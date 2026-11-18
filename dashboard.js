@@ -110,7 +110,7 @@ function paper(d) {
       })
   );
   note(
-    'Each BTC strategy models one contract. The size test requires at least 1,000 contracts visible on both checks. Strategies can overlap on the same market. Auction paper entries use their recorded fee reserves.'
+    'Each BTC strategy models one contract. The size test requires at least 1,000 contracts visible on both checks. Strategies can overlap on the same market. Sale-window auction entries use a fee reserve. Later offers use estimated taker fees.'
   );
   note(
     'BTC monitor · ' +
@@ -138,6 +138,44 @@ function paper(d) {
           ' · ' +
           time(pair.at)
       );
+  if (d.lateAuctionStatus?.at) {
+    const late = d.lateAuctionStatus;
+    note(
+      'Post-auction books · ' +
+        (late.error ??
+          late.books +
+            ' books checked; ' +
+            late.quoted +
+            ' with at least one contract at 99¢ or less on the indicated side; ' +
+            late.sourceErrors +
+            ' source errors') +
+        ' · ' +
+        time(late.at)
+    );
+  }
+  if (selected === 'all' || selected === 'late_auction') {
+    const positions = rows.filter(
+      (r) => r.strategy === 'late_auction' && r.payout == null
+    );
+    if (positions.length)
+      table(
+        'Open post-auction paper positions',
+        [
+          'Market',
+          'Side',
+          'Contracts',
+          'Cost at risk incl. fees',
+          'Net if side wins'
+        ],
+        positions.map((r) => [
+          r.ticker,
+          r.side.toUpperCase(),
+          r.quantity,
+          money(r.quantity * r.price + r.fees),
+          money(r.quantity * (1 - r.price) - r.fees)
+        ])
+      );
+  }
   for (const a of d.auctionStatus.next ?? [])
     note(
       'Scheduled ' +

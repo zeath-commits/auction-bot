@@ -5,6 +5,7 @@ import { setTimeout as sleep } from 'node:timers/promises';
 import { Transport } from './transport.mjs';
 
 export const strategies = {
+  late_auction: 'Auction · offers after the sale',
   auction_pair: 'Auction · paired thresholds',
   crypto_pair: 'Crypto · paired thresholds',
   btc60: 'Bitcoin · final minute',

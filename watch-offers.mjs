@@ -14,14 +14,14 @@ async function readSource(io, url) {
   }
 }
 
-async function catalogue(io, auction) {
+export async function catalogue(io, auction) {
   const r = await readSource(io,auction.sourceUrl);
   const rows = auction.house === 'christies' ? christies(r.text,auction.sale) :
     phillips(r.text,auction.sale,{allowPartialCatalogue:true});
   return {rows, requestedAt:r.requestedAt};
 }
 
-async function evidence(io, auction, target, source) {
+export async function evidence(io, auction, target, source) {
   const matches = source.rows.filter(r=>r.lot===target.lot && r.id===target.id);
   if (matches.length!==1) return null;
   const row = matches[0];

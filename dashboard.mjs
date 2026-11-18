@@ -5,6 +5,7 @@ import { timingSafeEqual, createHash } from 'node:crypto';
 import { spawn } from 'node:child_process';
 import { ROOT } from './bot.mjs';
 import { observePairs, pairSeries } from './auction-pairs.mjs';
+import { observeLateAuctions } from './late-auction.mjs';
 import {
   addPaper,
   observe,
@@ -26,6 +27,7 @@ const config = JSON.parse(
   )
 );
 const status = { state: 'Starting', at: null };
+const lateAuctionStatus = { at: null };
 const pairStatus = Object.fromEntries(
   Object.entries(pairSeries).map(([k, label]) => [k, { label, at: null }])
 );
@@ -350,6 +352,7 @@ const server = http.createServer((req, res) => {
           status,
           auctionStatus,
           pairStatus,
+          lateAuctionStatus,
           strategies,
           paper,
           replay: replay(),
@@ -391,6 +394,15 @@ server.listen(port, host, () => {
     }
   }
   importSafe();
+  observeLateAuctions({
+    db,
+    config,
+    auctions: calendars.flatMap((c) => c.auctions),
+    stop: () => stopping || exists(path.join(ROOT, 'STOP')),
+    status: lateAuctionStatus
+  }).catch((e) => {
+    lateAuctionStatus.error = e.message;
+  });
   for (const [series, state] of Object.entries(pairStatus))
     observePairs({
       series,
