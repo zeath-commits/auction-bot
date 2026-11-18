@@ -110,6 +110,7 @@ function importAuction() {
         );
     }
 }
+const cachedDays = new Map();
 function replay() {
   const dir = path.join(runtime, 'replay');
   const baseline = path.join(ROOT, 'replay-baseline.json');
@@ -119,7 +120,14 @@ function replay() {
   for (const f of (exists(dir) ? fs.readdirSync(dir) : []).filter((f) =>
     /^\d{4}-\d{2}-\d{2}\.json$/.test(f)
   )) {
-    const { rows, listed, possible } = json(path.join(dir, f));
+    const file = path.join(dir, f);
+    const stamp = fs.statSync(file).mtimeMs;
+    const cached = cachedDays.get(f);
+    if (cached?.stamp === stamp) {
+      byDay.set(cached.day, cached.summary);
+      continue;
+    }
+    const { rows, listed, possible } = json(file);
     const prints = rows.filter((r) => r.first);
     const day = f.slice(0, 10);
     const ten = rows.filter((r) => r.finalTen);
@@ -139,6 +147,15 @@ function replay() {
       listed: listed ?? rows.length,
       possible: possible ?? 96,
       prints: prints.length,
+      byPrice: [0.98, 0.99].map((price) => {
+        const cohort = prints.filter((r) => r.first.price === price);
+        return {
+          price,
+          count: cohort.length,
+          wins: cohort.filter((r) => r.first.side === r.result).length,
+          net: modeledNet(cohort, 'first')
+        };
+      }),
       wins: prints.filter((r) => r.first.side === r.result).length,
       finalTen: rows.every((r) => 'finalTen' in r)
         ? {
@@ -156,6 +173,7 @@ function replay() {
         .filter((r) => r.first.side !== r.result)
         .map((r) => ({ ticker: r.ticker, ...r.first, result: r.result }))
     });
+    cachedDays.set(f, { stamp, day, summary: byDay.get(day) });
   }
   return [...byDay.values()].sort((a, b) => b.day.localeCompare(a.day));
 }
@@ -374,7 +392,9 @@ const server = http.createServer((req, res) => {
   }
 });
 server.listen(port, host, () => {
-  console.log('Strategy dashboard listening on ' + host + ':' + port);
+  console.log(
+    'Strategy dashboard listening on ' + host + ':' + server.address().port
+  );
   function importSafe() {
     try {
       importAuction();

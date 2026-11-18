@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { openLedger, recordBtc, settle } from '../strategy-monitor.mjs';
 
-test('BTC strategies require repeatable size and settle both paper variants only once', async () => {
+test('BTC strategies require repeatable size and settle each paper variant only once', async () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'btc-paper-')),
     db = openLedger(dir);
   try {
@@ -44,6 +44,17 @@ test('BTC strategies require repeatable size and settle both paper variants only
       ['btc10', 'btc60']
     );
     assert.equal(rows()[0].fees, 0.0014);
+    enter(
+      book(close - 3000, '0.0200', '1000'),
+      book(close - 1800, '0.0200', '999.99')
+    );
+    assert.equal(rows().length, 2);
+    enter(
+      book(close - 2800, '0.0200', '1200'),
+      book(close - 1600, '0.0200', '1000')
+    );
+    assert.equal(rows()[2].strategy, 'btcDepth');
+    assert.equal(rows()[2].depth, 1000);
     const io = {
       get: async () => ({
         body: { market: { ...market, status: 'finalized', result: 'no' } }
@@ -53,7 +64,7 @@ test('BTC strategies require repeatable size and settle both paper variants only
     await settle(db, io);
     assert.deepEqual(
       rows().map((r) => r.payout),
-      [0, 0]
+      [0, 0, 0]
     );
   } finally {
     db.close();

@@ -7,6 +7,7 @@ import { Transport } from './transport.mjs';
 export const strategies = {
   btc60: 'Bitcoin · final minute',
   btc10: 'Bitcoin · final 10 seconds',
+  btcDepth: 'Bitcoin · 1,000 contracts displayed',
   published_sale: 'Published auction price',
   unsold: 'Explicitly unsold lot',
   live_bid: 'Live bid above threshold',
@@ -71,11 +72,14 @@ export function recordBtc(db, market, first, second, multiplier) {
   const a = bestFavorite(first.body),
     b = bestFavorite(second.body);
   if (!a || !b || b.side !== a.side || b.price > a.price) return;
-  for (const [strategy, seconds] of [
-    ['btc60', 60],
-    ['btc10', 10]
+  const depth = Math.min(a.size, b.size);
+  for (const [strategy, seconds, minimumSize] of [
+    ['btc60', 60, 1],
+    ['btc10', 10, 1],
+    ['btcDepth', 60, 1000]
   ]) {
-    if (first.requestedAt < close - seconds * 1000) continue;
+    if (first.requestedAt < close - seconds * 1000 || depth < minimumSize)
+      continue;
     const fee =
       Math.ceil(0.07 * multiplier * b.price * (1 - b.price) * 10000 - 1e-9) /
       10000;
@@ -88,7 +92,7 @@ export function recordBtc(db, market, first, second, multiplier) {
       quantity: 1,
       price: b.price,
       fees: fee,
-      depth: Math.min(a.size, b.size),
+      depth,
       closeAt: close
     });
   }
@@ -115,7 +119,7 @@ export async function settle(db, io) {
   const pending = db
     .prepare(
       `SELECT DISTINCT p.ticker FROM paper p LEFT JOIN results r USING(ticker)
-    WHERE payout IS NULL AND (p.strategy NOT IN ('btc60','btc10') OR closeAt<=?) AND COALESCE(r.checked,0)<?
+    WHERE payout IS NULL AND (p.strategy NOT IN ('btc60','btc10','btcDepth') OR closeAt<=?) AND COALESCE(r.checked,0)<?
     ORDER BY COALESCE(r.checked,0) LIMIT 10`
     )
     .all(Date.now(), Date.now() - 60000);

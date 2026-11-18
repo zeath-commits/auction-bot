@@ -83,7 +83,15 @@ function paper(d) {
       'Settled paper net',
       settled.length ? money(settled.reduce((s, r) => s + r.net, 0)) : '—'
     ],
-    ['BTC windows sampled', d.windows.n]
+    ['BTC windows sampled', d.windows.n],
+    [
+      'BTC windows showing 1,000+ at entry',
+      new Set(
+        rows
+          .filter((r) => r.strategy.startsWith('btc') && r.depth >= 1000)
+          .map((r) => r.ticker)
+      ).size
+    ]
   ]);
   table(
     'Strategies',
@@ -102,7 +110,7 @@ function paper(d) {
       })
   );
   note(
-    'BTC models one contract after two book checks at least a second apart. The final-minute and final-10-second models can overlap. Auction paper entries use their recorded fee reserves.'
+    'Each BTC strategy models one contract. The size test requires at least 1,000 contracts visible on both checks. Strategies can overlap on the same market. Auction paper entries use their recorded fee reserves.'
   );
   note(
     'BTC monitor · ' +
@@ -154,6 +162,24 @@ function history(d) {
   ]);
   note(
     'First 98¢ or 99¢ trade on either side during the final minute of each Kalshi 15-minute BTC market. Gross assumes one contract per qualifying window, before fees. Historical prints do not establish available depth.'
+  );
+  table(
+    'Final minute by entry price',
+    ['Entry', 'Qualifying', 'Wins', 'Losses', 'Net at standard fee'],
+    [0.98, 0.99].map((price) => {
+      const cohorts = days
+        .flatMap((d) => d.byPrice ?? [])
+        .filter((c) => c.price === price);
+      const n = cohorts.reduce((s, c) => s + c.count, 0),
+        w = cohorts.reduce((s, c) => s + c.wins, 0);
+      return [
+        money(price),
+        n,
+        w,
+        n - w,
+        money(cohorts.reduce((s, c) => s + c.net, 0))
+      ];
+    })
   );
   table(
     'Daily replay',
