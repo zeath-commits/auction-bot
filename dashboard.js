@@ -258,6 +258,17 @@ function paper(d) {
         '. The observed high includes a one-degree buffer when testing a crossing. Kalshi settles these contracts from The Weather Company.'
     );
   }
+  if (['all','cs2_reference'].includes(selected) && d.cs2Status) {
+    const c = d.cs2Status;
+    note('CS2 pregame · ' + (c.error ?? (c.at ? c.matched + ' matched games · ' +
+      c.priced + ' with usable books' : 'Starting')) +
+      (c.at ? ' · checked ' + time(c.at) : ''));
+    if (selected === 'cs2_reference') {
+      note('One simulated Kalshi YES per game when its cost including fees is at least 2¢ below the Polymarket US bid on two checks. The reference needs five contracts on each side with a spread of 4¢ or less. Checks end two minutes before scheduled play.');
+      if (c.best) note('Largest difference this scan · ' + c.best.team + ' · ' + (c.best.gap*100).toFixed(2) + '¢ per contract.');
+      for (const error of c.errors ?? []) note(error);
+    }
+  }
   if (['all', 'nba_five','nba_best_route'].includes(selected) && d.nbaStatus?.at) {
     const n = d.nbaStatus;
     note(

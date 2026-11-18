@@ -16,6 +16,7 @@ import {
   observeAuctionExits
 } from './auction-portfolio.mjs';
 import { observeNBA } from './nba-paper.mjs';
+import { observeCS2 } from './esports-paper.mjs';
 import { observeUS } from './us-bitcoin-paper.mjs';
 import { observeSothebysBids } from './sothebys-bids.mjs';
 import {
@@ -44,6 +45,7 @@ const lateAuctionStatus = { at: null };
 const usBitcoinStatus = { at: null };
 const sothebysStatus = {};
 const nbaStatus = {};
+const cs2Status = {};
 const auctionExits = {};
 const weatherStatus = {};
 const pairStatus = Object.fromEntries(
@@ -516,6 +518,7 @@ const server = http.createServer((req, res) => {
           sothebysStatus,
           soldLimits: soldLimits.summary(),
           nbaStatus,
+          cs2Status,
           auctionPortfolio: auctionPortfolio(db),
           catalogComparison: { observedAt: catalogObservedAt, source: catalogSource, cases: catalogCases },
           auctionHoldings: auctionHoldings(db),
@@ -594,6 +597,10 @@ server.listen(port, host, () => {
     }
   }
   importSafe();
+  observeCS2({
+    db, config, status: cs2Status,
+    stop: () => stopping || exists(path.join(ROOT, 'STOP'))
+  }).catch(e => { cs2Status.error = e.message; });
   observeWeather({
     db,
     config,

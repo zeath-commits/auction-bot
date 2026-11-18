@@ -6,6 +6,7 @@ import { Transport } from './transport.mjs';
 import { chartProjection, referencePrices } from './bitcoin-reference.mjs';
 
 export const strategies = {
+  cs2_reference: 'CS2 · Kalshi offer below Polymarket US bid',
   weather_three: 'Weather · 3 p.m. station readings',
   weather_high: 'Weather · afternoon high already crossed',
   nba_five: 'NBA · five-point lead with 35–50 seconds left',
