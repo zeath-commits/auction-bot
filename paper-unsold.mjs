@@ -14,7 +14,8 @@ export function christiesLotHeader(html, sale, target) {
   const lots = data.lots.filter(l => l.object_id === target.id && l.lot_id_txt?.replace(/\s/g,'') === target.lot);
   if (lots.length !== 1) return false;
   const l = lots[0];
-  return l.title_primary_txt === target.artist && l.title_secondary_txt === target.title &&
+  return typeof l.title_primary_txt === 'string' && l.title_primary_txt.trim() === target.artist.trim() &&
+    typeof l.title_secondary_txt === 'string' && l.title_secondary_txt.trim() === target.title.trim() &&
     l.analytics_id?.startsWith(sale + '.') ? l : null;
 }
 

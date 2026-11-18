@@ -19,6 +19,9 @@ test('unsold requires matching explicit status without a price, then counts once
   assert.equal(christiesUnsold(html(),'42',target),false);
   lot.is_unsold=true;
   assert.equal(christiesUnsold(html(),'42',target),true);
+  lot.title_secondary_txt='B ';
+  assert.equal(christiesUnsold(html(),'42',target),true);
+  assert.equal(christiesUnsold(html(),'42',{...target,title:'Different title'}),false);
   assert.equal(christiesUnsold(html(),'43',target),false);
   lot.lot_withdrawn=true; assert.equal(christiesUnsold(html(),'42',target),false);
   lot.lot_withdrawn=false; lot.price_realised=500000; assert.equal(christiesUnsold(html(),'42',target),false);
