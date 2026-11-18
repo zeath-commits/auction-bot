@@ -1,8 +1,8 @@
 import { createHash } from 'node:crypto';
 import { setTimeout as sleep } from 'node:timers/promises';
 import calendar from './sothebys-bid-calendar.json' with { type: 'json' };
-import { askLevels, checkFees, checkMarketActive } from './core.mjs';
-import { marketList } from './sothebys-bids.mjs';
+import { askLevels, checkFees, checkMarketActive, overlappingAskLevels } from './core.mjs';
+import { marketList, readSalePage } from './sothebys-bids.mjs';
 import { addPaper } from './strategy-monitor.mjs';
 import { Transport } from './transport.mjs';
 
@@ -11,6 +11,45 @@ const annualEvent = 'KXAUCTIONRECORD-27-VIN';
 const annualTicker = annualEvent + '-117180000';
 const target = calendar.targets.find(t => t.event === 'KXART-VANCHAT18NOV26');
 const budget = 1000;
+const publishedStrategy='art_published_record';
+
+// Separate $1,000 paper portfolio: one prospective entry from the first
+// repeated annual book after both the lot page and catalog report the sale.
+export function recordPublishedAnnual(db,annual,a,b,stop,sources) {
+  if(stop()||annual?.ticker!==annualTicker||!checkMarketActive(annual,b.receivedAt))return;
+  if(sources?.length!==2||sources[0].kind!=='catalog'||sources[1].kind!=='lot'||
+    sources[0].amount!==sources[1].amount||!(sources[0].amount>annual.floor_strike)||
+    sources.some(s=>!s.fresh||s.at>a.requestedAt||s.at<Date.parse(calendar.scheduled)||a.requestedAt-s.at>5000))return;
+  const date=r=>Date.parse(r.httpDate)-1000*Number(r.cacheAge??0);
+  if(!(Number.isFinite(date(a))&&date(b)>date(a)&&b.requestedAt>=a.receivedAt+1000&&
+    b.receivedAt-a.requestedAt<=6000))return;
+  const get=r=>r.body.orderbooks.find(q=>q.ticker===annual.ticker);
+  const first=get(a),second=get(b);
+  if(!first||!second)return;
+  const levels=overlappingAskLevels(first,second,'YES',99);
+  const picked=[];
+  let cash=budget;
+  for(const l of levels){
+    const price=l.price,depth=l.quantity;
+    let n=Math.min(depth,Math.floor(cash/price));
+    const fee=q=>Math.ceil(7*q*price*(1-price)-1e-9)/100;
+    while(n>0&&n*price+fee(n)>cash+1e-9)n--;
+    if(n<1||n*(1-price)<=fee(n)+1e-9)continue;
+    picked.push({price,depth,quantity:n,fees:fee(n)});
+    cash-=n*price+fee(n);
+  }
+  if(!picked.length)return;
+  db.exec('BEGIN IMMEDIATE');
+  try{
+    if(!db.prepare('SELECT 1 FROM paper WHERE strategy=? AND ticker=? LIMIT 1').get(publishedStrategy,annual.ticker)){
+      for(const l of picked)addPaper(db,{...l,id:publishedStrategy+'/'+annual.ticker+'/'+Math.round(l.price*1e6),
+        strategy:publishedStrategy,ticker:annual.ticker,side:'yes',at:new Date(b.receivedAt).toISOString(),closeAt:Date.parse(annual.close_time)});
+      db.prepare('INSERT INTO art_published_record_evidence VALUES(?,?,?)').run(annual.ticker,b.receivedAt,
+        JSON.stringify({sources,first:{at:a.receivedAt,asOf:date(a),book:first},second:{at:b.receivedAt,asOf:date(b),book:second},picked}));
+    }
+    db.exec('COMMIT');
+  }catch(e){db.exec('ROLLBACK');throw e;}
+}
 
 export function recordMarkets(event, lots, now) {
   const annual = event.markets?.find(m => m.ticker === annualTicker);
@@ -96,6 +135,7 @@ export function remainingPairs(pairs, books, used) {
 }
 
 export async function observeRecordPair({db,config,stop,status}) {
+  db.exec('CREATE TABLE IF NOT EXISTS art_published_record_evidence(ticker TEXT PRIMARY KEY,at INTEGER,detail TEXT)');
   const io = new Transport({...config,maxHttpAgeSeconds:1,requestTimeoutMs:2500});
   db.exec('CREATE TABLE IF NOT EXISTS art_record_pair_books(at INTEGER PRIMARY KEY, firstBook TEXT NOT NULL, secondBook TEXT NOT NULL)');
   db.exec('CREATE TABLE IF NOT EXISTS art_record_delays(entryAt INTEGER,seconds INTEGER,requested INTEGER,checked INTEGER,available INTEGER,detail TEXT,PRIMARY KEY(entryAt,seconds))');
@@ -114,7 +154,17 @@ export async function observeRecordPair({db,config,stop,status}) {
       const markets=recordMarkets(event.body.event,lots,Date.now());
       status.strikes=Math.max(0,markets.length-1);
       status.added=0;
-      if (markets.length>1 && exchange.body.exchange_active && exchange.body.trading_active) {
+      if (markets.length && exchange.body.exchange_active && exchange.body.trading_active) {
+        let sources=null;
+        if (began>=Date.parse(calendar.scheduled) && !db.prepare('SELECT 1 FROM paper WHERE strategy=? LIMIT 1').get(publishedStrategy)) {
+          try{
+            const pages=await Promise.all([readSalePage(),readSalePage(target)]);
+            sources=pages.map(p=>({kind:p.kind,url:p.url,at:p.at,generation:p.generation,fresh:p.soldFresh,
+              amount:p.lots.find(l=>l.event===target.event)?.salePrice??null}));
+            status.publishedSources=sources;
+            delete status.publishedSourceError;
+          }catch(e){status.publishedSourceError=e.message;}
+        }
         const q=new URLSearchParams(markets.map(m=>['tickers',m.ticker]));
         q.set('depth','100');
         const read = async () => {
@@ -130,6 +180,7 @@ export async function observeRecordPair({db,config,stop,status}) {
         const b=await read();
         if (!stop() && markets.every(m=>checkMarketActive(m,b.receivedAt)) &&
             Date.parse(b.httpDate)-Number(b.cacheAge??0)*1000>Date.parse(a.httpDate)-Number(a.cacheAge??0)*1000) {
+          recordPublishedAnnual(db,markets[0],a,b,stop,sources);
           db.exec('BEGIN IMMEDIATE');
           let pairs,used;
           try {
