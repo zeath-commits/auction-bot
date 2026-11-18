@@ -36,6 +36,11 @@
   ],
   "studies": [
     {
+      "market": "Phillips bought-in lot",
+      "test": "Matched settled Kiefer paper entries to Kalshi trades and checked all ten thresholds from the first recorded paper NO until market close.",
+      "finding": "The two late paper entries modeled 1,009 shares and $9.40 net on one artwork. The 884-share NO on Above $550K accounted for $8.23. That threshold reported zero lifetime trading volume. Across all ten thresholds, the only non-block NO taker executions of at least one whole share after the first paper signal were two one-share fills at 83¢ on Above $500K at 9:38 a.m. ET on November 18. Both settled NO. The visible quotes and these small executions provide different evidence about attainable size."
+    },
+    {
       "market": "Published auction results",
       "test": "Twelve selected follow-up order books from the November 16 auctions, matched with the earlier book and the next 30 seconds of Kalshi trades.",
       "finding": "Light Leaks sold for $5 million. On Above $3.5M YES, two snapshots 0.229 seconds apart each displayed 130 whole contracts at 91¢. A buyer took eight at 91¢ 25.316 seconds after the second snapshot. Those eight would have earned about $0.67 after estimated fees. This was the sole matching trade across these follow-ups. The snapshots lack exchange generation timestamps and establish neither continuous availability nor a bot fill. For Rothko Above $18M NO, two snapshots 37.952 seconds apart each displayed 51 at 87¢, with no matching buyer execution at an overlapping price in the next 30 seconds."
