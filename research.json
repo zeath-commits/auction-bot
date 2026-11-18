@@ -36,6 +36,11 @@
   ],
   "studies": [
     {
+      "market": "Published auction results",
+      "test": "Twelve selected follow-up order books from the November 16 auctions, matched with the earlier book and the next 30 seconds of Kalshi trades.",
+      "finding": "Light Leaks sold for $5 million. On Above $3.5M YES, two snapshots 0.229 seconds apart each displayed 130 whole contracts at 91¢. A buyer took eight at 91¢ 25.316 seconds after the second snapshot. Those eight would have earned about $0.67 after estimated fees. This was the sole matching trade across these follow-ups. The snapshots lack exchange generation timestamps and establish neither continuous availability nor a bot fill. For Rothko Above $18M NO, two snapshots 37.952 seconds apart each displayed 51 at 87¢, with no matching buyer execution at an overlapping price in the next 30 seconds."
+    },
+    {
       "market": "Daily high temperature ranges",
       "test": "November 11–17, 2026. Used the first uncorrected same-day afternoon NWS report from eight cities to pick its corresponding Kalshi range. Checked whole-share YES purchases starting one minute after release and ending within an hour or at the next report.",
       "finding": "The recovered sample contained 51 station-days. The forecast won 49 of 50 finalized markets. Only three markets had a public YES purchase of five or more at 95¢ or less. At five contracts each, San Francisco at 92¢ modeled a 37¢ gain and Seattle at 77¢ a $3.92 loss after estimated fees. New York at 94¢ remained unsettled. Seattle’s preliminary 59°F became an official 61°F. This sample shows a loss of $3.55 on the two finalized purchases even with the high overall forecast accuracy. The forward paper test requires independently refreshed order books."
