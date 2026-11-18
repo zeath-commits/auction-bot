@@ -124,6 +124,41 @@ function paper(d) {
       d.auctionStatus.offers +
       '.'
   );
+  if (selected === 'weather_high' && d.weatherStatus?.cities) {
+    for (const x of d.weatherStatus.historical ?? [])
+      note(
+        'Historical buyer at ' +
+          x.ticker +
+          ' · ' +
+          x.status +
+          (x.net == null
+            ? ' · awaiting official payout'
+            : ' · one-share modeled net ' + money(x.net))
+      );
+    if (d.weatherStatus.reviewError) note(d.weatherStatus.reviewError);
+    table(
+      'Afternoon climate reports',
+      [
+        'Station',
+        'Latest check',
+        'Reported high',
+        'Crossed thresholds',
+        'Repeated offers'
+      ],
+      Object.entries(d.weatherStatus.cities).map(([city, r]) => [
+        city,
+        r.error ?? r.state,
+        r.high != null ? r.high + '°F' : null,
+        r.thresholds,
+        r.offers
+      ])
+    );
+    note(
+      'Reports checked ' +
+        time(d.weatherStatus.at) +
+        '. The observed high includes a one-degree buffer when testing a crossing. Kalshi settles these contracts from The Weather Company.'
+    );
+  }
   if (['all', 'nba_five'].includes(selected) && d.nbaStatus?.at) {
     const n = d.nbaStatus;
     note(

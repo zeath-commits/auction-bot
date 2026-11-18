@@ -5,6 +5,7 @@ import { setTimeout as sleep } from 'node:timers/promises';
 import { Transport } from './transport.mjs';
 
 export const strategies = {
+  weather_high: 'Weather · afternoon high already crossed',
   nba_five: 'NBA · five-point lead with 35–50 seconds left',
   sothebys_sold: 'Sotheby’s · published sale price and available quantity',
   sothebys_live_bid: 'Sotheby’s · live bids above a threshold',

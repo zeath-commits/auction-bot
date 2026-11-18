@@ -8,6 +8,7 @@ import { observePairs, pairSeries } from './auction-pairs.mjs';
 import { observeLateAuctions } from './late-auction.mjs';
 import { openSoldLimits } from './sold-limits.mjs';
 import { Transport } from './transport.mjs';
+import { observeWeather } from './weather-paper.mjs';
 import { observeNBA } from './nba-paper.mjs';
 import { observeUS } from './us-bitcoin-paper.mjs';
 import { observeSothebysBids } from './sothebys-bids.mjs';
@@ -37,6 +38,7 @@ const lateAuctionStatus = { at: null };
 const usBitcoinStatus = { at: null };
 const sothebysStatus = {};
 const nbaStatus = {};
+const weatherStatus = {};
 const pairStatus = Object.fromEntries(
   Object.entries(pairSeries).map(([k, label]) => [k, { label, at: null }])
 );
@@ -467,6 +469,7 @@ const server = http.createServer((req, res) => {
           sothebysStatus,
           soldLimits: soldLimits.summary(),
           nbaStatus,
+          weatherStatus,
           sothebysCoverage: db
             .prepare(
               'SELECT COUNT(*) AS scans,COALESCE(SUM(fresh),0) AS fresh FROM sothebys_bid_scans'
@@ -532,6 +535,14 @@ server.listen(port, host, () => {
     }
   }
   importSafe();
+  observeWeather({
+    db,
+    config,
+    status: weatherStatus,
+    stop: () => stopping || exists(path.join(ROOT, 'STOP'))
+  }).catch((e) => {
+    weatherStatus.error = e.message;
+  });
   observeNBA({
     db,
     config,

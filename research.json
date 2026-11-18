@@ -36,6 +36,11 @@
   ],
   "studies": [
     {
+      "market": "Daily high temperature",
+      "test": "Four stations, November 11–17 afternoon climate reports",
+      "finding": "A one-degree buffer identified 49 crossed thresholds across 28 station-days. All 48 finalized markets agreed. Only the Central Park high below 50°F had qualifying buyer executions one to sixty minutes after issuance. The first timestamp included 250 NO contracts at 98–99¢. The afternoon report gave 52°F, but the next National Weather Service report and The Weather Company both recorded 47°F. As of November 18 the market was closed with settlement pending."
+    },
+    {
       "market": "November 16 auction sales",
       "test": "Price limits, competing buyers and repeated order books",
       "finding": "Across 105 settled thresholds, allocating $1,000 to observed buyer executions after 30 seconds modeled +$104.36 at a 95¢ limit and +$88.07 at 99¢. At 95¢, $80.16 of the modeled gain came from Rothko. The archive sampled books for 78 thresholds. Two successive books 1–30 seconds apart supported just two shares on one artwork, for +$0.159 after modeled fees. Reserving the cheapest share for another buyer left +$0.0748. Archive coverage was incomplete."

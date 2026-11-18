@@ -30,6 +30,8 @@ test(
         'sold-limits.mjs',
         'sale-timing.mjs',
         'nba-paper.mjs',
+        'weather-paper.mjs',
+        'weather-high.mjs',
         'sothebys-bid-calendar.json',
         'watch-offers.mjs',
         'paper-unsold.mjs',
