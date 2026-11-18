@@ -36,6 +36,11 @@
   ],
   "studies": [
     {
+      "market": "Fine art",
+      "test": "Delayed start on two-book auction replay, November 16",
+      "finding": "Untitled (Shipwreck) was the only lot with qualifying depth on two archived order books. Starting 30 seconds, one minute or three minutes after the first recorded sold price still showed one contract at 91¢ and one at 92¢ on two subsequent reads. Each delay modeled $0.159 net after fees. Starting five minutes late found zero qualifying pairs in the available archive. These delays reuse the same two shares."
+    },
+    {
       "market": "Daily high temperature",
       "test": "3 p.m. station readings before the afternoon climate product, November 11–17",
       "finding": "Across 28 station-days, 34 thresholds crossed on 20 station-days and all agreed with settlement. From 3:01 p.m. local standard time to the earlier of the afternoon product or 4 p.m., no whole-contract same-side taker buy at 99¢ or less appeared. An earlier check started one minute after the first supported crossing and ran up to one hour, ending by 3 p.m. All 33 earlier thresholds agreed with settlement and none had a qualifying buy. Both checks used the same four stations and dates."

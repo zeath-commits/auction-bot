@@ -370,6 +370,21 @@ function paper(d) {
       'Waiting for the auction house to publish a sold price.'
     );
     if (d.sothebysStatus.timingError) note(d.sothebysStatus.timingError);
+    const quotes = d.sothebysStatus.quotes;
+    if (quotes) {
+      if (quotes.at) note('Last independent order-book check covered ' + quotes.checked + ' thresholds at ' + time(quotes.at) + '.');
+      if (quotes.error) note('Order-book timing check · ' + quotes.error);
+      function quote(r) {
+        if (!r) return 'No timely sample';
+        const text = r.quoted ? money(r.best) + ' best · ' + r.quoted + '/' + r.checked + ' quoted'
+          : 'No whole contract through 99¢';
+        return text + ' · ' + (r.lagMs / 1000).toFixed(1) + ' s';
+      }
+      table('Offers around the first published sale price', ['Artwork','Before receipt','After receipt','After 30 seconds','After 5 minutes'],
+        (quotes.comparison ?? []).map(r => r.conflict ? [r.title,'Source prices need review','—','—','—'] :
+          [r.title,quote(r.before),quote(r.after),quote(r.after30),quote(r.after300)]),
+        'Waiting for a published sale price.');
+    }
   }
   if (selected === 'sothebys_sold' && d.soldLimits) {
     table(

@@ -31,6 +31,7 @@ test(
         'sothebys-sold.mjs',
         'sold-limits.mjs',
         'sale-timing.mjs',
+        'auction-quote-timing.mjs',
         'nba-paper.mjs',
         'weather-paper.mjs',
         'weather-station.mjs',

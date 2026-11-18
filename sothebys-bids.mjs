@@ -9,6 +9,7 @@ import { addPaper } from './strategy-monitor.mjs';
 import { initSoldStudy, scanSold } from './sothebys-sold.mjs';
 
 import { saleTiming } from './sale-timing.mjs';
+import { observeAuctionQuotes } from './auction-quote-timing.mjs';
 
 const calendar = JSON.parse(
   fs.readFileSync(new URL('./sothebys-bid-calendar.json', import.meta.url))
@@ -218,6 +219,9 @@ export async function observeSothebysBids({
   });
   initSoldStudy(db);
   const timing = saleTiming(db, calendar.targets);
+  status.quotes = {};
+  observeAuctionQuotes({db,io,calendar,marketList,stop,status:status.quotes,timing})
+    .catch(e => { status.quotes.error = e.message; });
   status.timing = timing.summary();
   let previous = new Map(),
     previousSold = new Map();

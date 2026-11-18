@@ -199,7 +199,7 @@ export function priceSensitivity(tape) {
 // Reconstruct only the depth frozen in the original <=95-cent book archive.
 // Removing the first unit per ticker represents a competing small buyer.
 // Previously attributed units remain reserved if displayed volume reappears.
-export function confirmedDepthReplay(lots, checked, competitorUnits) {
+export function confirmedDepthReplay(lots, checked, competitorUnits, delayMs = 0) {
   const outcomes = new Map(checked.map((c) => [c.ticker, c.aligned]));
   const books = lots
     .flatMap((l) =>
@@ -219,7 +219,7 @@ export function confirmedDepthReplay(lots, checked, competitorUnits) {
     entries = [];
   let cash = 1000;
   for (const b of books) {
-    if (Date.parse(b.at) < Date.parse(b.seenAt)) continue;
+    if (Date.parse(b.at) < Date.parse(b.seenAt) + delayMs) continue;
     const sideBook = {
       orderbook_fp: {
         no_dollars: b.levels.map(([price, quantity]) => [
@@ -459,7 +459,10 @@ async function main() {
     priceSensitivity: priceSensitivity(fullTape),
     confirmedDepth: desktop
       ? null
-      : [0, 1].map((units) => confirmedDepthReplay(lots, checked, units))
+      : [0, 1].map((units) => confirmedDepthReplay(lots, checked, units)),
+    delayedDepth: desktop ? null : [0,30,60,180,300].map(seconds => ({
+      seconds, ...confirmedDepthReplay(lots,checked,0,seconds*1000)
+    }))
   };
   const dir = new URL('./runtime/', import.meta.url);
   await fs.mkdir(dir, { recursive: true });

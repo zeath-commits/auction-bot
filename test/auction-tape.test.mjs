@@ -150,5 +150,7 @@ test('two observed books cap paper size across repeated and interrupted snapshot
   const baseline = confirmedDepthReplay([l], outcomes, 0);
   assert.equal(baseline.quantity, 2);
   assert.equal(confirmedDepthReplay([l], outcomes, 1).quantity, 1);
+  assert.equal(confirmedDepthReplay([l], outcomes, 0, 20000).quantity, 2);
+  assert.equal(confirmedDepthReplay([l], outcomes, 0, 25000).quantity, 0);
   assert.equal(confirmedDepthReplay([l], [], 0).net, null);
 });
