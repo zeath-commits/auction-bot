@@ -493,6 +493,18 @@ function paper(d) {
         (quotes.comparison ?? []).map(r => r.conflict ? [r.title,'Source prices need review','—','—','—'] :
           [r.title,quote(r.before),quote(r.after),quote(r.after30),quote(r.after300)]),
         'Waiting for a published sale price.');
+      if (quotes.comparison?.some(r=>r.baselineAt)) {
+        function depth(sample) {
+          if (!sample?.depth95) return 'No depth sample';
+          const {shares,overlap}=sample.depth95;
+          return shares.toLocaleString()+' shown'+(overlap==null?'':' · '+overlap.toLocaleString()+' at matching prices');
+        }
+        table('Whole shares offered through 95¢ on the published-result side',
+          ['Artwork','Pre-sale','At first result','After 30 seconds','After 5 minutes'],
+          quotes.comparison.filter(r=>r.baselineAt).map(r=>[r.title,r.baselineShares.toLocaleString()+' at '+time(r.baselineAt),
+            depth(r.after),depth(r.after30),depth(r.after300)]),'Waiting for quote comparisons.');
+        note('Matching shares use the smaller displayed quantity at the same threshold and price in both snapshots. Orders can change between reads.');
+      }
     }
   }
   if (selected === 'sothebys_sold' && d.soldLimits) {

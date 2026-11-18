@@ -24,11 +24,13 @@ export async function captureAuctionQuotes(io, markets) {
   const rows = active.filter(m => checkMarketActive(m,read.receivedAt)).map(m => {
     const book = books.get(m.ticker);
     if (!book) throw Error('Missing auction book ' + m.ticker);
-    function best(side) {
-      const level = askLevels(book, side, 99).find(l => l.quantity >= 1000000);
-      return level ? {price:level.price/1000000, size:Math.floor(level.quantity/1000000)} : null;
+    function levels(side) {
+      return askLevels(book,side,99).filter(l=>l.quantity>=1000000)
+        .map(l=>[l.price,Math.floor(l.quantity/1000000)]);
     }
-    return {event:m.event_ticker,ticker:m.ticker,strike:m.floor_strike,yes:best('YES'),no:best('NO')};
+    const depth = {yes:levels('YES'),no:levels('NO')};
+    const best = rows => rows.length ? {price:rows[0][0]/1000000,size:rows[0][1]} : null;
+    return {event:m.event_ticker,ticker:m.ticker,strike:m.floor_strike,yes:best(depth.yes),no:best(depth.no),depth};
   });
   return {begin:read.requestedAt, at:read.receivedAt, asOf, rows};
 }
@@ -41,20 +43,46 @@ export function quoteTiming(db) {
   const insert = db.prepare('INSERT OR IGNORE INTO auction_quote_batches(at,begin,detail,asOf) VALUES(?,?,?,?)');
   const before = db.prepare('SELECT * FROM auction_quote_batches WHERE at<? AND at>=? ORDER BY at DESC LIMIT 1');
   const after = db.prepare('SELECT * FROM auction_quote_batches WHERE begin>=? AND asOf>=? AND at<=? ORDER BY begin LIMIT 1');
-  function describe(batch, event, price, anchor) {
+  db.exec('CREATE TABLE IF NOT EXISTS auction_presale_depth(event TEXT PRIMARY KEY,at INTEGER NOT NULL,detail TEXT NOT NULL)');
+  const baseline = db.prepare('SELECT at,detail FROM auction_presale_depth WHERE event=? AND at<?');
+  const saveBaseline = db.prepare('INSERT OR IGNORE INTO auction_presale_depth VALUES(?,?,?)');
+  function describe(batch, event, price, anchor, reference) {
     if (!batch) return null;
     const rows = JSON.parse(batch.detail).filter(r => r.event === event);
     if (!rows.length) return null;
     const offers = rows.map(r => price > r.strike ? r.yes : r.no).filter(Boolean);
-    return {lagMs:batch.at-anchor, checked:rows.length, quoted:offers.length,
+    let depth95 = null;
+    if (rows.every(r=>r.depth)) {
+      let shares=0,overlap=0,matched=0;
+      for (const r of rows) {
+        const side=price>r.strike?'yes':'no';
+        const original=reference?.get(r.ticker);
+        const previous=new Map(original?.strike===r.strike ? original.depth[side] : []);
+        if (original?.strike===r.strike) matched++;
+        for (const [p,n] of r.depth[side]) {
+          if (p>950000) continue;
+          shares+=n;
+          overlap+=Math.min(n,previous.get(p)??0);
+        }
+      }
+      depth95={shares,overlap:matched===rows.length ? overlap : null};
+    }
+    return {lagMs:batch.at-anchor, checked:rows.length, quoted:offers.length,depth95,
       best:offers.length ? Math.min(...offers.map(o => o.price)) : null};
   }
   return {
+    recordBaseline(event,at,rows) {
+      if (rows.length && rows.every(r=>r.event===event && r.depth)) saveBaseline.run(event,at,JSON.stringify(rows));
+    },
     record: sample => insert.run(sample.at,sample.begin,JSON.stringify(sample.rows),sample.asOf),
     compare(event, at, price) {
+      const base=baseline.get(event,at);
+      const reference=base && new Map(JSON.parse(base.detail).map(r=>[r.ticker,r]));
+      const baselineShares=reference ? [...reference.values()].reduce((sum,r)=>
+        sum+r.depth[price>r.strike?'yes':'no'].reduce((n,[p,q])=>n+(p<=950000?q:0),0),0) : null;
       const pre = before.get(at,at-12000);
-      const post = delay => describe(after.get(at+delay,at+delay,at+delay+12000),event,price,at);
-      return {before:describe(pre,event,price,at), after:post(0), after30:post(30000), after300:post(300000)};
+      const post = delay => describe(after.get(at+delay,at+delay,at+delay+12000),event,price,at,reference);
+      return {baselineAt:base?.at??null,baselineShares,before:describe(pre,event,price,at,reference), after:post(0), after30:post(30000), after300:post(300000)};
     }
   };
 }
@@ -86,6 +114,12 @@ export async function observeAuctionQuotes({db,io,calendar,marketList,stop,statu
       const sample = await captureAuctionQuotes(io,markets);
       if (sample && !stop()) {
         store.record(sample);
+        if (sample.at<start) {
+          for (const target of calendar.targets) {
+            const rows=sample.rows.filter(r=>r.event===target.event);
+            if (rows.length===target.contracts) store.recordBaseline(target.event,sample.at,rows);
+          }
+        }
         status.at = sample.at;
         status.checked = sample.rows.length;
       }

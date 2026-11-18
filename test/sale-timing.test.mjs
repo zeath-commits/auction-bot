@@ -3,6 +3,23 @@ import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
 import { saleTiming } from '../sale-timing.mjs';
 import { quoteTiming } from '../auction-quote-timing.mjs';
+test('pre-sale depth overlaps only at the same strike, outcome and price through 95 cents', () => {
+  const db=new DatabaseSync(':memory:');
+  try {
+    const store=quoteTiming(db);
+    const row=(ticker,strike,yes,no)=>({event:'E',ticker,strike,depth:{yes,no},yes:null,no:null});
+    const initial=[row('T1',100,[[900000,8]],[[910000,99]]),row('T2',110,[],[[940000,4],[960000,20]])];
+    store.recordBaseline('E',1000,initial);
+    const later=[row('T1',100,[[900000,3],[930000,7]],[]),row('T2',110,[],[[940000,6],[960000,25]])];
+    store.recordBaseline('E',2000,later);
+    store.record({begin:5000,asOf:5000,at:5200,rows:later});
+    const check=store.compare('E',4900,110);
+    assert.equal(check.baselineAt,1000);
+    assert.equal(check.baselineShares,12);
+    assert.deepEqual(check.after.depth95,{shares:16,overlap:7});
+    assert.equal(check.after30,null);
+  } finally {db.close();}
+});
 test('auction quote timing excludes straddling requests and distinguishes an empty book from missing coverage', () => {
   const db = new DatabaseSync(':memory:');
   try {
