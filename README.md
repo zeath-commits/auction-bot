@@ -19,6 +19,8 @@ For Railway, deploy the repository root as a background worker. Railpack detects
 
 Run `node bot.mjs --paper --watch-offers --once` for one read-only scan. Omit `--once` to keep watching. The watchlist covers specific sales. Offer monitoring continues for 12 hours after each configured observation window, subject to the contract remaining active. Use a reviewed watchlist for future auctions.
 
+During paper scans, `runtime/paper/observations.jsonl` records a `paper_depth` observation for each eligible order book the worker examines, including empty books. It records the auction signal, timestamps and returned price levels up to the configured price ceiling. Prices and quantities in these levels are integers in millionths of a dollar and millionths of a contract. These snapshots measure displayed capacity before fees. Order sizing still uses the configured quantity and risk limits. The API request is limited to 100 levels and the scan skips artworks that have already hit their attempt limit.
+
 * A published current USD bid strictly above a threshold supports a speculative YES entry. This source currently supports Christie’s catalogue when it displays the bid. A bid can be withdrawn or the lot can go unsold.
 * A verified premium-inclusive sale supports YES or NO according to the exact threshold. Christie’s individual lot pages can publish the price before the catalogue does. Artnet is the designated settlement source.
 * An explicit unsold result supports a conditional NO entry under the reviewed series terms. Missing lots and ambiguous prices are skipped.

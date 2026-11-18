@@ -1,6 +1,6 @@
 import {randomUUID} from 'node:crypto';
 import {assertNoExistingExposure, submitCandidate} from './bot.mjs';
-import {artworkKey, checkEvent, checkFees, checkMarketActive, quoteBook, requireThat} from './core.mjs';
+import {artworkKey, askLevels, checkEvent, checkFees, checkMarketActive, quoteBook, requireThat} from './core.mjs';
 import {christies, phillips} from './parsers.mjs';
 import {christiesLotHeader, christiesUnsold, verifyTerms} from './paper-unsold.mjs';
 
@@ -83,7 +83,16 @@ async function prepare(opts,target,source,prior) {
     if (!checkMarketActive(market,Date.now())) continue;
     const side=offerSide(first,market.floor_strike);
     if (!side || prior.some(i=>i.ticker===market.ticker && i.side!==side)) continue;
-    const q=getQuote((await book(market.ticker)).body,side,config,config.maxPriceCents);
+    const snapshot=await book(market.ticker);
+    if (!live) {
+      const levels=askLevels(snapshot.body,side,config.maxPriceCents);
+      await opts.log('paper_depth',{ticker:market.ticker,side,kind:first.kind,artwork:target.id,
+        source:first.url,sourceAmount:first.amount,sourceRequestedAt:first.requestedAt,
+        bookRequestedAt:snapshot.requestedAt,bookReceivedAt:snapshot.receivedAt,
+        maxPriceCents:config.maxPriceCents,levels,units:'price in millionths of a dollar; quantity in millionths of a contract',
+        displayedOnly:true});
+    }
+    const q=getQuote(snapshot.body,side,config,config.maxPriceCents);
     if(q && (!best || q.reserveCents<best.quote.reserveCents)) best={market,side,quote:q};
   }
   if (!best) return null;

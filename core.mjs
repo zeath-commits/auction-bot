@@ -100,16 +100,20 @@ export function checkFees(body) {
 }
 
 // Both sides of REST orderbook are bids. Complement the opposite side to buy.
-export function quoteBook(body, side, quantity, maxPriceCents) {
+export function askLevels(body, side, maxPriceCents) {
   requireThat(side === 'YES' || side === 'NO', 'Invalid outcome side');
   const rows = body.orderbook_fp?.[side === 'YES' ? 'no_dollars' : 'yes_dollars'];
   requireThat(Array.isArray(rows), 'Missing fixed-point orderbook');
-  const levels = rows.map(row => {
+  return rows.map(row => {
     requireThat(Array.isArray(row) && row.length === 2, 'Malformed orderbook level');
     const bid = decimal(row[0]), q = decimal(row[1]);
     requireThat(bid > 0 && bid < MICRO && q >= 0, 'Invalid bid');
     return { price: MICRO - bid, quantity: q };
   }).filter(l => l.price <= maxPriceCents * 10000 && l.quantity > 0).sort((a, b) => a.price - b.price);
+}
+
+export function quoteBook(body, side, quantity, maxPriceCents) {
+  const levels = askLevels(body, side, maxPriceCents);
   let remaining = quantity * MICRO;
   const used = [];
   for (const l of levels) {
