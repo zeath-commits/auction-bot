@@ -299,18 +299,26 @@ function runAuctions() {
     bids = false;
   auctionStatus.next = [];
   for (const { extra, auctions } of calendars) {
-    for (const a of auctions.filter((a) => Date.parse(a.startAt) > now))
+    for (const a of auctions.filter((a) => Date.parse(a.deadline) > now))
       auctionStatus.next.push({
         house: a.house,
         at: a.startAt,
-        targets: a.targets.length
+        targets: a.targets.length,
+        lots: a.targets.map((t) => ({
+          lot: t.lot,
+          title: t.title,
+          event: t.event,
+          source: t.url,
+          sessionAt: t.sessionAt ?? null,
+          thresholds: t.markets.length
+        }))
       });
     const within = (a, tail = 0) =>
       now >= Date.parse(a.startAt) && now < Date.parse(a.deadline) + tail;
     const hasOffers = auctions.some((a) =>
       within(a, config.offerTailHours * 3600000)
     );
-    const hasBids = auctions.some((a) => a.house === 'christies' && within(a));
+    const hasBids = auctions.some((a) => within(a));
     const start = (mode, args) => {
       if (
         ![...children].some(

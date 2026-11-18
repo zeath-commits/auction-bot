@@ -1,6 +1,58 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { persistentOffer } from '../late-auction.mjs';
+import { auditArtCoverage, persistentOffer } from '../late-auction.mjs';
+
+test('auction coverage checks active thresholds across pages and flags unmapped strikes', async () => {
+  const e = 'KXART-ART',
+    source = [{ name: 'Artnet', url: 'https://www.artnet.com/' }];
+  const m = {
+    event_ticker: e,
+    ticker: e + '-10',
+    rules_primary: 'above ten',
+    rules_secondary: 'premium',
+    strike_type: 'greater',
+    floor_strike: 10,
+    market_type: 'binary',
+    notional_value_dollars: '1.0000',
+    status: 'active'
+  };
+  const base = {
+    event_ticker: e,
+    title: 'art',
+    settlement_sources: source,
+    markets: [m, { ...m, ticker: e + '-20' }, { ...m, status: 'finalized' }]
+  };
+  const other = {
+    ...base,
+    event_ticker: 'KXART-OTHER',
+    settlement_sources: [
+      { name: 'Sothebys', url: 'https://www.sothebys.com/' }
+    ],
+    markets: [m]
+  };
+  const target = {
+    event: e,
+    markets: [
+      {
+        ticker: m.ticker,
+        primary: m.rules_primary,
+        secondary: m.rules_secondary,
+        strikeType: 'greater',
+        threshold: 10
+      }
+    ]
+  };
+  const io = {
+    get: async (p) => ({
+      body: p.includes('&cursor=')
+        ? { events: [other], cursor: '' }
+        : { events: [base], cursor: 'next' }
+    })
+  };
+  const a = await auditArtCoverage(io, [{ targets: [target] }]);
+  assert.deepEqual([a.open, a.artnet, a.mapped, a.other], [3, 2, 1, 1]);
+  assert.deepEqual(a.review[0].tickers, [e + '-20']);
+});
 
 test('late auction sizing uses repeat depth, fees, and available cash', () => {
   const book = (one, two) => ({

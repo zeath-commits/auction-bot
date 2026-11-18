@@ -33,11 +33,13 @@ The dashboard checks hourly for the previous Eastern day's completed internation
 
 ## Watch for later offers
 
+Every ten minutes the dashboard compares open KXART contracts with the reviewed calendar, checks the named settlement source and flags new or changed Artnet thresholds for review. The post-sale scan also lists lots still missing a verified result.
+
 After the configured 12-hour offer window, a paper monitor revisits reviewed lots while their Kalshi contracts are active. It checks current auction-house evidence, exact Artnet rules and current order books. For an entry it verifies the auction source again and checks displayed quantity twice. Once per ticker, it models the whole-contract depth visible at the same prices on both checks through 99¢, within a separate $1,000 paper balance and after estimated taker fees. Prices, quantities, source and timestamps are saved with the paper entry. The exchange can remove orders between observations, and Artnet determines the contract result. Outcomes on multiple thresholds for one lot are correlated.
 
 The dashboard also scans open KXART, KXBTCD and KXETHD contracts for paired thresholds. It compares two strikes on the same event only when the primary rules differ solely by the strike and the secondary rules and close times match. Under ordinary binary settlement, one lower-strike YES and one higher-strike NO together pay at least one dollar. The paper monitor needs two book checks with a whole contract on each side, a combined cost below one dollar after estimated fees and a current exchange status. Separate live orders could fill only one leg. Paper net for a pair appears after both contracts settle.
 
-The additional paper calendar covers Phillips lot 301 and eight Christie’s lots on November 19. The dashboard starts the configured paper workers during their sale windows. Use `node bot.mjs --paper --paper-calendar --preflight` to verify all frozen rules against public sources again.
+The paper calendar covers Phillips lot 301 and eight Christie’s lots on November 19. On November 20 it also covers 33 thresholds across seven Christie’s lots. Lots 719 and 721 are in the 10:30 a.m. Eastern session, and lots 910, 913, 926, 938 and 941 are in the 2 p.m. session. Individual lot times depend on the auction. The dashboard links each lot to the auction house and Kalshi. The Friday worker loads all 343 catalog entries and uses the same reviewed Artnet rules as the other paper watches. Run `node bot.mjs --paper --paper-calendar --preflight` to recheck the public sources and contract rules.
 
 For an independent BTC final-ten-second study, add `--final-ten` to the replay command. It writes separate daily observations under `runtime/holdout-ten/`, including the trade size and aggressor. These are historical print tests.
 

@@ -13,6 +13,79 @@ import { addPaper } from './strategy-monitor.mjs';
 const scale = 1000000;
 const portfolio = 1000;
 const strategy = 'late_auction';
+export async function auditArtCoverage(io, auctions) {
+  const known = new Map(
+    auctions.flatMap((a) => a.targets).map((t) => [t.event, t])
+  );
+  const summary = {
+    open: 0,
+    artnet: 0,
+    mapped: 0,
+    other: 0,
+    unclassified: 0,
+    review: []
+  };
+  let cursor = '';
+  const seen = new Set();
+  do {
+    const { body } = await io.get(
+      '/events?series_ticker=KXART&status=open&limit=200&with_nested_markets=true' +
+        (cursor ? '&cursor=' + encodeURIComponent(cursor) : '')
+    );
+    for (const e of body.events) {
+      if (
+        !/^KXART-[A-Z0-9]+$/.test(e.event_ticker) ||
+        !Array.isArray(e.markets)
+      )
+        throw Error('Unexpected auction event');
+      const active = e.markets.filter((m) => m.status === 'active');
+      summary.open += active.length;
+      const sources = e.settlement_sources;
+      if (!sources?.length) {
+        summary.unclassified += active.length;
+        continue;
+      }
+      if (
+        !sources.every(
+          (s) =>
+            /^artnet$/i.test(s.name) &&
+            /(^|\.)artnet\.com$/i.test(new URL(s.url).hostname)
+        )
+      ) {
+        summary.other += active.length;
+        continue;
+      }
+      summary.artnet += active.length;
+      const target = known.get(e.event_ticker);
+      let matched = [];
+      if (target) {
+        try {
+          matched = checkEvent({ event: e, markets: active }, target).filter(
+            (m) => m.status === 'active'
+          );
+        } catch {
+          /* Changed rules require review. */
+        }
+      }
+      const tickers = new Set(matched.map((m) => m.ticker));
+      summary.mapped += tickers.size;
+      const missing = active
+        .filter((m) => !tickers.has(m.ticker))
+        .map((m) => m.ticker);
+      if (missing.length)
+        summary.review.push({
+          event: e.event_ticker,
+          title: e.title,
+          tickers: missing
+        });
+    }
+    cursor = body.cursor;
+    if (cursor && seen.has(cursor))
+      throw Error('Repeated auction event cursor');
+    seen.add(cursor);
+  } while (cursor);
+  return summary;
+}
 function charge(price, quantity) {
   return (
     Math.ceil(0.07 * quantity * price * (1 - price) * 10000 - 1e-9) / 10000
@@ -91,6 +164,7 @@ async function scan({ db, io, auctions, config, stop, status }) {
     matched: 0,
     books: 0,
     quoted: 0,
+    unconfirmed: [],
     sourceErrors: 0,
     newEntries: 0
   };
@@ -115,7 +189,15 @@ async function scan({ db, io, auctions, config, stop, status }) {
         totals.sourceErrors++;
         continue;
       }
-      if (!['published_sale', 'unsold'].includes(sig?.kind)) continue;
+      if (!['published_sale', 'unsold'].includes(sig?.kind)) {
+        totals.unconfirmed.push({
+          event: target.event,
+          lot: target.lot,
+          title: target.title,
+          thresholds: target.markets.filter((m) => open.has(m.ticker)).length
+        });
+        continue;
+      }
       const current = async () =>
         checkEvent(
           (
@@ -232,8 +314,22 @@ export async function observeLateAuctions(opts) {
     'CREATE TABLE IF NOT EXISTS late_evidence(id TEXT PRIMARY KEY, detail TEXT NOT NULL); CREATE TABLE IF NOT EXISTS late_scans(at TEXT PRIMARY KEY, books INTEGER, quoted INTEGER, source_errors INTEGER, error TEXT)'
   );
   const io = new Transport(opts.config);
+  let coverageDue = 0;
   while (!opts.stop()) {
     const cycle = {};
+    if (Date.now() >= coverageDue) {
+      try {
+        opts.status.coverage = {
+          ...(await auditArtCoverage(io, opts.auctions)),
+          at: new Date().toISOString()
+        };
+        opts.status.coverageError = null;
+        coverageDue = Date.now() + 600000;
+      } catch (e) {
+        opts.status.coverageError = e.message;
+        coverageDue = Date.now() + 60000;
+      }
+    }
     try {
       await scan({ ...opts, io, status: cycle });
       cycle.error = null;

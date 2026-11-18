@@ -554,6 +554,398 @@
           ]
         }
       ]
+    },
+    {
+      "house": "christies",
+      "sale": "24268",
+      "sourceUrl": "https://www.christies.com/en/auction/auction-24268-nyr?page=5",
+      "startAt": "2026-11-20T15:25:00Z",
+      "deadline": "2026-11-21T01:00:00Z",
+      "targets": [
+        {
+          "lot": "719",
+          "id": "6614249",
+          "artist": "YAYOI KUSAMA (1929-2026)",
+          "title": "INFINITY-NETS (OXTWH)",
+          "url": "https://www.christies.com/en/lot/lot-6614249?ldp_breadcrumb=back",
+          "event": "KXART-CHR71920NOV26",
+          "sessionAt": "2026-11-20T15:30Z",
+          "settlementSources": [
+            {
+              "name": "Artnet",
+              "url": "https://www.artnet.com/"
+            }
+          ],
+          "markets": [
+            {
+              "ticker": "KXART-CHR71920NOV26-700000",
+              "primary": "If the sale price including buyer’s premium of the Infinity-Nets (OXTWH) (2006; lot 719) by Yayoi Kusama on Artnet is above $700K during Christie's New York Post-War and Contemporary Art Day Sale (sale 24268), beginning November 20, 2026 at 9:30 AM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 700000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR71920NOV26-800000",
+              "primary": "If the sale price including buyer’s premium of the Infinity-Nets (OXTWH) (2006; lot 719) by Yayoi Kusama on Artnet is above $800K during Christie's New York Post-War and Contemporary Art Day Sale (sale 24268), beginning November 20, 2026 at 9:30 AM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 800000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR71920NOV26-900000",
+              "primary": "If the sale price including buyer’s premium of the Infinity-Nets (OXTWH) (2006; lot 719) by Yayoi Kusama on Artnet is above $900K during Christie's New York Post-War and Contemporary Art Day Sale (sale 24268), beginning November 20, 2026 at 9:30 AM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 900000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR71920NOV26-1000000",
+              "primary": "If the sale price including buyer’s premium of the Infinity-Nets (OXTWH) (2006; lot 719) by Yayoi Kusama on Artnet is above $1M during Christie's New York Post-War and Contemporary Art Day Sale (sale 24268), beginning November 20, 2026 at 9:30 AM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 1000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR71920NOV26-1100000",
+              "primary": "If the sale price including buyer’s premium of the Infinity-Nets (OXTWH) (2006; lot 719) by Yayoi Kusama on Artnet is above $1.1M during Christie's New York Post-War and Contemporary Art Day Sale (sale 24268), beginning November 20, 2026 at 9:30 AM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 1100000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR71920NOV26-1200000",
+              "primary": "If the sale price including buyer’s premium of the Infinity-Nets (OXTWH) (2006; lot 719) by Yayoi Kusama on Artnet is above $1.2M during Christie's New York Post-War and Contemporary Art Day Sale (sale 24268), beginning November 20, 2026 at 9:30 AM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 1200000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR71920NOV26-1300000",
+              "primary": "If the sale price including buyer’s premium of the Infinity-Nets (OXTWH) (2006; lot 719) by Yayoi Kusama on Artnet is above $1.3M during Christie's New York Post-War and Contemporary Art Day Sale (sale 24268), beginning November 20, 2026 at 9:30 AM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 1300000,
+              "notional": "1.0000"
+            }
+          ]
+        },
+        {
+          "lot": "721",
+          "id": "6614251",
+          "artist": "ANDY WARHOL (1928-1987)",
+          "title": "Jackie",
+          "url": "https://www.christies.com/en/lot/lot-6614251?ldp_breadcrumb=back",
+          "event": "KXART-CHR72120NOV26",
+          "sessionAt": "2026-11-20T15:30Z",
+          "settlementSources": [
+            {
+              "name": "Artnet",
+              "url": "https://www.artnet.com/"
+            }
+          ],
+          "markets": [
+            {
+              "ticker": "KXART-CHR72120NOV26-600000",
+              "primary": "If the sale price including buyer’s premium of the Jackie (1964; lot 721) by Andy Warhol on Artnet is above $600K during Christie's New York Post-War and Contemporary Art Day Sale (sale 24268), beginning November 20, 2026 at 9:30 AM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 600000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR72120NOV26-700000",
+              "primary": "If the sale price including buyer’s premium of the Jackie (1964; lot 721) by Andy Warhol on Artnet is above $700K during Christie's New York Post-War and Contemporary Art Day Sale (sale 24268), beginning November 20, 2026 at 9:30 AM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 700000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR72120NOV26-800000",
+              "primary": "If the sale price including buyer’s premium of the Jackie (1964; lot 721) by Andy Warhol on Artnet is above $800K during Christie's New York Post-War and Contemporary Art Day Sale (sale 24268), beginning November 20, 2026 at 9:30 AM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 800000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR72120NOV26-900000",
+              "primary": "If the sale price including buyer’s premium of the Jackie (1964; lot 721) by Andy Warhol on Artnet is above $900K during Christie's New York Post-War and Contemporary Art Day Sale (sale 24268), beginning November 20, 2026 at 9:30 AM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 900000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR72120NOV26-1000000",
+              "primary": "If the sale price including buyer’s premium of the Jackie (1964; lot 721) by Andy Warhol on Artnet is above $1M during Christie's New York Post-War and Contemporary Art Day Sale (sale 24268), beginning November 20, 2026 at 9:30 AM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 1000000,
+              "notional": "1.0000"
+            }
+          ]
+        },
+        {
+          "lot": "910",
+          "id": "6614404",
+          "artist": "JULIE MEHRETU (B. 1970)",
+          "title": "Blind Writing (boomerang)",
+          "url": "https://www.christies.com/en/lot/lot-6614404?ldp_breadcrumb=back",
+          "event": "KXART-CHR91020NOV26",
+          "sessionAt": "2026-11-20T19:00Z",
+          "settlementSources": [
+            {
+              "name": "Artnet",
+              "url": "https://www.artnet.com/"
+            }
+          ],
+          "markets": [
+            {
+              "ticker": "KXART-CHR91020NOV26-800000",
+              "primary": "If the sale price including buyer’s premium of the Blind Writing (boomerang) (2014; lot 910) by Julie Mehretu on Artnet is above $800K during Christie's New York Post-War and Contemporary Art Day Sale (sale 24268), beginning November 20, 2026 at 9:30 AM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 800000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR91020NOV26-1000000",
+              "primary": "If the sale price including buyer’s premium of the Blind Writing (boomerang) (2014; lot 910) by Julie Mehretu on Artnet is above $1M during Christie's New York Post-War and Contemporary Art Day Sale (sale 24268), beginning November 20, 2026 at 9:30 AM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 1000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR91020NOV26-1200000",
+              "primary": "If the sale price including buyer’s premium of the Blind Writing (boomerang) (2014; lot 910) by Julie Mehretu on Artnet is above $1.2M during Christie's New York Post-War and Contemporary Art Day Sale (sale 24268), beginning November 20, 2026 at 9:30 AM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 1200000,
+              "notional": "1.0000"
+            }
+          ]
+        },
+        {
+          "lot": "913",
+          "id": "6614407",
+          "artist": "NICOLAS PARTY (B. 1980)",
+          "title": "Yellow Portrait",
+          "url": "https://www.christies.com/en/lot/lot-6614407?ldp_breadcrumb=back",
+          "event": "KXART-CHR91320NOV26",
+          "sessionAt": "2026-11-20T19:00Z",
+          "settlementSources": [
+            {
+              "name": "Artnet",
+              "url": "https://www.artnet.com/"
+            }
+          ],
+          "markets": [
+            {
+              "ticker": "KXART-CHR91320NOV26-400000",
+              "primary": "If the sale price including buyer’s premium of the Yellow Portrait (2017; lot 913) by Nicolas Party on Artnet is above $400K during Christie's New York Post-War and Contemporary Art Day Sale (sale 24268), beginning November 20, 2026 at 9:30 AM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 400000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR91320NOV26-500000",
+              "primary": "If the sale price including buyer’s premium of the Yellow Portrait (2017; lot 913) by Nicolas Party on Artnet is above $500K during Christie's New York Post-War and Contemporary Art Day Sale (sale 24268), beginning November 20, 2026 at 9:30 AM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 500000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR91320NOV26-600000",
+              "primary": "If the sale price including buyer’s premium of the Yellow Portrait (2017; lot 913) by Nicolas Party on Artnet is above $600K during Christie's New York Post-War and Contemporary Art Day Sale (sale 24268), beginning November 20, 2026 at 9:30 AM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 600000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR91320NOV26-700000",
+              "primary": "If the sale price including buyer’s premium of the Yellow Portrait (2017; lot 913) by Nicolas Party on Artnet is above $700K during Christie's New York Post-War and Contemporary Art Day Sale (sale 24268), beginning November 20, 2026 at 9:30 AM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 700000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR91320NOV26-800000",
+              "primary": "If the sale price including buyer’s premium of the Yellow Portrait (2017; lot 913) by Nicolas Party on Artnet is above $800K during Christie's New York Post-War and Contemporary Art Day Sale (sale 24268), beginning November 20, 2026 at 9:30 AM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 800000,
+              "notional": "1.0000"
+            }
+          ]
+        },
+        {
+          "lot": "926",
+          "id": "6614420",
+          "artist": "ROBERT GOBER (B. 1954)",
+          "title": "Untitled",
+          "url": "https://www.christies.com/en/lot/lot-6614420?ldp_breadcrumb=back",
+          "event": "KXART-CHR92620NOV26",
+          "sessionAt": "2026-11-20T19:00Z",
+          "settlementSources": [
+            {
+              "name": "Artnet",
+              "url": "https://www.artnet.com/"
+            }
+          ],
+          "markets": [
+            {
+              "ticker": "KXART-CHR92620NOV26-600000",
+              "primary": "If the sale price including buyer’s premium of the Untitled (1992; lot 926) by Robert Gober on Artnet is above $600K during Christie's New York Post-War and Contemporary Art Day Sale (sale 24268), beginning November 20, 2026 at 9:30 AM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 600000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR92620NOV26-700000",
+              "primary": "If the sale price including buyer’s premium of the Untitled (1992; lot 926) by Robert Gober on Artnet is above $700K during Christie's New York Post-War and Contemporary Art Day Sale (sale 24268), beginning November 20, 2026 at 9:30 AM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 700000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR92620NOV26-800000",
+              "primary": "If the sale price including buyer’s premium of the Untitled (1992; lot 926) by Robert Gober on Artnet is above $800K during Christie's New York Post-War and Contemporary Art Day Sale (sale 24268), beginning November 20, 2026 at 9:30 AM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 800000,
+              "notional": "1.0000"
+            }
+          ]
+        },
+        {
+          "lot": "938",
+          "id": "6614432",
+          "artist": "JEFF KOONS (B. 1955)",
+          "title": "Gazing Ball (Standing Woman)",
+          "url": "https://www.christies.com/en/lot/lot-6614432?ldp_breadcrumb=back",
+          "event": "KXART-CHR93820NOV26",
+          "sessionAt": "2026-11-20T19:00Z",
+          "settlementSources": [
+            {
+              "name": "Artnet",
+              "url": "https://www.artnet.com/"
+            }
+          ],
+          "markets": [
+            {
+              "ticker": "KXART-CHR93820NOV26-500000",
+              "primary": "If the sale price including buyer’s premium of the Gazing Ball (Standing Woman) (2013; lot 938) by Jeff Koons on Artnet is above $500K during Christie's New York Post-War and Contemporary Art Day Sale (sale 24268), beginning November 20, 2026 at 9:30 AM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 500000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR93820NOV26-600000",
+              "primary": "If the sale price including buyer’s premium of the Gazing Ball (Standing Woman) (2013; lot 938) by Jeff Koons on Artnet is above $600K during Christie's New York Post-War and Contemporary Art Day Sale (sale 24268), beginning November 20, 2026 at 9:30 AM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 600000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR93820NOV26-700000",
+              "primary": "If the sale price including buyer’s premium of the Gazing Ball (Standing Woman) (2013; lot 938) by Jeff Koons on Artnet is above $700K during Christie's New York Post-War and Contemporary Art Day Sale (sale 24268), beginning November 20, 2026 at 9:30 AM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 700000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR93820NOV26-800000",
+              "primary": "If the sale price including buyer’s premium of the Gazing Ball (Standing Woman) (2013; lot 938) by Jeff Koons on Artnet is above $800K during Christie's New York Post-War and Contemporary Art Day Sale (sale 24268), beginning November 20, 2026 at 9:30 AM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 800000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR93820NOV26-900000",
+              "primary": "If the sale price including buyer’s premium of the Gazing Ball (Standing Woman) (2013; lot 938) by Jeff Koons on Artnet is above $900K during Christie's New York Post-War and Contemporary Art Day Sale (sale 24268), beginning November 20, 2026 at 9:30 AM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 900000,
+              "notional": "1.0000"
+            }
+          ]
+        },
+        {
+          "lot": "941",
+          "id": "6614435",
+          "artist": "DANA SCHUTZ (B. 1976)",
+          "title": "Assemblage",
+          "url": "https://www.christies.com/en/lot/lot-6614435?ldp_breadcrumb=back",
+          "event": "KXART-CHR94120NOV26",
+          "sessionAt": "2026-11-20T19:00Z",
+          "settlementSources": [
+            {
+              "name": "Artnet",
+              "url": "https://www.artnet.com/"
+            }
+          ],
+          "markets": [
+            {
+              "ticker": "KXART-CHR94120NOV26-250000",
+              "primary": "If the sale price including buyer’s premium of the Assemblage (2003; lot 941) by Dana Schutz on Artnet is above $250K during Christie's New York Post-War and Contemporary Art Day Sale (sale 24268), beginning November 20, 2026 at 9:30 AM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 250000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR94120NOV26-300000",
+              "primary": "If the sale price including buyer’s premium of the Assemblage (2003; lot 941) by Dana Schutz on Artnet is above $300K during Christie's New York Post-War and Contemporary Art Day Sale (sale 24268), beginning November 20, 2026 at 9:30 AM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 300000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR94120NOV26-350000",
+              "primary": "If the sale price including buyer’s premium of the Assemblage (2003; lot 941) by Dana Schutz on Artnet is above $350K during Christie's New York Post-War and Contemporary Art Day Sale (sale 24268), beginning November 20, 2026 at 9:30 AM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 350000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR94120NOV26-400000",
+              "primary": "If the sale price including buyer’s premium of the Assemblage (2003; lot 941) by Dana Schutz on Artnet is above $400K during Christie's New York Post-War and Contemporary Art Day Sale (sale 24268), beginning November 20, 2026 at 9:30 AM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 400000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR94120NOV26-450000",
+              "primary": "If the sale price including buyer’s premium of the Assemblage (2003; lot 941) by Dana Schutz on Artnet is above $450K during Christie's New York Post-War and Contemporary Art Day Sale (sale 24268), beginning November 20, 2026 at 9:30 AM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 450000,
+              "notional": "1.0000"
+            }
+          ]
+        }
+      ]
     }
   ]
 }

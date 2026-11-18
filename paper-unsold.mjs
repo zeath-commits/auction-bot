@@ -83,7 +83,7 @@ export async function scanUnsold({auction, io, config, db, log, saveObservation}
     if (!quote || quote.reserveCents>config.maxOrderCostCents || quote.conditionalProfitCents<config.minConditionalProfitCents ||
         now-evidence.requestedAt>config.maxSourceAgeMs || now-book.requestedAt>config.maxQuoteAgeMs ||
         now>=Date.parse(auction.deadline) || !checkMarketActive(best.market,now)) continue;
-    const row = {ticker:best.market.ticker, event:best.listing.event, artist:target.artist, lot:target.lot,
+    const row = {ticker:best.market.ticker, sale:auction.sale, event:best.listing.event, artist:target.artist, lot:target.lot,
       threshold:best.market.floor_strike, side:'NO', decision:'paper_buy_no', strategy:'explicit_unsold',
       source:url, observedAt:new Date(evidence.receivedAt).toISOString(), bookAt:new Date(book.receivedAt).toISOString(),
       auctionStatus:auction.house==='phillips'?'BoughtIn':'is_unsold=true', settlementSource:'Artnet',

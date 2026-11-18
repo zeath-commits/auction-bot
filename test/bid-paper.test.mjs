@@ -1,8 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
-import { scan, saveObservation } from '../paper-bids.mjs';
+import { activeSales, scan, saveObservation } from '../paper-bids.mjs';
 import { christiesUnsold } from '../paper-unsold.mjs';
+
+test('selects each sale during its own watch window, including overlapping houses', () => {
+  const a={house:'christies',startAt:'2026-11-19T20:00Z',deadline:'2026-11-19T23:00Z'};
+  const b={house:'christies',startAt:'2026-11-20T15:25Z',deadline:'2026-11-21T01:00Z'};
+  const c={...b,house:'phillips'};
+  assert.deepEqual(activeSales([a,b,c],Date.parse(b.startAt)),[b,c]);
+  assert.deepEqual(activeSales([a,b,c],Date.parse(b.deadline)),[]);
+});
 
 test('unsold requires matching explicit status without a price, then counts once against the paper budget', () => {
   const target={id:'1',lot:'9A',artist:'A',title:'B'};
@@ -38,7 +46,7 @@ test('only published bids strictly above a strike can generate one depth-backed 
     is_in_progress:true,is_auction_over:false,lot_withdrawn:false,current_bid:100,current_bid_txt:'',estimate_low:200};
   const markets = strikes.map(m=>({ticker:m.ticker,event_ticker:event,rules_primary:'p',rules_secondary:'s',market_type:'binary',
     status:'active',close_time:auction.deadline,notional_value_dollars:'1.00',strike_type:'greater',floor_strike:m.threshold}));
-  let bookReads=0;
+  let bookReads=0, lowerAvailable=false;
   const io = {
     async request() {
       const data={data:{lots:[l],total_hits_filtered:1},labels:{currency_txt:'USD'}};
@@ -49,7 +57,7 @@ test('only published bids strictly above a strike can generate one depth-backed 
       if(route==='/series/KXART') body={series:{ticker:'KXART',fee_type:'quadratic',fee_multiplier:1}};
       else if(route==='/exchange/status') body={exchange_active:true,trading_active:true};
       else if(route.startsWith('/events/')) body={event:{event_ticker:event,settlement_sources:[{name:'Artnet',url:'https://www.artnet.com/'}],markets}};
-      else { bookReads++; body={orderbook_fp:{no_dollars:[[route.includes('-90/')?'0.0100':'0.1800','2.00']]}}; }
+      else { bookReads++; body={orderbook_fp:{no_dollars:[[route.includes('-90/')&&!lowerAvailable?'0.0100':'0.1800','2.00']]}}; }
       return {body,requestedAt:Date.now(),receivedAt:Date.now()};
     }
   };
@@ -60,8 +68,14 @@ test('only published bids strictly above a strike can generate one depth-backed 
     l.current_bid_txt='USD 100';
     l.lot_withdrawn=true; await run(); assert.equal(bookReads,0);
     l.lot_withdrawn=false; await run(); await run();
-    assert.equal(bookReads,2);
+    assert.equal(bookReads,3);
     assert.deepEqual(records.map(x=>[x.threshold,x.decision]),[[95,'paper_buy_yes'],[90,'insufficient_depth_or_price']]);
     assert.equal(records[0].quote.limitCents,82);
+    lowerAvailable=true;
+    await run(); await run();
+    assert.equal(bookReads,4);
+    assert.equal(records.length,3);
+    assert.equal(records[2].threshold,90);
+    assert.equal(records[2].decision,'paper_buy_yes');
   } finally { db.close(); }
 });

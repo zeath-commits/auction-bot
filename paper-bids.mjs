@@ -26,7 +26,9 @@ export function saveObservation(db, row, config, key=row.ticker) {
     const totals = db.prepare('SELECT COUNT(*) AS count, COALESCE(SUM(reserve),0) AS cost FROM signals WHERE reserve > 0').get();
     if (row.quote && (totals.count >= config.maxOrders || totals.cost + row.quote.reserveCents > config.maxTotalReservedCents)) row.decision = 'budget_limit';
     const reserve = ['paper_buy_yes','paper_buy_no'].includes(row.decision) ? row.quote.reserveCents : 0;
-    const result = db.prepare('INSERT OR IGNORE INTO signals(ticker,reserve,detail) VALUES(?,?,?)').run(key, reserve, JSON.stringify(row));
+    const result = db.prepare(`INSERT INTO signals(ticker,reserve,detail) VALUES(?,?,?)
+      ON CONFLICT(ticker) DO UPDATE SET reserve=excluded.reserve, detail=excluded.detail
+      WHERE signals.reserve=0 AND excluded.reserve>0`).run(key, reserve, JSON.stringify(row));
     db.exec('COMMIT');
     return result.changes === 1;
   } catch (e) { db.exec('ROLLBACK'); throw e; }
@@ -42,7 +44,7 @@ export async function scan({auction, io, config, db, log}) {
     matched++;
     const row = matches[0];
     if (row.liveBid) bids++;
-    const crossed = crossedContracts(target, row).filter(m => !db.prepare('SELECT 1 FROM signals WHERE ticker=?').get(m.ticker));
+    const crossed = crossedContracts(target, row).filter(m => !db.prepare('SELECT 1 FROM signals WHERE ticker=? AND reserve>0').get(m.ticker));
     if (!crossed.length) continue;
     checkFees((await io.get('/series/KXART')).body);
     const exchange = (await io.get('/exchange/status')).body;
@@ -50,7 +52,7 @@ export async function scan({auction, io, config, db, log}) {
     // Start at the highest threshold below this bid when several appear at once.
     for (const contract of crossed.sort((a,b) => b.threshold-a.threshold)) {
       const market = markets.find(m => m.ticker === contract.ticker);
-      const signal = {ticker:contract.ticker, lot:row.lot, artist:row.artist, threshold:contract.threshold,
+      const signal = {ticker:contract.ticker, sale:auction.sale, lot:row.lot, artist:row.artist, threshold:contract.threshold,
         observedBidUSD:row.liveBid, source:auction.sourceUrl, observedAt:new Date(source.receivedAt).toISOString(),
         side:'YES', decision:'market_inactive', quote:null, hypothetical:true, actualProfit:null};
       if (exchange.exchange_active && exchange.trading_active && market && checkMarketActive(market, Date.now())) {
@@ -67,15 +69,21 @@ export async function scan({auction, io, config, db, log}) {
   return {matchedEvents:matched, eventsWithPublishedBid:bids};
 }
 
+export function activeSales(auctions, now) {
+  return auctions.filter(a => now>=Date.parse(a.startAt) && now<Date.parse(a.deadline));
+}
+
 export async function runBidPaper(once=false, watchFile='watchlist.json') {
   let raw;
   try { raw=await fs.readFile(path.join(root,'config.json'),'utf8'); }
   catch(e) { if(e.code!=='ENOENT') throw e; raw=await fs.readFile(path.join(root,'config.example.json'),'utf8'); }
   const config=validateConfig(JSON.parse(raw));
   const {auctions}=validateWatchlist(JSON.parse(await fs.readFile(path.join(root,watchFile),'utf8')));
-  const auction=auctions.find(a=>a.house==='christies');
-  requireThat(auction && Date.now()<Date.parse(auction.deadline),'No remaining Christie’s watch window');
-  const dir=path.join(root,'runtime','paper-bids',auction.sale);
+  const end=Math.max(...auctions.map(a=>Date.parse(a.deadline)));
+  requireThat(Date.now()<end,'No remaining auction watch window');
+  // Keep the existing journal name and shared paper budget across this calendar.
+  const journalSale=auctions.find(a=>a.house==='christies') ?? auctions[0];
+  const dir=path.join(root,'runtime','paper-bids',journalSale.sale);
   await fs.mkdir(dir,{recursive:true});
   const db=new DatabaseSync(path.join(dir,'signals.sqlite'));
   db.exec('PRAGMA busy_timeout=2000; CREATE TABLE IF NOT EXISTS signals(ticker TEXT PRIMARY KEY, reserve INTEGER NOT NULL, detail TEXT NOT NULL)');
@@ -84,21 +92,27 @@ export async function runBidPaper(once=false, watchFile='watchlist.json') {
   try {
     do {
       try { await fs.access(path.join(root,'STOP')); break; } catch(e) { if(e.code!=='ENOENT') throw e; }
-      let delay=config.pollIntervalMs, status={state:'waiting'};
-      if (Date.now()>=Date.parse(auction.startAt)) {
-        try { status={state:'monitoring',...await scan({auction,io,config,db,log})}; }
-        catch(e) { status={state:'read_error',error:e.message}; delay=Math.max(delay,30000); }
-      }
-      status.unsold = {};
-      for (const sale of auctions) {
-        if (Date.now()<Date.parse(sale.startAt) || Date.now()>=Date.parse(sale.deadline)) continue;
-        try { status.unsold[sale.house]=await scanUnsold({auction:sale,io,config,db,log,saveObservation}); }
-        catch(e) { status.unsold[sale.house]={error:e.message}; delay=Math.max(delay,30000); }
+      const now=Date.now(), active=activeSales(auctions,now);
+      let delay=active.length ? config.pollIntervalMs : Math.min(60000,...auctions.map(a=>Date.parse(a.startAt)-now).filter(ms=>ms>0));
+      const status={state:active.length?'monitoring':'waiting',bids:{},unsold:{},unsoldBySale:{}};
+      for (const sale of active) {
+        if (sale.house==='christies') {
+          try {
+            const observed=await scan({auction:sale,io,config,db,log});
+            status.bids[sale.sale]=observed;
+            status.matchedEvents=(status.matchedEvents??0)+observed.matchedEvents;
+            status.eventsWithPublishedBid=(status.eventsWithPublishedBid??0)+observed.eventsWithPublishedBid;
+          }
+          catch(e) { status.bids[sale.sale]={error:e.message}; status.state='read_error'; status.error=e.message; delay=Math.max(delay,30000); }
+        }
+        try { status.unsoldBySale[sale.sale]=await scanUnsold({auction:sale,io,config,db,log,saveObservation}); }
+        catch(e) { status.unsoldBySale[sale.sale]={error:e.message}; delay=Math.max(delay,30000); }
+        status.unsold[sale.house]=status.unsoldBySale[sale.sale];
       }
       const counts=db.prepare('SELECT COUNT(*) AS observed,COUNT(CASE WHEN reserve>0 THEN 1 END) AS paperBuys FROM signals').get();
       await fs.writeFile(path.join(dir,'status.json'),JSON.stringify({...status,...counts,at:new Date().toISOString(),pid:process.pid},null,2));
       if(once) break;
-      await sleep(Math.min(delay,Math.max(0,Date.parse(auction.deadline)-Date.now())));
-    } while(Date.now()<Date.parse(auction.deadline));
+      await sleep(Math.min(delay,Math.max(0,end-Date.now())));
+    } while(Date.now()<end);
   } finally { db.close(); }
 }

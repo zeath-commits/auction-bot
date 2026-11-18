@@ -2,7 +2,8 @@ const view = document.querySelector('#view'),
   err = document.querySelector('#error');
 let page = 'paper',
   selected = 'all',
-  version = 0;
+  version = 0,
+  calendarOpen = false;
 const money = (n) =>
   n == null
     ? '—'
@@ -152,7 +153,62 @@ function paper(d) {
         ' · ' +
         time(late.at)
     );
+    if (late.unconfirmed?.length)
+      note(
+        'Awaiting a published sale or explicit unsold result · ' +
+          late.unconfirmed
+            .map(
+              (t) =>
+                t.title +
+                ' (lot ' +
+                t.lot +
+                ', ' +
+                t.thresholds +
+                ' thresholds)'
+            )
+            .join(', ')
+      );
   }
+  const art = d.lateAuctionStatus?.coverage;
+  if (
+    art &&
+    [
+      'all',
+      'late_auction',
+      'live_bid',
+      'unsold',
+      'published_sale',
+      'auction_pair'
+    ].includes(selected)
+  ) {
+    note(
+      'Auction watchlist · ' +
+        art.mapped +
+        ' of ' +
+        art.artnet +
+        ' open Artnet thresholds match the reviewed rules · ' +
+        art.other +
+        ' use another settlement source · ' +
+        art.unclassified +
+        ' with unconfirmed sources · checked ' +
+        time(art.at)
+    );
+    for (const row of art.review) {
+      const p = el('p', null, 'note'),
+        a = el('a', row.title || row.event);
+      a.href =
+        'https://kalshi.com/markets/kxart/what-will-the-price-of-art-be/' +
+        row.event.toLowerCase();
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      p.append(a, ' · ' + row.tickers.length + ' thresholds need review');
+      view.append(p);
+    }
+  }
+  if (d.lateAuctionStatus?.coverageError)
+    note(
+      'Auction coverage check delayed · ' + d.lateAuctionStatus.coverageError
+    );
   if (d.usBitcoinStatus?.at)
     note(
       'Polymarket US · ' +
@@ -221,17 +277,62 @@ function paper(d) {
         ])
       );
   }
-  for (const a of d.auctionStatus.next ?? [])
-    note(
-      'Scheduled ' +
-        a.house +
-        ' paper watch · ' +
-        time(a.at) +
-        ' · ' +
-        a.targets +
-        ' tracked artwork' +
-        (a.targets === 1 ? '' : 's')
+  const upcoming = d.auctionStatus.next ?? [];
+  if (
+    upcoming.length &&
+    [
+      'all',
+      'published_sale',
+      'unsold',
+      'live_bid',
+      'late_auction',
+      'auction_pair'
+    ].includes(selected)
+  ) {
+    const calendar = el('details'),
+      count = upcoming.reduce((n, a) => n + a.targets, 0);
+    calendar.open = calendarOpen;
+    calendar.ontoggle = () => {
+      if (calendar.isConnected) calendarOpen = calendar.open;
+    };
+    calendar.append(
+      el('summary', 'Auction calendar · ' + count + ' tracked lots')
     );
+    for (const sale of upcoming) {
+      calendar.append(
+        el(
+          'h3',
+          (sale.house === 'phillips' ? 'Phillips' : 'Christie’s') +
+            ' · monitoring from ' +
+            time(sale.at)
+        )
+      );
+      for (const item of sale.lots ?? []) {
+        const p = el('p'),
+          market = el('a', 'Kalshi market'),
+          lot = el('a', 'Lot ' + item.lot + ' · ' + item.title);
+        lot.href = item.source;
+        market.href =
+          'https://kalshi.com/markets/kxart/what-will-the-price-of-art-be/' +
+          item.event.toLowerCase();
+        for (const link of [market, lot]) {
+          link.target = '_blank';
+          link.rel = 'noopener noreferrer';
+        }
+        p.append(
+          lot,
+          ' · ',
+          market,
+          ' · ' +
+            item.thresholds +
+            ' thresholds' +
+            (item.sessionAt ? ' · session starts ' + time(item.sessionAt) : '')
+        );
+        calendar.append(p);
+      }
+    }
+    view.append(calendar);
+  }
   table(
     'Paper ledger',
     [
