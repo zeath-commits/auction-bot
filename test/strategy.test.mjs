@@ -165,6 +165,14 @@ test('BTC strategies require repeatable size and settle each paper variant only 
     recordBtc(db, subcent, book(close-12000,'0.0140'), book(close-10900,'0.0150'), 1);
     assert.deepEqual(rows().filter(r => r.ticker === subcent.ticker).map(r => [r.strategy,r.price,r.fees]),
       [['btc_band60',0.985,0.0011]]);
+    const earlier=book(close-7000,'0.0140'), later=book(close-5000,'0.0150');
+    earlier.httpDate=new Date(earlier.requestedAt).toUTCString();
+    later.httpDate=earlier.httpDate;
+    recordBtc(db, subcent, earlier, later, 1);
+    assert.equal(rows().filter(r=>r.strategy==='btc_band10').length,0);
+    later.httpDate=new Date(later.requestedAt).toUTCString();
+    recordBtc(db, subcent, earlier, later, 1);
+    assert.deepEqual(rows().filter(r=>r.strategy==='btc_band10').map(r=>[r.ticker,r.price]),[[subcent.ticker,0.985]]);
   } finally {
     db.close();
     fs.rmSync(dir, { recursive: true, force: true });

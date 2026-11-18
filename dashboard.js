@@ -102,6 +102,8 @@ function paper(d) {
     note('One paper contract per market at the first 1¢ or 2¢ ask in the final minute that holds or improves on a second book check. Net includes modeled taker fees.');
   if (selected === 'btc_band60')
     note('One paper contract in the final minute. The best offer must be from 98¢ through 99¢, including fractional cents, with at least one full contract on both checks. This test can overlap the exact-cent strategy.');
+  if (selected === 'btc_band10')
+    note('One paper contract per market. Both order-book requests must start in the last ten seconds, with distinct, fresh timestamps and a best offer from 98¢ through 99¢ on the same side that holds or improves.');
   if (selected === 'btc999' && d.btc999Coverage) {
     const c = d.btc999Coverage;
     table('99.9¢ offers in the final ten seconds', ['Closes checked','Fresh book pairs','100 offered on first read','100 offered on both reads'],

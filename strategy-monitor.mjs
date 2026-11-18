@@ -29,6 +29,7 @@ export const strategies = {
   index_pair: 'Stock indices · paired thresholds',
   btc60: 'Bitcoin · final minute',
   btc_band60: 'Bitcoin · final minute, all prices from 98¢ to 99¢',
+  btc_band10: 'Bitcoin · final 10 seconds, all prices from 98¢ to 99¢',
   btc_underdog: 'Bitcoin · 1–2¢ offer in the final minute',
   btc10: 'Bitcoin · final 10 seconds',
   btc_chart10: 'Bitcoin · final 10 seconds with chart confirmation',
@@ -94,15 +95,19 @@ export function bestFavorite(book) {
   return bestMatchingQuote(book, p => p === 0.98 || p === 0.99);
 }
 
+function independentBtcBooks(first,second) {
+  const asOf = read => Date.parse(read.httpDate) - 1000 * Number(read.cacheAge ?? 0);
+  return [first, second].every(read =>
+    asOf(read) >= read.receivedAt - 2500 && asOf(read) <= read.receivedAt + 500
+  ) && asOf(second) > asOf(first);
+}
+
 function recordLargeFavorite(db, market, close, first, second, multiplier) {
   if (first.requestedAt < close - 10000) return;
   const at = second.receivedAt;
   const offer = read => bestMatchingQuote(read.body, price => price === 0.999);
   const a = offer(first), b = offer(second);
-  const asOf = read => Date.parse(read.httpDate) - 1000 * Number(read.cacheAge ?? 0);
-  const fresh = [first, second].every(read =>
-    asOf(read) >= read.receivedAt - 2500 && asOf(read) <= read.receivedAt + 500
-  ) && asOf(second) > asOf(first);
+  const fresh = independentBtcBooks(first,second);
   db.prepare('INSERT OR IGNORE INTO btc_999_books VALUES(?,?,?,?,?,?)')
     .run(market.ticker, at, close, JSON.stringify(a), JSON.stringify(b), Number(fresh));
   if (fresh) observeMakerQueue(db,market,first,second,close);
@@ -182,8 +187,10 @@ export function recordBtc(db, market, first, second, multiplier) {
   const favoriteB = bestFavorite(second.body);
   recordOffer('btc60', 60, 1, favoriteA, favoriteB);
   const inBand = p => p >= 0.98 && p <= 0.99;
-  recordOffer('btc_band60', 60, 1,
-    bestMatchingQuote(first.body, inBand), bestMatchingQuote(second.body, inBand));
+  const bandA = bestMatchingQuote(first.body, inBand), bandB = bestMatchingQuote(second.body, inBand);
+  recordOffer('btc_band60', 60, 1, bandA, bandB);
+  if (first.requestedAt >= close-10000 && independentBtcBooks(first,second))
+    recordOffer('btc_band10', 10, 1, bandA, bandB);
   recordOffer('btc10', 10, 1, favoriteA, favoriteB);
   if (favoriteA && first.requestedAt >= close - 10000) {
     const chart = db.prepare('SELECT side FROM btc_chart_windows WHERE ticker=? AND closeAt=? AND strike=? AND receivedAt<=? AND ABS(gapBps)>=5')
@@ -233,7 +240,7 @@ export async function settle(db, io) {
     .prepare(
       `SELECT pending.ticker FROM (
     SELECT ticker FROM paper WHERE payout IS NULL AND ticker NOT LIKE 'cpc-btc-updown-5m-%'
-    AND (strategy NOT IN ('btc60','btc_band60','btc10','btc_chart10','btc999','btcDepth','btc_underdog','cross_us_btc','cross_us_middle') OR closeAt<=?)
+    AND (strategy NOT IN ('btc60','btc_band60','btc_band10','btc10','btc_chart10','btc999','btcDepth','btc_underdog','cross_us_btc','cross_us_middle') OR closeAt<=?)
     UNION SELECT ticker FROM btc_chart_windows WHERE side IS NOT NULL AND result IS NULL AND closeAt<=?
     UNION SELECT ticker FROM auction_premium_signals WHERE result IS NULL
     UNION SELECT ticker FROM weather_forecasts WHERE result IS NULL AND closeAt<=?
