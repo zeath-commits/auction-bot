@@ -180,6 +180,13 @@ function paper(d) {
   ) {
     const p = d.auctionPortfolio,
       marks = d.auctionExits;
+    const entryTape = (d.auctionEntryTape ?? []).filter(r=>selected==='all' || selected===r.strategy);
+    if (entryTape.length) {
+      table('Public purchases after paper entries',['Threshold','Paper entry','Side','Price','Paper shares','Public shares at price','Whole shares overlapping'],
+        entryTape.flatMap(r=>r.levels.map(l=>[r.ticker,time(r.at),r.side.toUpperCase(),money(l.price),l.paper,l.printed,l.overlap])));
+      note('Counts same-side buyer executions from one second to 30 seconds after the paper observation. A later entry or market close ends the window early. Public trades do not establish a bot fill.');
+    }
+    if(d.sothebysStatus?.entryTapeError) note(d.sothebysStatus.entryTapeError);
     const exits = d.auctionHoldings.map((h) =>
       marks.rows?.find(
         (r) =>

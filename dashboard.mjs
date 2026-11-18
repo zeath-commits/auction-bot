@@ -23,7 +23,7 @@ import { observeRangeBids, observeRangeResults } from './art-range-bids.mjs';
 import { observeCS2 } from './esports-paper.mjs';
 import { observeUS } from './us-bitcoin-paper.mjs';
 import { observeSothebysBids } from './sothebys-bids.mjs';
-import { initRestingStudy, reviewRestingBid } from './auction-resting.mjs';
+import { initRestingStudy, reviewRestingBid, reviewAuctionEntry } from './auction-resting.mjs';
 import {
   addPaper,
   observe,
@@ -526,6 +526,7 @@ const server = http.createServer((req, res) => {
           sothebysStatus,
           soldLimits: soldLimits.summary(),
           auctionResting:db.prepare('SELECT ticker,side,arrival,untilAt,ahead,atLimit,belowLimit FROM auction_resting_trials ORDER BY arrival,ticker').all(),
+          auctionEntryTape:db.prepare('SELECT detail FROM auction_entry_tape WHERE detail IS NOT NULL ORDER BY at DESC,ticker').all().map(r=>JSON.parse(r.detail)),
           nbaStatus,
           recordPairStatus,
           recordPairDelays: db.prepare(`SELECT seconds,COUNT(*) AS batches,COUNT(available) AS checked,
@@ -736,6 +737,8 @@ server.listen(port, host, () => {
     reviewingResting=true;
     try {await reviewRestingBid(db,soldIO,Date.now());delete sothebysStatus.restingError;}
     catch(e){sothebysStatus.restingError=e.message;}
+    try {await reviewAuctionEntry(db,soldIO,Date.now());delete sothebysStatus.entryTapeError;}
+    catch(e){sothebysStatus.entryTapeError=e.message;}
     finally{reviewingResting=false;}
   };
   reviewResting();
