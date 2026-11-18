@@ -6,7 +6,7 @@ import { Transport } from './transport.mjs';
 import { askLevels, checkFees, checkMarketActive } from './core.mjs';
 import { addPaper } from './strategy-monitor.mjs';
 
-import { initSoldStudy, scanSold } from './sothebys-sold.mjs';
+import { initSoldStudy, scanSold, publishedVerdicts } from './sothebys-sold.mjs';
 
 import { saleTiming } from './sale-timing.mjs';
 import { observeAuctionQuotes } from './auction-quote-timing.mjs';
@@ -118,6 +118,8 @@ export async function readSalePage(target = null) {
     age = Number(r.headers.get('age') ?? 0),
     generation = sourceGeneration(at, httpDate, age);
   return {
+    kind: target ? 'lot' : 'catalog',
+    url: target?.url ?? calendar.url,
     at,
     requestedAt: start,
     httpDate,
@@ -242,12 +244,15 @@ export async function observeSothebysBids({
   });
   initSoldStudy(db);
   const timing = saleTiming(db, calendar.targets);
+  const verdicts=publishedVerdicts(db);
   status.quotes = {};
   observeAuctionQuotes({db,io,calendar,marketList,stop,status:status.quotes,timing})
     .catch(e => { status.quotes.error = e.message; });
   status.timing = timing.summary();
   let previous = new Map(),
     previousSold = new Map();
+  const lotBooks=new Map();
+  status.lotSales={};
   let nextDisclosureCheck = 0;
   const deadline = Date.parse(calendar.settlementWatchEnd);
   while (!stop()) {
@@ -273,20 +278,54 @@ export async function observeSothebysBids({
       continue;
     }
     let delay = tail ? 60000 : 10000;
-    const remaining = tail ? [] : timing.remaining();
+    const conflicts=verdicts.conflicts();
+    const waiting=tail ? [] : timing.remaining();
+    const remaining=calendar.targets.filter(t=>conflicts.has(t.event)||waiting.includes(t));
     const ctx = { io, marketList, stop };
     const timingErrors = [];
     const track = (promise) =>
       promise.catch((e) => {
         timingErrors.push(e.message);
       });
-    const reads = remaining.map((t) =>
-      track(readSalePage(t).then((r) => timing.record('lot', r, ctx)))
-    );
+    const reads = remaining.map(t=>track((async ()=>{
+      const read=await readSalePage(t);
+      verdicts.record('lot',read);
+      const recordTiming=track(timing.record('lot',read,ctx));
+      try {
+        const lot=read.lots[0], prior=lotBooks.get(t.event) ?? new Map();
+        if (!read.soldFresh || !(lot.salePrice>0) || !verdicts.accepts(t.event,lot.salePrice)) {
+          lotBooks.delete(t.event);
+          return;
+        }
+        const scan=async (source,previous)=>{
+          const outcome=await scanSold({db,io,source,targets:[t],marketList,previous,stop,tail:false,deadline,
+            accept:verdicts.accepts});
+          if (limits && outcome.next.size) limits.record([...outcome.next.values()],previous,30000);
+          lotBooks.set(t.event,outcome.next);
+          status.lotSales[t.event]={...outcome.status,at:new Date().toISOString(),price:source.lots[0].salePrice};
+          return outcome.next;
+        };
+        const quotes=await scan(read,prior);
+        if (!prior.size && [...quotes.values()].some(q=>askLevels(q.book,q.side,99).some(l=>l.quantity>=1e6))) {
+          await sleep(2200);
+          if (stop() || Date.now()>=deadline) return;
+          const confirm=await readSalePage(t);
+          verdicts.record('lot',confirm);
+          await scan(confirm,quotes);
+        }
+      } catch(e) {
+        lotBooks.delete(t.event);
+        status.lotSales[t.event]={at:new Date().toISOString(),error:e.message};
+        throw e;
+      } finally {
+        await recordTiming;
+      }
+    })()));
 
     try {
       const s = await readSalePage(),
         next = new Map();
+      verdicts.record('catalog',s);
       if (remaining.length)
         reads.push(
           track(
@@ -394,7 +433,8 @@ export async function observeSothebysBids({
           previous: previousSold,
           stop,
           tail,
-          deadline
+          deadline,
+          accept:verdicts.accepts
         });
         if (limits && sold.next.size)
           limits.record(

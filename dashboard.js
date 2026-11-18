@@ -425,6 +425,12 @@ function paper(d) {
             ' threshold books checked at ' +
             time(s.sold.at)
       );
+    if (selected === 'sothebys_sold') {
+      note('The lot page and auction catalog share one paper balance. The artwork-page test requires the same published sale price and available offers on two separate reads. Conflicting published verdicts suspend sold-price entries for that artwork.');
+      table('Paper entries by result source',['Result source','Contracts','Entry cost with fees'],
+        (d.soldPageEntries ?? []).map(r=>[r.source==='lot'?'Artwork page':'Auction catalog',r.shares,money(r.cost)]),
+        'Waiting for a confirmed result and available contracts.');
+    }
     if (
       ['sothebys_live_bid', 'sothebys_bid_high', 'sothebys_bid_premium', 'sothebys_sold'].includes(
         selected

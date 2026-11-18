@@ -4,8 +4,35 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import { openLedger, addPaper, paperRows } from '../strategy-monitor.mjs';
-import { initSoldStudy, recordSoldBooks, scanSold } from '../sothebys-sold.mjs';
+import { initSoldStudy, recordSoldBooks, scanSold, publishedVerdicts } from '../sothebys-sold.mjs';
 import { auctionDepthCash } from '../late-auction.mjs';
+
+test('artwork-page confirmation uses independent books and shares inventory with catalog confirmations', () => {
+  const dir=mkdtempSync(path.join(os.tmpdir(),'sold-page-')),db=openLedger(dir);
+  try {
+    initSoldStudy(db);
+    const q={ticker:'T',sourceKind:'lot',amount:120e6,side:'NO',generation:1000,at:2500,sourceAt:2000,
+      bookAsOf:2000,url:'artwork',closeAt:20000,book:{orderbook_fp:{yes_dollars:[['0.10','4.0']]}}};
+    const next={...q,generation:4000,at:5500,bookAsOf:5000,sourceAt:5100};
+    const prior=new Map([['T',q]]);
+    assert.equal(recordSoldBooks(db,[{...next,bookAsOf:q.bookAsOf}],prior,30000).contracts,0);
+    assert.equal(recordSoldBooks(db,[next],prior,30000).contracts,4);
+    assert.equal(recordSoldBooks(db,[{...next,at:6000,sourceKind:'catalog'}],new Map([['T',{...q,sourceKind:'catalog'}]]),30000).contracts,0);
+    assert.equal(JSON.parse(db.prepare('SELECT detail FROM sothebys_sold_entries').get().detail).sourceKind,'lot');
+    const v=publishedVerdicts(db);
+    const save=(kind,generation,price,extra={})=>v.record(kind,{soldFresh:true,generation,at:generation+500,
+      lots:[{event:'E',salePrice:price,...extra}]});
+    save('lot',3000,120e6);
+    save('catalog',4000,119e6);
+    assert.equal(v.accepts('E',120e6),false);
+    save('catalog',2000,120e6);
+    assert.equal(v.accepts('E',120e6),false);
+    save('catalog',5000,120e6);
+    assert.equal(v.accepts('E',120e6),true);
+    save('lot',6000,null,{withdrawn:'Withdrawn'});
+    assert.equal(v.accepts('E',120e6),false);
+  } finally { db.close(); rmSync(dir,{recursive:true,force:true}); }
+});
 
 test('sold-price study shares cash across auctions and takes cheapest confirmed levels only once', () => {
   const directory = mkdtempSync(path.join(os.tmpdir(), 'sold-depth-')),

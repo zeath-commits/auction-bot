@@ -545,6 +545,9 @@ const server = http.createServer((req, res) => {
               'SELECT COUNT(*) AS scans,COALESCE(SUM(fresh),0) AS fresh FROM sothebys_bid_scans'
             )
             .get(),
+          soldPageEntries: db.prepare(`SELECT COALESCE(json_extract(e.detail,'$.sourceKind'),'catalog') AS source,
+            SUM(p.quantity) AS shares,SUM(p.quantity*p.price+p.fees) AS cost
+            FROM sothebys_sold_entries e JOIN paper p USING(id) GROUP BY 1`).all(),
           premiumSignals: db.prepare(`SELECT p.*,
             (SELECT d.irrevocable FROM sale_disclosures d WHERE d.event=p.event AND d.at<=p.at
              ORDER BY d.generation DESC,d.at DESC LIMIT 1) AS irrevocable

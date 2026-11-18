@@ -39,6 +39,8 @@ export function recordSoldBooks(
         q.amount <= 0 ||
         p.amount !== q.amount ||
         p.side !== q.side ||
+        (q.sourceKind === 'lot' && !(p.sourceKind === 'lot' &&
+          q.bookAsOf > p.bookAsOf && q.bookAsOf >= p.sourceAt)) ||
         !(q.generation - p.generation >= 2000) ||
         q.at - p.at < 1000 ||
         q.at - p.at > maxGapMs
@@ -108,6 +110,9 @@ export function recordSoldBooks(
           first: p.at,
           second: q.at,
           source: q.url,
+          sourceKind: q.sourceKind ?? 'catalog',
+          firstSourceAt: p.sourceAt,
+          secondSourceAt: q.sourceAt,
           held,
           depth,
           level: l.price
@@ -134,7 +139,8 @@ export async function scanSold({
   previous,
   stop,
   tail,
-  deadline
+  deadline,
+  accept = () => true
 }) {
   const sold = source.soldFresh
     ? source.lots.filter(
@@ -165,6 +171,7 @@ export async function scanSold({
       );
       query.set('depth', '100');
       const read = await io.get('/markets/orderbooks?' + query);
+      const bookAsOf=Date.parse(read.httpDate)-1000*Number(read.cacheAge??0);
       const books = new Map(read.body.orderbooks.map((b) => [b.ticker, b]));
       if (
         books.size !== eligible.length ||
@@ -179,15 +186,20 @@ export async function scanSold({
       ) {
         for (const { m, side, lot, target } of eligible) {
           if (!checkMarketActive(m, Date.now())) continue;
+          if (source.kind==='lot' && !(read.requestedAt>=source.at &&
+            bookAsOf>=read.receivedAt-3500 && bookAsOf<=read.receivedAt+1000)) continue;
           quotes.push({
             ticker: m.ticker,
+            event: lot.event,
             at: read.receivedAt,
             amount: lot.salePrice,
             side,
             generation: source.generation,
             sourceAt: source.at,
+            bookAsOf: Number.isFinite(bookAsOf) ? bookAsOf : null,
             sourceCacheAgeSeconds: source.age,
-            url: target.url,
+            url: source.url ?? target.url,
+            sourceKind: source.kind ?? 'catalog',
             closeAt: Date.parse(m.close_time),
             book: books.get(m.ticker)
           });
@@ -195,9 +207,34 @@ export async function scanSold({
       }
     }
   }
-  const added = recordSoldBooks(db, quotes, previous, tail ? 95000 : 30000);
+  const accepted=quotes.filter(q=>accept(q.event,q.amount));
+  const added = recordSoldBooks(db, accepted, previous, tail ? 95000 : 30000);
   return {
-    next: new Map(quotes.map((q) => [q.ticker, q])),
-    status: { published: sold.length, books: quotes.length, ...added }
+    next: new Map(accepted.map((q) => [q.ticker, q])),
+    status: { published: sold.length, books: accepted.length, ...added }
+  };
+}
+
+// A published result on either official page can contradict the other page.
+// Preserve the latest dated, explicit verdict per source, including an unsold verdict.
+export function publishedVerdicts(db) {
+  db.exec(`CREATE TABLE IF NOT EXISTS sothebys_verdicts(event TEXT,kind TEXT,generation INTEGER,at INTEGER,
+    amount INTEGER,PRIMARY KEY(event,kind))`);
+  const write=db.prepare(`INSERT INTO sothebys_verdicts VALUES(?,?,?,?,?) ON CONFLICT(event,kind) DO UPDATE SET
+    generation=excluded.generation,at=excluded.at,amount=excluded.amount WHERE excluded.generation>sothebys_verdicts.generation
+    OR (excluded.generation=sothebys_verdicts.generation AND excluded.at>sothebys_verdicts.at)`);
+  const conflicting=db.prepare('SELECT 1 FROM sothebys_verdicts WHERE event=? AND amount<>? LIMIT 1');
+  return {
+    record(kind,read) {
+      if (!read.soldFresh || !Number.isFinite(read.generation)) return;
+      for (const lot of read.lots) {
+        const noSale=lot.explicitUnsold || lot.withdrawn==='Withdrawn';
+        const amount=noSale ? 0 : lot.salePrice;
+        if (Number.isSafeInteger(amount) && (amount>0 || noSale))
+          write.run(lot.event,kind,read.generation,read.at,amount);
+      }
+    },
+    accepts:(event,amount)=>!conflicting.get(event,amount),
+    conflicts:()=>new Set(db.prepare('SELECT event FROM sothebys_verdicts GROUP BY event HAVING MIN(amount)<>MAX(amount)').all().map(r=>r.event))
   };
 }
