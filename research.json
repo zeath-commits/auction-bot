@@ -36,6 +36,16 @@
   ],
   "studies": [
     {
+      "market": "Kalshi Bitcoin at 99.9¢",
+      "test": "Earlier replication on October 21–27, 2026, using the same size, price, and final-ten-second rules.",
+      "finding": "Of 664 finalized markets, 68 had a qualifying taker purchase at size 100 and all won, for $6.12 modeled net. At size 1,000, all 64 qualifying purchases won, for $59.52. Across the three sampled weeks there were 148 qualifying markets at size 100 and $13.32 of modeled profit. One losing entry would have erased that amount. Resting participants matched size 100 on the 99.9¢ side in 653 markets in this earlier week. Public executions reveal neither our hypothetical queue position nor whether the offers were available on two reads."
+    },
+    {
+      "market": "Kalshi Bitcoin at 99.9¢",
+      "test": "All 1,328 finalized quarter-hour markets closing November 4–17, 2026, Eastern time. Used the first non-block trade of the required size in the final ten seconds at exactly 99.9¢, once per market and role.",
+      "finding": "Buyers took at least 100 contracts in 80 markets. All 80 purchases won, worth $7.20 total at 100 each after estimated fees. The two weeks contributed 47 and 33 wins. At 1,000 each, 79 qualifying buys won for $73.47 modeled net. A single loss at 100 contracts would cost $99.91. In 1,324 markets a resting participant on the 99.9¢ side matched at least 100 contracts, and in 1,250 markets at least 1,000. All those sides won. A new bidder would have joined a queue with unknown priority. The dashboard now measures subsequent volume against the visible queue and tracks a separate paper test for immediate purchases."
+    },
+    {
       "market": "S&P 500 and Nasdaq-100 hourly thresholds",
       "test": "Checked the 35 latest finalized hourly events on each index at 4:13 p.m. ET on November 18, 2026. Compared lower YES and higher NO under matching rules.",
       "finding": "All 70 events had consistent payouts across their thresholds. These events span six trading dates. Historical results validate the payoff relationship only. The first live scan found zero pairs offered below $1 across 3,220 open contracts. New paper entries require two fresh order-book checks and a positive margin after reserving whole-cent fees on each leg."

@@ -27,6 +27,7 @@ test(
         'catalog-results.mjs',
         'us-bitcoin-paper.mjs',
         'bitcoin-reference.mjs',
+        'btc-maker-study.mjs',
         'sothebys-bids.mjs',
         'sothebys-sold.mjs',
         'sold-limits.mjs',

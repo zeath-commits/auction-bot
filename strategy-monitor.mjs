@@ -4,6 +4,7 @@ import path from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { Transport } from './transport.mjs';
 import { chartProjection, referencePrices } from './bitcoin-reference.mjs';
+import { observeMakerQueue, reviewMakerQueue } from './btc-maker-study.mjs';
 
 export const strategies = {
   cs2_reference: 'CS2 · Kalshi offer below Polymarket US bid',
@@ -29,6 +30,7 @@ export const strategies = {
   btc_underdog: 'Bitcoin · 1–2¢ offer in the final minute',
   btc10: 'Bitcoin · final 10 seconds',
   btc_chart10: 'Bitcoin · final 10 seconds with chart confirmation',
+  btc999: 'Bitcoin · 100 contracts at 99.9¢ in final 10 seconds',
   btcDepth: 'Bitcoin · 1,000 contracts displayed',
   published_sale: 'Published auction price',
   unsold: 'Explicitly unsold lot',
@@ -49,6 +51,10 @@ export function openLedger(directory) {
     CREATE TABLE IF NOT EXISTS btc_chart_windows(ticker TEXT PRIMARY KEY, closeAt INTEGER NOT NULL,
       strike REAL, requestedAt INTEGER, receivedAt INTEGER, projected REAL, gapBps REAL, side TEXT,
       error TEXT, result TEXT);
+    CREATE TABLE IF NOT EXISTS btc_999_books(ticker TEXT, at INTEGER, closeAt INTEGER, firstQuote TEXT,
+      secondQuote TEXT, fresh INTEGER, PRIMARY KEY(ticker,at));
+    CREATE TABLE IF NOT EXISTS btc_999_queue(ticker TEXT PRIMARY KEY,side TEXT,arrival INTEGER,
+      closeAt INTEGER,ahead REAL,checked INTEGER,volume REAL,result TEXT);
   `);
   return db;
 }
@@ -78,6 +84,28 @@ function bestMatchingQuote(book, matchesPrice) {
 
 export function bestFavorite(book) {
   return bestMatchingQuote(book, p => p === 0.98 || p === 0.99);
+}
+
+function recordLargeFavorite(db, market, close, first, second, multiplier) {
+  if (first.requestedAt < close - 10000) return;
+  const at = second.receivedAt;
+  const offer = read => bestMatchingQuote(read.body, price => price === 0.999);
+  const a = offer(first), b = offer(second);
+  const asOf = read => Date.parse(read.httpDate) - 1000 * Number(read.cacheAge ?? 0);
+  const fresh = [first, second].every(read =>
+    asOf(read) >= read.receivedAt - 2500 && asOf(read) <= read.receivedAt + 500
+  ) && asOf(second) > asOf(first);
+  db.prepare('INSERT OR IGNORE INTO btc_999_books VALUES(?,?,?,?,?,?)')
+    .run(market.ticker, at, close, JSON.stringify(a), JSON.stringify(b), Number(fresh));
+  if (fresh) observeMakerQueue(db,market,first,second,close);
+  const quantity = 100;
+  if (!fresh || !a || !b || a.side !== b.side || Math.min(a.size,b.size) < quantity) return;
+  const fees = Math.ceil(100 * 0.07 * multiplier * quantity * b.price * (1-b.price) - 1e-9) / 100;
+  const cost = quantity * b.price + fees;
+  const cash = db.prepare("SELECT 1000 + COALESCE(SUM(COALESCE(payout,0)-quantity*price-fees),0) AS balance FROM paper WHERE strategy='btc999'").get().balance;
+  if (cost >= quantity || cost > cash) return;
+  addPaper(db, { id:'btc999/'+market.ticker, strategy:'btc999', ticker:market.ticker, side:b.side,
+    at:new Date(at).toISOString(), quantity, price:b.price, fees, depth:Math.min(a.size,b.size), closeAt:close });
 }
 
 export async function captureChart(db, market, read = referencePrices, now = Date.now) {
@@ -121,6 +149,7 @@ export function recordBtc(db, market, first, second, multiplier) {
     `INSERT INTO windows VALUES(?,?,1,?,?) ON CONFLICT(ticker) DO UPDATE SET
     checks=checks+1,lastCheck=excluded.lastCheck`
   ).run(market.ticker, close, observed, observed);
+  recordLargeFavorite(db, market, close, first, second, multiplier);
   function recordOffer(strategy, seconds, minimumSize, a, b) {
     if (!a || !b || b.side !== a.side || b.price > a.price) return;
     const depth = Math.min(a.size, b.size);
@@ -196,7 +225,7 @@ export async function settle(db, io) {
     .prepare(
       `SELECT pending.ticker FROM (
     SELECT ticker FROM paper WHERE payout IS NULL AND ticker NOT LIKE 'cpc-btc-updown-5m-%'
-    AND (strategy NOT IN ('btc60','btc_band60','btc10','btc_chart10','btcDepth','btc_underdog','cross_us_btc','cross_us_middle') OR closeAt<=?)
+    AND (strategy NOT IN ('btc60','btc_band60','btc10','btc_chart10','btc999','btcDepth','btc_underdog','cross_us_btc','cross_us_middle') OR closeAt<=?)
     UNION SELECT ticker FROM btc_chart_windows WHERE side IS NOT NULL AND result IS NULL AND closeAt<=?
     ) pending LEFT JOIN results r USING(ticker) WHERE COALESCE(r.checked,0)<?
     ORDER BY COALESCE(r.checked,0) LIMIT 10`
@@ -292,6 +321,7 @@ export async function observe({ db, config, stop, status }) {
         delay = 250;
       } else {
         await settle(db, io);
+        if (left > 75000) await reviewMakerQueue(db, io, Date.now());
         status.state = market
           ? 'Waiting for final minute'
           : 'Waiting for next listing';

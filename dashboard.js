@@ -102,6 +102,18 @@ function paper(d) {
     note('One paper contract per market at the first 1¢ or 2¢ ask in the final minute that holds or improves on a second book check. Net includes modeled taker fees.');
   if (selected === 'btc_band60')
     note('One paper contract in the final minute. The best offer must be from 98¢ through 99¢, including fractional cents, with at least one full contract on both checks. This test can overlap the exact-cent strategy.');
+  if (selected === 'btc999' && d.btc999Coverage) {
+    const c = d.btc999Coverage;
+    table('99.9¢ offers in the final ten seconds', ['Closes checked','Fresh book pairs','100 offered on first read','100 offered on both reads'],
+      [[c.windows,c.freshWindows,c.offered,c.repeated]]);
+    note('Each column counts distinct markets. One paper entry uses 100 contracts and a separate $1,000 starting balance. At the standard modeled fee, a win earns $0.09 and a loss costs $99.91.');
+    const q = d.btc999Queue;
+    if (q) {
+      table('Joining an existing 99.9¢ bid', ['Bids observed','Settlements reviewed','Volume covered queue + 100','Winning side among those'],
+        [[q.trials,q.reviewed,q.cleared,q.wins]]);
+      note('The queue estimate uses the larger depth on two reads. It counts subsequent trades starting 500 milliseconds later. Actual queue priority is unknown.');
+    }
+  }
   if (selected === 'art_record_pair') {
     const pairs = rows.filter(r => r.side === 'yes').reduce((s,r)=>s+r.quantity,0);
     const cost = rows.reduce((s,r)=>s+r.quantity*r.price+r.fees,0);
@@ -232,7 +244,7 @@ function paper(d) {
       })
   );
   note(
-    'BTC closing-favorite tests model one contract per market. The size test requires 1,000 visible on both checks. Cross-venue tests model ten pairs. Strategies can overlap. Sale-window auction entries use a fee reserve. Later offers use estimated taker fees.'
+    'The 98–99¢ BTC tests model one contract per market. The size test requires 1,000 visible on both checks. The 99.9¢ test models 100 contracts. Cross-venue tests model ten pairs. Strategies can overlap. Sale-window auction entries use a fee reserve. Later offers use estimated taker fees.'
   );
   note(
     'BTC monitor · ' +

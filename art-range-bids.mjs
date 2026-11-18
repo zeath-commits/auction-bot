@@ -100,10 +100,7 @@ export async function observeRangeBids({db,config,stop,status}) {
       if(Date.now()<(nextRead.get(id)??0)) continue;
       nextRead.set(id,Date.now()+(end-Date.now()>3*3600000?300000:60000));
       try {
-        const [buckets,markets,fees,ex]=await Promise.all([ranges(target),readMarkets(io,lot),
-          io.get('/series/KXART'),io.get('/exchange/status')]);
-        checkFees(fees.body);
-        if (!ex.body.exchange_active || !ex.body.trading_active) throw Error('Exchange paused');
+        const [buckets,markets]=await Promise.all([ranges(target),readMarkets(io,lot)]);
         async function sample() {
           const begin=Date.now();
           const [bounds,k]=await Promise.all([Promise.all(buckets.map(bidAtSize)),captureAuctionQuotes(io,markets)]);
@@ -122,10 +119,12 @@ export async function observeRangeBids({db,config,stop,status}) {
           continue;
         }
         await sleep(1250);
-        const second=await sample();
+        const [second,fees,ex]=await Promise.all([sample(),io.get('/series/KXART'),io.get('/exchange/status')]);
+        checkFees(fees.body);
+        if (!ex.body.exchange_active || !ex.body.trading_active) throw Error('Exchange paused');
         const pick=second.rows.find(b=>b.gap>=0.02 && first.rows.some(a=>
           a.ticker===b.ticker && a.gap>=0.02 && b.price<=a.price));
-        if(!pick || stop() || second.asOf<=first.asOf) {
+        if(!pick || stop() || Date.now()>=end || second.asOf<=first.asOf) {
           status.lots[lot.title]={state:'Awaiting repeated prices'};
           continue;
         }

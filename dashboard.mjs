@@ -570,6 +570,16 @@ const server = http.createServer((req, res) => {
             FROM btc_chart_windows WHERE closeAt<=?`).get(Date.now()),
           tenSecondValidation:
             json(path.join(ROOT, 'research.json')).tenSecondValidation ?? [],
+          btc999Coverage: db.prepare(`SELECT count(DISTINCT ticker) AS windows,
+            count(DISTINCT CASE WHEN fresh=1 THEN ticker END) AS freshWindows,
+            count(DISTINCT CASE WHEN fresh=1 AND json_extract(firstQuote,'$.size')>=100 THEN ticker END) AS offered,
+            count(DISTINCT CASE WHEN fresh=1 AND json_extract(firstQuote,'$.size')>=100
+              AND json_extract(secondQuote,'$.size')>=100 AND json_extract(firstQuote,'$.side')=json_extract(secondQuote,'$.side')
+              THEN ticker END) AS repeated FROM btc_999_books`).get(),
+          btc999Queue: db.prepare(`SELECT count(*) AS trials,count(volume) AS reviewed,
+            count(CASE WHEN volume>=ahead+100 THEN 1 END) AS cleared,
+            count(CASE WHEN volume>=ahead+100 AND result=side THEN 1 END) AS wins
+            FROM btc_999_queue`).get(),
           research: [
             ...(desktopAuctionStudy ? [desktopAuctionStudy] : []),
             ...(latestGlobalStudy ? [latestGlobalStudy] : []),

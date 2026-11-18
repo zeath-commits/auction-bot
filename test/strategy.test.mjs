@@ -12,6 +12,7 @@ import {
   settle
 } from '../strategy-monitor.mjs';
 import { chartProjection } from '../bitcoin-reference.mjs';
+import { makerQueue, observeMakerQueue, reviewMakerQueue } from '../btc-maker-study.mjs';
 
 test('chart-confirmed BTC entries use candles and receipts available before the quote', async () => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'bitcoin-chart-'));
@@ -167,5 +168,65 @@ test('BTC strategies require repeatable size and settle each paper variant only 
   } finally {
     db.close();
     fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('99.9-cent closing test requires fresh repeated depth and available paper cash', async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'btc-large-favorite-'));
+  const db = openLedger(dir);
+  try {
+    const close = Math.floor(Date.now()/1000)*1000-1000;
+    const market = {ticker:'KXBTC15M-999',status:'active',close_time:new Date(close).toISOString()};
+    const read = (at, size='100.00') => ({requestedAt:at,receivedAt:at+20,
+      httpDate:new Date(at).toUTCString(), cacheAge:'0',
+      body:{orderbook_fp:{yes_dollars:[['0.9980','1200']],no_dollars:[['0.0010',size]]}}});
+    const first=read(close-8000), second=read(close-6900);
+    const rows=() => paperRows(db).filter(r=>r.strategy==='btc999');
+    recordBtc(db,market,first,{...second,httpDate:first.httpDate},1);
+    recordBtc(db,market,first,read(close-6500,'99.99'),1);
+    recordBtc(db,market,read(close-11000),read(close-9800),1);
+    assert.equal(rows().length,0);
+    recordBtc(db,market,first,read(close-6300),1);
+    recordBtc(db,market,first,read(close-6100),1);
+    assert.deepEqual(rows().map(r=>[r.side,r.quantity,r.fees,r.depth]),[['yes',100,0.01,100]]);
+    assert.equal(db.prepare('SELECT SUM(fresh) AS n FROM btc_999_books').get().n,3);
+    await settle(db,{get:async()=>({body:{market:{...market,status:'finalized',result:'no'}}})});
+    assert.ok(Math.abs(rows()[0].net + 99.91)<1e-9);
+    db.prepare("UPDATE paper SET quantity=1000,price=0.99 WHERE strategy='btc999'").run();
+    recordBtc(db,{...market,ticker:'KXBTC15M-NEW'},first,second,1);
+    assert.equal(rows().length,1);
+  } finally {
+    db.close();
+    fs.rmSync(dir,{recursive:true,force:true});
+  }
+});
+
+test('public maker study selects a side before the tape and excludes ineligible volume', async () => {
+  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'btc-maker-'));
+  const db=openLedger(dir);
+  try {
+    const close=Date.now()-90000, arrival=close-6500;
+    const book=(size,no=[])=>({orderbook_fp:{yes_dollars:[['0.9990',size]],no_dollars:no}});
+    const m={ticker:'KXBTC15M-MAKER',price_ranges:[{start:'0.9000',end:'1.0000',step:'0.0010'}]};
+    assert.equal(makerQueue(book('200',[['0.0010','1.00']])),null);
+    observeMakerQueue(db,m,{body:book('200')},{body:book('150'),receivedAt:arrival-500},close);
+    const trade={ticker:m.ticker,trade_id:'candidate',taker_outcome_side:'no',taker_book_side:'ask',
+      yes_price_dollars:'0.9990',count_fp:'250.50',created_time:new Date(arrival).toISOString()};
+    const io={get:async route=>{
+      if(!route.includes('/trades?'))return {body:{market:{...m,status:'finalized',result:'yes'}}};
+      if(route.includes('cursor=second'))return {body:{trades:[trade,{...trade,trade_id:'extra',count_fp:'50.50'}]}};
+      return {body:{cursor:'second',trades:[trade,
+        {...trade,trade_id:'late',created_time:new Date(close).toISOString()},
+        {...trade,trade_id:'early',created_time:new Date(arrival-1).toISOString()},
+        {...trade,trade_id:'block',is_block_trade:true},
+        {...trade,trade_id:'other',taker_outcome_side:'yes'}]}};
+    }};
+    await reviewMakerQueue(db,io,Date.now());
+    const trial=db.prepare('SELECT * FROM btc_999_queue').get();
+    assert.deepEqual([trial.side,trial.arrival,trial.ahead,trial.volume,trial.result],['yes',arrival,200,301,'yes']);
+    assert.equal(paperRows(db).length,0);
+  } finally {
+    db.close();
+    fs.rmSync(dir,{recursive:true,force:true});
   }
 });
