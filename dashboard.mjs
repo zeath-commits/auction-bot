@@ -6,6 +6,7 @@ import { spawn } from 'node:child_process';
 import { ROOT } from './bot.mjs';
 import { observePairs, pairSeries } from './auction-pairs.mjs';
 import { observeLateAuctions } from './late-auction.mjs';
+import { observeNBA } from './nba-paper.mjs';
 import { observeUS } from './us-bitcoin-paper.mjs';
 import { observeSothebysBids } from './sothebys-bids.mjs';
 import {
@@ -32,6 +33,7 @@ const status = { state: 'Starting', at: null };
 const lateAuctionStatus = { at: null };
 const usBitcoinStatus = { at: null };
 const sothebysStatus = {};
+const nbaStatus = {};
 const pairStatus = Object.fromEntries(
   Object.entries(pairSeries).map(([k, label]) => [k, { label, at: null }])
 );
@@ -460,6 +462,7 @@ const server = http.createServer((req, res) => {
           lateAuctionStatus,
           usBitcoinStatus,
           sothebysStatus,
+          nbaStatus,
           sothebysCoverage: db
             .prepare(
               'SELECT COUNT(*) AS scans,COALESCE(SUM(fresh),0) AS fresh FROM sothebys_bid_scans'
@@ -525,6 +528,14 @@ server.listen(port, host, () => {
     }
   }
   importSafe();
+  observeNBA({
+    db,
+    config,
+    status: nbaStatus,
+    stop: () => stopping || exists(path.join(ROOT, 'STOP'))
+  }).catch((e) => {
+    nbaStatus.error = e.message;
+  });
   observeSothebysBids({
     db,
     config,

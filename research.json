@@ -36,6 +36,11 @@
   ],
   "studies": [
     {
+      "market": "NBA game winners",
+      "test": "Five-point leads with 35–50 seconds left in regulation",
+      "finding": "2025–26 replay of Kalshi buyer executions. Of 1,220 quality-screened games, 226 had missing or reversed late-game timestamps. The remaining games produced 43 signals. In 21 games a buyer paid up to 99¢ five to fifteen seconds later, before the next recorded play. Twenty leaders won. One share per matched game modeled a 22¢ loss after standard fees. Golden State led Chicago 115–110 with 47.5 seconds left, traded at 92¢ and lost. Live paper testing requires two displayed offers and a fresh score."
+    },
+    {
       "market": "Sotheby’s live bidding",
       "test": "November 16 · live bid strictly above an Artnet threshold",
       "finding": "Across 58 archived live-bid observations on ten artworks, seven artworks crossed 14 thresholds. All 14 settled YES. All six public executions in the sampled windows were YES buys at 97¢ or 98¢ across three thresholds. No whole-share buy qualified at 95¢ or less. The archive did not capture the live asks for those crossings. The November 18 forward test compares bids with fresh offers on five lots that settle directly from Sotheby’s."

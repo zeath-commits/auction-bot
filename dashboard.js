@@ -124,6 +124,21 @@ function paper(d) {
       d.auctionStatus.offers +
       '.'
   );
+  if (['all', 'nba_five'].includes(selected) && d.nbaStatus?.at) {
+    const n = d.nbaStatus;
+    note(
+      'NBA final minute · ' +
+        (n.error ??
+          n.scheduled +
+            ' upcoming games · ' +
+            n.live +
+            ' live · ' +
+            n.observations +
+            ' five-point signals recorded') +
+        ' · checked ' +
+        time(n.at)
+    );
+  }
   for (const pair of Object.values(d.pairStatus ?? {}))
     if (pair.at)
       note(
