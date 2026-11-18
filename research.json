@@ -36,6 +36,11 @@
   ],
   "studies": [
     {
+      "market": "How long the November 18 auction offers lasted",
+      "test": "For Monet and van Gogh, checked non-block buyer executions on the indicated side of all 18 thresholds in the five minutes after our first public sale-price receipt. For Renoir, Cézanne and Pissarro, an additional observer samples all nine thresholds at receipt and after 1, 2.25, 4, 7, 15 and 30 seconds. It excludes snapshots whose exchange timestamp could predate the result. These samples are separate from the original three-second test.",
+      "finding": "For Monet above $20M, a second snapshot 11.011 seconds after publication showed 23 YES at 64¢. Another 23 traded at 64¢ at +14.098 seconds. The first and second Sotheby’s reads had the same cached generation. There were no buyer executions at 95¢ or less on the sale-price-indicated sides from +15 seconds through five minutes. For van Gogh, one NO above $260M traded at 94¢ at +27.484 seconds. For Renoir, Sotheby’s catalog and lot page agreed on $27.5M. All six independently timestamped snapshots between +1 and +30.2 seconds had zero whole contracts offered through 99¢ on the indicated sides."
+    },
+    {
       "market": "Monet and van Gogh after the November 18 sale price appeared",
       "test": "Compared the first public Sotheby’s result with the first complete Kalshi order book timestamped after its receipt and captured within three seconds. At the cheapest outcome supported by the result through 95¢, counted public buyers at exactly that price from 0.25 to 2 seconds after receipt of the quote. This timing rule was chosen after reviewing Monet. Renoir, Cézanne and Pissarro were designated for forward validation at 6:27 p.m. Eastern, before their first monitored results.",
       "finding": "Sotheby’s catalog first showed $20.23M for Monet. At +1.574 seconds, 21 YES contracts above $20M were offered at 64¢. At +2.110 seconds, 22 YES contracts traded at 64¢. The bot recorded no fill on that offer. Buying 21 at the displayed price would cost $13.78 including an estimated 34¢ fee and net $7.22 if Kalshi settles YES. For van Gogh, Sotheby’s published $190.43M. The first eligible book contained zero offers through 95¢ on the indicated sides."

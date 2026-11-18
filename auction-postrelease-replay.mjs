@@ -1,4 +1,5 @@
 import fs from 'node:fs/promises';
+import {existsSync} from 'node:fs';
 import {DatabaseSync} from 'node:sqlite';
 import {API} from './transport.mjs';
 
@@ -9,6 +10,9 @@ const runtime=new URL('./runtime/',import.meta.url);
 const db=new DatabaseSync(new URL('strategies.sqlite',runtime),{readOnly:true});
 const first=db.prepare('SELECT * FROM sale_first_prices WHERE event=? ORDER BY at,source');
 const batches=db.prepare('SELECT * FROM auction_quote_batches WHERE begin>=? AND asOf>=? AND at<=? ORDER BY at');
+const depthFile=new URL('auction-release-depth.sqlite',runtime);
+const depth=existsSync(depthFile)?new DatabaseSync(depthFile,{readOnly:true}):null;
+const rapid=depth?.prepare('SELECT offset,sample,error FROM frames WHERE event=? AND release=? ORDER BY offset');
 const output=[];
 for(const lot of calendar.targets) {
   const sources=first.all(lot.event);
@@ -16,6 +20,18 @@ for(const lot of calendar.targets) {
   const row={event:lot.event,published:r?.at??null,amount:r?.price??null};
   output.push(row);
   if(!r) {row.status='Awaiting first public price';continue;}
+  // Keep separately collected snapshots out of the previously specified replay.
+  const observations=rapid?.all(lot.event,r.at)??[];
+  if(observations.length){
+    row.additionalBooks=observations.map(f=>{
+      if(!f.sample)return {offset:f.offset,error:f.error};
+      const s=JSON.parse(f.sample);
+      if(s.asOf<r.at)return {offset:f.offset,status:'Book timestamp overlaps publication'};
+      const offers=s.rows.flatMap(q=>q.depth[r.price>q.strike?'yes':'no'].map(([p,n])=>({ticker:q.ticker,price:p/1e6,size:n})));
+      return {offset:f.offset,lag:s.at-r.at,thresholds:s.rows.length,
+        lowest:offers.sort((a,b)=>a.price-b.price||a.ticker.localeCompare(b.ticker))[0]??null};
+    });
+  }
   if(Date.now()<=r.at+6000){row.status='Observation window open';continue;}
   row.sourceAgreement=sources.length===2&&sources.every(s=>s.price===r.price);
   const books=batches.all(r.at,r.at,r.at+3000);
@@ -67,6 +83,7 @@ for(const lot of calendar.targets) {
   row.illustration={qty,fee,netIfCorrect:+(qty*(1-top.price)-fee).toFixed(4),netIfWrong:+(-qty*top.price-fee).toFixed(4)};
 }
 db.close();
+depth?.close();
 const report={checked:new Date().toISOString(),rows:output};
 const file=new URL('auction-postrelease-replay.json',runtime);
 const tmp=new URL('auction-postrelease-replay.'+process.pid+'.tmp',runtime);
