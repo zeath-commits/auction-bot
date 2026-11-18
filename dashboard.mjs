@@ -539,6 +539,7 @@ const server = http.createServer((req, res) => {
           auctionExitTrials: exitTrialResults(db),
           auctionExits,
           weatherStatus,
+          weatherForecasts: db.prepare('SELECT event,ticker,high,at,checks,result FROM weather_forecasts ORDER BY at DESC LIMIT 100').all(),
           sothebysCoverage: db
             .prepare(
               'SELECT COUNT(*) AS scans,COALESCE(SUM(fresh),0) AS fresh FROM sothebys_bid_scans'

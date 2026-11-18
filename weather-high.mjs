@@ -35,6 +35,13 @@ export const stations = [
     zone: 'America/Chicago'
   }
 ];
+export const westernStations = [
+  {cli:'DEN',series:'KXHIGHDEN',city:'Denver',heading:'DENVER CO',office:'KBOU',zone:'America/Denver'},
+  {cli:'LAX',series:'KXHIGHLAX',city:'Los Angeles',heading:'LOS ANGELES INTL AIRPORT CA',office:'KLOX',zone:'America/Los_Angeles'},
+  {cli:'SEA',series:'KXHIGHTSEA',city:'Seattle',heading:'SEATTLE-TACOMA WA AIRPORT',office:'KSEW',zone:'America/Los_Angeles'},
+  {cli:'SFO',series:'KXHIGHTSFO',city:'San Francisco',heading:'SAN FRANCISCO AIRPORT',office:'KMTR',zone:'America/Los_Angeles'}
+];
+const standardOffsets = {'America/New_York':5,'America/Chicago':6,'America/Denver':7,'America/Los_Angeles':8};
 export async function publicJson(url) {
   for (let attempt = 0; ; attempt++) {
     const r = await fetch(url, {
@@ -84,8 +91,7 @@ export function localParts(station, t) {
   return Object.fromEntries(parts.map((p) => [p.type, p.value]));
 }
 export function stationDay(station, at) {
-  // These four climate stations use a local standard-time observing day, including in summer.
-  const offsetHours = station.cli === 'MDW' ? 6 : 5;
+  const offsetHours = standardOffsets[station.zone];
   const date = new Date(at - offsetHours * 3600000);
   const dayStart = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), offsetHours);
   const month = date.toLocaleString('en-US', {timeZone: 'UTC', month: 'short'});
@@ -129,7 +135,7 @@ export function parseReport(station, p) {
     Number(d.year),
     monthIndex,
     Number(d.day),
-    station.cli === 'MDW' ? 6 : 5
+    standardOffsets[station.zone]
   );
   const peak = s
     .slice(temp.index + temp[0].length)
@@ -167,23 +173,22 @@ export async function eventMarkets(station, report) {
     throw Error('Weather event source mismatch');
   return event.markets;
 }
-export function crossed(station, r, m) {
+function temperatureBracket(station, r, m) {
   if (
     m.event_ticker !== r.event ||
     m.market_type !== 'binary' ||
     m.notional_value_dollars !== '1.0000'
   )
     return null;
-  const lower = r.high - 1,
-    f = m.floor_strike,
+  const f = m.floor_strike,
     c = m.cap_strike;
-  let words, side;
+  let words, low=-Infinity, high=Infinity;
   if (m.strike_type === 'less' && Number.isInteger(c)) {
     words = 'less than ' + c;
-    side = lower >= c ? 'no' : null;
+    high=c-1;
   } else if (m.strike_type === 'greater' && Number.isInteger(f)) {
     words = 'greater than ' + f;
-    side = lower > f ? 'yes' : null;
+    low=f+1;
   } else if (
     m.strike_type === 'between' &&
     Number.isInteger(c) &&
@@ -191,7 +196,8 @@ export function crossed(station, r, m) {
     f <= c
   ) {
     words = 'between ' + f + '-' + c;
-    side = lower > c ? 'no' : null;
+    low=f;
+    high=c;
   } else return null;
   const rule =
     'If the maximum temperature recorded at ' +
@@ -203,7 +209,23 @@ export function crossed(station, r, m) {
     ', is ' +
     words +
     '° fahrenheit according to The Weather Company, then the market resolves to Yes.';
-  return m.rules_primary === rule ? side : null;
+  return m.rules_primary === rule ? {low,high} : null;
+}
+
+export function crossed(station, r, m) {
+  const bounds=temperatureBracket(station,r,m);
+  if (!bounds) return null;
+  const lower=r.high-1;
+  if (lower>bounds.high) return 'no';
+  return bounds.high===Infinity && lower>=bounds.low ? 'yes' : null;
+}
+
+export function afternoonForecast(station, r, markets) {
+  const hits=markets.filter(m=>{
+    const bounds=temperatureBracket(station,r,m);
+    return bounds && r.high>=bounds.low && r.high<=bounds.high;
+  });
+  return hits.length===1 ? hits[0] : null;
 }
 
 export function officialPayout(m, side) {

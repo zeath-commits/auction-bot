@@ -10,6 +10,7 @@ export const strategies = {
   cs2_reference: 'CS2 · Kalshi offer below Polymarket US bid',
   weather_three: 'Weather · 3 p.m. station readings',
   weather_high: 'Weather · afternoon high already crossed',
+  weather_bracket: 'Weather · afternoon high predicts final range',
   nba_five: 'NBA · five-point lead with 35–50 seconds left',
   nba_best_route: 'NBA · five-point leader, better of two offers',
   sothebys_sold: 'Sotheby’s · published sale price and available quantity',
@@ -60,6 +61,8 @@ export function openLedger(directory) {
       bid INTEGER,estimated REAL,strike REAL,result TEXT);
     CREATE TABLE IF NOT EXISTS auction_exit_trials(id TEXT PRIMARY KEY,strategy TEXT,registered INTEGER,
       holdings TEXT,soldAt INTEGER,proceeds REAL,evidence TEXT);
+    CREATE TABLE IF NOT EXISTS weather_forecasts(event TEXT PRIMARY KEY,ticker TEXT,report TEXT,high INTEGER,
+      at INTEGER,closeAt INTEGER,checks INTEGER DEFAULT 0,result TEXT,proof TEXT);
   `);
   return db;
 }
@@ -233,10 +236,11 @@ export async function settle(db, io) {
     AND (strategy NOT IN ('btc60','btc_band60','btc10','btc_chart10','btc999','btcDepth','btc_underdog','cross_us_btc','cross_us_middle') OR closeAt<=?)
     UNION SELECT ticker FROM btc_chart_windows WHERE side IS NOT NULL AND result IS NULL AND closeAt<=?
     UNION SELECT ticker FROM auction_premium_signals WHERE result IS NULL
+    UNION SELECT ticker FROM weather_forecasts WHERE result IS NULL AND closeAt<=?
     ) pending LEFT JOIN results r USING(ticker) WHERE COALESCE(r.checked,0)<?
     ORDER BY COALESCE(r.checked,0) LIMIT 10`
     )
-    .all(Date.now(), Date.now(), Date.now() - 60000);
+    .all(Date.now(), Date.now(), Date.now(), Date.now() - 60000);
   for (const { ticker } of pending) {
     const { market: m } = (
       await io.get('/markets/' + encodeURIComponent(ticker))
@@ -245,6 +249,7 @@ export async function settle(db, io) {
     if (m.status === 'finalized' && ['yes','no','scalar'].includes(m.result)) {
       db.prepare('UPDATE btc_chart_windows SET result=? WHERE ticker=? AND result IS NULL').run(m.result, ticker);
       db.prepare('UPDATE auction_premium_signals SET result=? WHERE ticker=? AND result IS NULL').run(m.result,ticker);
+      db.prepare('UPDATE weather_forecasts SET result=? WHERE ticker=? AND result IS NULL').run(m.result,ticker);
     }
     if (m.status === 'finalized' && ['yes', 'no'].includes(m.result)) {
       db.prepare(

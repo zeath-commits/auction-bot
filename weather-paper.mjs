@@ -6,11 +6,13 @@ import {
 import fs from 'node:fs/promises';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { Transport } from './transport.mjs';
-import { askLevels, checkMarketActive } from './core.mjs';
+import { askLevels, checkMarketActive, quoteBook, MICRO } from './core.mjs';
 import { addPaper } from './strategy-monitor.mjs';
 import { threeOClock, threeSignals } from './weather-three.mjs';
 import {
   stations,
+  westernStations,
+  afternoonForecast,
   listings,
   product,
   parseReport,
@@ -19,6 +21,7 @@ import {
   localParts,
   officialPayout
 } from './weather-high.mjs';
+const monitoredStations = [...stations,...westernStations];
 
 function latest(products) {
   return [...products].sort(
@@ -49,7 +52,20 @@ async function snapshot(io, eligible) {
   const books = new Map(read.body.orderbooks.map((b) => [b.ticker, b]));
   if (eligible.some(({ m }) => !books.has(m.ticker)))
     throw Error('Missing weather book');
-  return { books, at: read.receivedAt };
+  return { books, at: read.receivedAt, asOf:Date.parse(read.httpDate)-1000*Number(read.cacheAge??0) };
+}
+
+export function forecastOffer(a,b,ticker) {
+  if (!(b.asOf>a.asOf) || ![a,b].every(r=>r.at-r.asOf>=-500 && r.at-r.asOf<=3500)) return null;
+  const quotes=[a,b].map(r=>quoteBook(r.books.get(ticker),'YES',5,95));
+  if (quotes.some(q=>!q) || quotes[1].levels.at(-1).price>quotes[0].levels.at(-1).price) return null;
+  const costs=quotes.map(q=>q.levels.reduce((n,l)=>n+l.price*l.quantity/(MICRO*MICRO),0));
+  if (costs[1]>costs[0]+1e-9) return null;
+  const fees=quotes[1].levels.reduce((n,l)=>{
+    const p=l.price/MICRO;
+    return n+Math.ceil(7*l.quantity/MICRO*p*(1-p)-1e-9)/100;
+  },0);
+  return {quantity:5,price:costs[1]/5,fees,depth:5};
 }
 async function weatherExchange(io, station) {
   const [series, exchange] = await Promise.all([
@@ -232,17 +248,23 @@ export async function observeWeather({ db, config, status, stop }) {
     const eligible = markets
       .map((m) => ({ m, side: crossed(station, r, m) }))
       .filter(({ m, side }) => side && checkMarketActive(m, Date.now()));
-    if (!eligible.length)
+    const forecast=afternoonForecast(station,r,markets);
+    const activeForecast=forecast && checkMarketActive(forecast,Date.now()) ? forecast : null;
+    if (activeForecast)
+      db.prepare('INSERT OR IGNORE INTO weather_forecasts(event,ticker,report,high,at,closeAt) VALUES(?,?,?,?,?,?)')
+        .run(r.event,forecast.ticker,r.id,r.high,Date.now(),Date.parse(forecast.close_time));
+    const books=activeForecast && !eligible.some(x=>x.m.ticker===forecast.ticker) ? [...eligible,{m:forecast,side:'yes'}] : eligible;
+    if (!books.length)
       return { ...info, state: 'No open crossed thresholds', thresholds: 0 };
     if (!await weatherExchange(io, station))
       return { ...info, state: 'Exchange unavailable' };
     // Freeze what this worker actually had in hand before the first book request.
     const proof = cached.get(station.cli).proof;
-    const a = await snapshot(io, eligible);
+    const a = await snapshot(io, books);
     await sleep(1000);
     const [again, b] = await Promise.all([
       listings(station),
-      snapshot(io, eligible)
+      snapshot(io, books)
     ]);
     if (
       stop() ||
@@ -254,6 +276,16 @@ export async function observeWeather({ db, config, status, stop }) {
     let offers = 0;
     db.exec('BEGIN IMMEDIATE');
     try {
+      if (activeForecast && checkMarketActive(forecast,Date.now())) {
+        const offer=forecastOffer(a,b,forecast.ticker);
+        db.prepare('UPDATE weather_forecasts SET checks=checks+1 WHERE event=?').run(r.event);
+        if (offer) {
+          addPaper(db,{...offer,id:'weather_bracket/'+forecast.ticker,strategy:'weather_bracket',
+            ticker:forecast.ticker,side:'yes',at:new Date(b.at).toISOString(),closeAt:Date.parse(forecast.close_time)});
+          const proof=[a,b].map(s=>({at:s.at,asOf:s.asOf,book:s.books.get(forecast.ticker)}));
+          db.prepare('UPDATE weather_forecasts SET proof=COALESCE(proof,?) WHERE event=?').run(JSON.stringify(proof),r.event);
+        }
+      }
       for (const { m, side } of eligible) {
         if (!checkMarketActive(m, Date.now())) continue;
         const offer = repeatedWeatherAsk(
@@ -340,7 +372,10 @@ export async function observeWeather({ db, config, status, stop }) {
     status.historical = updates;
   }
   while (!stop()) {
-    const checks = await Promise.allSettled(stations.map(check));
+    const checks = await Promise.allSettled(monitoredStations.map(async (station,i)=>{
+      if (i>=stations.length) await sleep((i-stations.length+1)*1500);
+      return check(station);
+    }));
     if (Date.now() >= nextReview) {
       try {
         await reviewHistorical();
@@ -358,7 +393,7 @@ export async function observeWeather({ db, config, status, stop }) {
       .all();
     status.cities = Object.fromEntries(
       checks.map((x, i) => [
-        stations[i].city,
+        monitoredStations[i].city,
         x.status === 'fulfilled'
           ? x.value
           : { state: 'Data error', error: x.reason.message }

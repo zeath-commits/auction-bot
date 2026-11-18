@@ -267,6 +267,12 @@ function paper(d) {
       d.auctionStatus.offers +
       '.'
   );
+  if (selected === 'weather_bracket') {
+    note('The first afternoon NWS high predicts the final Kalshi range. Five paper YES shares require two fresh offers through 95¢ within an hour of publication. Later warming or a correction can change the winner.');
+    table('Afternoon forecasts',['Contract','Reported high (°F)','First seen','Two-read checks','Settlement'],
+      (d.weatherForecasts ?? []).map(r=>[r.ticker,r.high,time(r.at),r.checks,r.result?.toUpperCase() ?? 'Pending']),
+      'Waiting for an afternoon report and open contract.');
+  }
   if (selected === 'weather_three') {
     const scans = d.weatherStatus?.threeTotals;
     if (scans) metrics([['Station-days checked', scans.stationDays],['Completed scans',scans.scans],['Scans with offers',scans.scansWithOffers]]);

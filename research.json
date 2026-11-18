@@ -36,6 +36,11 @@
   ],
   "studies": [
     {
+      "market": "Daily high temperature ranges",
+      "test": "November 11–17, 2026. Used the first uncorrected same-day afternoon NWS report from eight cities to pick its corresponding Kalshi range. Checked whole-share YES purchases starting one minute after release and ending within an hour or at the next report.",
+      "finding": "The recovered sample contained 51 station-days. The forecast won 49 of 50 finalized markets. Only three markets had a public YES purchase of five or more at 95¢ or less. At five contracts each, San Francisco at 92¢ modeled a 37¢ gain and Seattle at 77¢ a $3.92 loss after estimated fees. New York at 94¢ remained unsettled. Seattle’s preliminary 59°F became an official 61°F. This sample shows a loss of $3.55 on the two finalized purchases even with the high overall forecast accuracy. The forward paper test requires independently refreshed order books."
+    },
+    {
       "market": "Sotheby’s irrevocable bids",
       "test": "Matched the lot-page symbols retrieved on November 18 to 14 archived November 16 sold prices. Checked the five contract-linked November 18 lots before the sale.",
       "finding": "Eleven of the 14 earlier lots display an irrevocable-bid symbol. For six of those eleven the standard premium calculation exceeded the published price. All three unmarked lots matched. Sotheby’s says a fee for a successful irrevocable bidder can reduce the reported price. Bidder identity and individual fee amounts were unavailable. All five upcoming lots displayed the symbol before the sale. The dashboard records the disclosure available at each forecast and the size of the deduction that would erase the forecast’s margin."
