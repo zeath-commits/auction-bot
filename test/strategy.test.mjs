@@ -110,20 +110,20 @@ test('BTC strategies require repeatable size and settle each paper variant only 
     enter(book(close - 12000), book(close - 10900));
     assert.deepEqual(
       rows().map((r) => r.strategy),
-      ['btc60']
+      ['btc60','btc_band60']
     );
     enter(book(close - 9000), book(close - 7800));
     enter(book(close - 5000), book(close - 3800));
     assert.deepEqual(
       rows().map((r) => r.strategy),
-      ['btc10', 'btc60']
+      ['btc10', 'btc60', 'btc_band60']
     );
     assert.equal(rows()[0].fees, 0.0014);
     enter(
       book(close - 3000, '0.0200', '1000'),
       book(close - 1800, '0.0200', '999.99')
     );
-    assert.equal(rows().length, 2);
+    assert.equal(rows().length, 3);
     enter(
       book(close - 2800, '0.0200', '1200'),
       book(close - 1600, '0.0200', '1000')
@@ -139,7 +139,7 @@ test('BTC strategies require repeatable size and settle each paper variant only 
     await settle(db, io);
     assert.deepEqual(
       rows().map((r) => r.payout),
-      [0, 0, 0]
+      [0, 0, 0, 0]
     );
     const cheap = (ms, bid, size = '1.00') => {
       const snapshot = book(ms, '0.0500');
@@ -150,7 +150,7 @@ test('BTC strategies require repeatable size and settle each paper variant only 
     const recordCheap = (a,b) => recordBtc(db, candidate, a, b, 1);
     recordCheap(cheap(close-6000,'0.9900'), cheap(close-4500,'0.9800'));
     recordCheap(cheap(close-6000,'0.9800'), cheap(close-4500,'0.9800','0.99'));
-    assert.equal(rows().length, 3);
+    assert.equal(rows().length, 4);
     const confirm = () => recordCheap(cheap(close-6000,'0.9800'), cheap(close-4500,'0.9900'));
     confirm();
     confirm();
@@ -160,6 +160,10 @@ test('BTC strategies require repeatable size and settle each paper variant only 
       body: { market: { ...candidate, status: 'finalized', result: 'no' } }
     }) });
     assert.equal(cheapRows()[0].payout, 1);
+    const subcent = {...market, ticker:'KXBTC15M-SUBCENT'};
+    recordBtc(db, subcent, book(close-12000,'0.0140'), book(close-10900,'0.0150'), 1);
+    assert.deepEqual(rows().filter(r => r.ticker === subcent.ticker).map(r => [r.strategy,r.price,r.fees]),
+      [['btc_band60',0.985,0.0011]]);
   } finally {
     db.close();
     fs.rmSync(dir, { recursive: true, force: true });

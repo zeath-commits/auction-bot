@@ -22,6 +22,7 @@ export const strategies = {
   auction_pair: 'Auction · paired thresholds',
   crypto_pair: 'Crypto · paired thresholds',
   btc60: 'Bitcoin · final minute',
+  btc_band60: 'Bitcoin · final minute, all prices from 98¢ to 99¢',
   btc_underdog: 'Bitcoin · 1–2¢ offer in the final minute',
   btc10: 'Bitcoin · final 10 seconds',
   btc_chart10: 'Bitcoin · final 10 seconds with chart confirmation',
@@ -49,7 +50,7 @@ export function openLedger(directory) {
   return db;
 }
 
-function bestQuoteAtPrices(book, prices) {
+function bestMatchingQuote(book, matchesPrice) {
   const fp = book?.orderbook_fp;
   if (!Array.isArray(fp?.yes_dollars) || !Array.isArray(fp?.no_dollars))
     return null;
@@ -66,14 +67,14 @@ function bestQuoteAtPrices(book, prices) {
     const size = valid
       .filter(([p]) => p === bid)
       .reduce((sum, [, n]) => sum + n, 0);
-    if (prices.includes(price) && size >= 1)
+    if (matchesPrice(price) && size >= 1)
       choices.push({ side, price, size });
   }
   return choices.length === 1 ? choices[0] : null;
 }
 
 export function bestFavorite(book) {
-  return bestQuoteAtPrices(book, [0.98, 0.99]);
+  return bestMatchingQuote(book, p => p === 0.98 || p === 0.99);
 }
 
 export async function captureChart(db, market, read = referencePrices, now = Date.now) {
@@ -140,6 +141,9 @@ export function recordBtc(db, market, first, second, multiplier) {
   const favoriteA = bestFavorite(first.body);
   const favoriteB = bestFavorite(second.body);
   recordOffer('btc60', 60, 1, favoriteA, favoriteB);
+  const inBand = p => p >= 0.98 && p <= 0.99;
+  recordOffer('btc_band60', 60, 1,
+    bestMatchingQuote(first.body, inBand), bestMatchingQuote(second.body, inBand));
   recordOffer('btc10', 10, 1, favoriteA, favoriteB);
   if (favoriteA && first.requestedAt >= close - 10000) {
     const chart = db.prepare('SELECT side FROM btc_chart_windows WHERE ticker=? AND closeAt=? AND strike=? AND receivedAt<=? AND ABS(gapBps)>=5')
@@ -148,9 +152,9 @@ export function recordBtc(db, market, first, second, multiplier) {
       recordOffer('btc_chart10', 10, 1, favoriteA, favoriteB);
   }
   recordOffer('btcDepth', 60, 1000, favoriteA, favoriteB);
-  const cheapPrices = [0.01, 0.02];
+  const cheap = p => p === 0.01 || p === 0.02;
   recordOffer('btc_underdog', 60, 1,
-    bestQuoteAtPrices(first.body, cheapPrices), bestQuoteAtPrices(second.body, cheapPrices));
+    bestMatchingQuote(first.body, cheap), bestMatchingQuote(second.body, cheap));
 }
 
 export function addPaper(db, r) {
@@ -189,7 +193,7 @@ export async function settle(db, io) {
     .prepare(
       `SELECT pending.ticker FROM (
     SELECT ticker FROM paper WHERE payout IS NULL AND ticker NOT LIKE 'cpc-btc-updown-5m-%'
-    AND (strategy NOT IN ('btc60','btc10','btc_chart10','btcDepth','btc_underdog','cross_us_btc','cross_us_middle') OR closeAt<=?)
+    AND (strategy NOT IN ('btc60','btc_band60','btc10','btc_chart10','btcDepth','btc_underdog','cross_us_btc','cross_us_middle') OR closeAt<=?)
     UNION SELECT ticker FROM btc_chart_windows WHERE side IS NOT NULL AND result IS NULL AND closeAt<=?
     ) pending LEFT JOIN results r USING(ticker) WHERE COALESCE(r.checked,0)<?
     ORDER BY COALESCE(r.checked,0) LIMIT 10`

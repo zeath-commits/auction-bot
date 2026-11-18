@@ -12,7 +12,12 @@ export function usSlug(start) {
 }
 
 export async function usPublic(route) {
-  const r = await fetch(gateway + route, {
+  // A five-minute market's canonical book URL can retain a pre-opening 404
+  // into trading. Share a cache key for each UTC second across readers.
+  const url = new URL(gateway + route);
+  if (/^\/v1\/markets\/cpc-btc-updown-5m-[\d-]+-\d{4}z\/book$/.test(route))
+    url.searchParams.set('asof', String(Math.floor(Date.now() / 1000)));
+  const r = await fetch(url, {
     signal: AbortSignal.timeout(8000),
     cache: 'no-store',
     redirect: 'error',

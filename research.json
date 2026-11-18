@@ -36,6 +36,11 @@
   ],
   "studies": [
     {
+      "market": "Kalshi Bitcoin closing prices",
+      "test": "Public buyer executions in 14 windows the paper monitor sampled",
+      "finding": "In the final minute, 538 favorite-side buys of at least one contract printed at exactly 98¢ or 99¢ across four markets. All four first buys won, worth 7.44¢ combined at one share per market after modeled fees. The live monitor recorded zero qualifying entries. In the final ten seconds none of the 14 markets had a qualifying buy. One had 13 buys above 99¢. Trade prints cannot establish that the same prices were available to the bot."
+    },
+    {
       "market": "Counter-Strike 2",
       "test": "November 18 pregame match-winner prices",
       "finding": "Two books implied a 58.38–63.04% chance for BORRACHEIROS after removing their margins. Two Kalshi reads showed 60¢, requiring 61.68% to break even at the modeled fee. Axorfy Gaming needed 73.42% at 72¢ against a 69.46–73.95% range. Neither cleared both books. Bookmaker update times were unavailable. No paper entry."
