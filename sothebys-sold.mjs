@@ -6,9 +6,11 @@ import {
 import { addPaper } from './strategy-monitor.mjs';
 import { checkFees, checkMarketActive } from './core.mjs';
 import { offerSide } from './watch-offers.mjs';
+import { initRestingStudy, observeRestingBid } from './auction-resting.mjs';
 
 const strategy = 'sothebys_sold';
 export function initSoldStudy(db) {
+  initRestingStudy(db);
   db.exec(
     'CREATE TABLE IF NOT EXISTS sothebys_sold_books(ticker TEXT, at INTEGER, detail TEXT NOT NULL, PRIMARY KEY(ticker,at)); CREATE TABLE IF NOT EXISTS sothebys_sold_entries(id TEXT PRIMARY KEY, amount INTEGER, detail TEXT NOT NULL)'
   );
@@ -48,6 +50,7 @@ export function recordSoldBooks(
         q.at - p.at > maxGapMs
       )
         continue;
+      if (comparisonCap === null) observeRestingBid(db,p,q);
       const prior = db
         .prepare(
           'SELECT p.quantity,p.side,p.payout,e.amount FROM paper p LEFT JOIN sothebys_sold_entries e USING(id) WHERE p.strategy=? AND p.ticker=?'

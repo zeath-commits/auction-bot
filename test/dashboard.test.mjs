@@ -30,6 +30,7 @@ test(
         'btc-maker-study.mjs',
         'sothebys-bids.mjs',
         'sothebys-sold.mjs',
+        'auction-resting.mjs',
         'sold-limits.mjs',
         'sale-timing.mjs',
         'auction-quote-timing.mjs',

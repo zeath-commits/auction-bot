@@ -23,6 +23,7 @@ import { observeRangeBids } from './art-range-bids.mjs';
 import { observeCS2 } from './esports-paper.mjs';
 import { observeUS } from './us-bitcoin-paper.mjs';
 import { observeSothebysBids } from './sothebys-bids.mjs';
+import { initRestingStudy, reviewRestingBid } from './auction-resting.mjs';
 import {
   addPaper,
   observe,
@@ -33,6 +34,7 @@ import {
 
 const runtime = path.join(ROOT, 'runtime');
 const db = openLedger(runtime);
+initRestingStudy(db);
 const soldLimits = openSoldLimits(runtime);
 const config = JSON.parse(
   fs.readFileSync(
@@ -523,6 +525,7 @@ const server = http.createServer((req, res) => {
           usBitcoinStatus,
           sothebysStatus,
           soldLimits: soldLimits.summary(),
+          auctionResting:db.prepare('SELECT ticker,side,arrival,untilAt,ahead,atLimit,belowLimit FROM auction_resting_trials ORDER BY arrival,ticker').all(),
           nbaStatus,
           recordPairStatus,
           recordPairDelays: db.prepare(`SELECT seconds,COUNT(*) AS batches,COUNT(available) AS checked,
@@ -724,6 +727,16 @@ server.listen(port, host, () => {
         });
   };
   reconcileLimits();
+  let reviewingResting=false;
+  const reviewResting=async()=>{
+    if (reviewingResting || stopping || exists(path.join(ROOT,'STOP'))) return;
+    reviewingResting=true;
+    try {await reviewRestingBid(db,soldIO,Date.now());delete sothebysStatus.restingError;}
+    catch(e){sothebysStatus.restingError=e.message;}
+    finally{reviewingResting=false;}
+  };
+  reviewResting();
+  setInterval(reviewResting,15000).unref();
   setInterval(reconcileLimits, 60000).unref();
   observe({
     db,

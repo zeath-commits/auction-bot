@@ -430,6 +430,11 @@ function paper(d) {
       table('Paper entries by result source',['Result source','Contracts','Entry cost with fees'],
         (d.soldPageEntries ?? []).map(r=>[r.source==='lot'?'Artwork page':'Auction catalog',r.shares,money(r.cost)]),
         'Waiting for a confirmed result and available contracts.');
+      table('Resting bids at 95¢ after publication',['Threshold','Side','Shares queued at 95¢ or better','Subsequent volume at 95¢','Subsequent volume below 95¢'],
+        (d.auctionResting??[]).map(r=>[r.ticker,r.side,r.ahead,r.atLimit??'Pending',r.belowLimit??'Pending']),
+        'Waiting for a confirmed sold price and two books with no offer through 95¢.');
+      note('One observation per threshold. Counts opposing taker volume for up to one hour after a one-second arrival allowance. No fills are credited.');
+      if(d.sothebysStatus?.restingError)note(d.sothebysStatus.restingError);
     }
     if (
       ['sothebys_live_bid', 'sothebys_bid_high', 'sothebys_bid_premium', 'sothebys_sold'].includes(

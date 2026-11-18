@@ -36,6 +36,11 @@
   ],
   "studies": [
     {
+      "market": "Resting auction bids after publication",
+      "test": "Across 224 settled thresholds on 29 sold artworks, counted opposing non-block taker executions of at least one share from 30 seconds after a recorded result until close.",
+      "finding": "Resting participants bought the winning side below 95¢ in 42 executions across ten thresholds on seven artworks, totaling 1,071.44 contracts. Four artworks still had such purchases after one hour. None of the qualifying executions was exactly 95¢. The prospective monitor checks whether a 95¢ bid could have rested, records the visible queue and measures subsequent seller volume for one hour. Public executions alone do not establish where a new bid would have filled."
+    },
+    {
       "market": "Auction purchases after publication",
       "test": "Checked all 224 settled thresholds on 29 sold artworks across four November 16–17 sales. Timed whole-share, non-block buyer executions through 95¢ from the first recorded auction-house price.",
       "finding": "After an hour, 12 artworks across all four sales still had a qualifying purchase. After six hours, three artworks did. Warhol’s Flowers sold for $18,217,500. A buyer took three Above $17M YES at 61¢ about four hours and 49 minutes after the recorded result. Taking the first eligible purchase per artwork after one hour, capped at five shares, modeled 34 shares, $31.12 in cost and $2.88 net after fees. This assumes getting the actual buyers’ prices and sizes. Operating costs are excluded."
