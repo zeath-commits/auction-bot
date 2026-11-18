@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { Transport } from './transport.mjs';
+import { chartProjection, referencePrices } from './bitcoin-reference.mjs';
 
 export const strategies = {
   weather_high: 'Weather · afternoon high already crossed',
@@ -20,6 +21,7 @@ export const strategies = {
   btc60: 'Bitcoin · final minute',
   btc_underdog: 'Bitcoin · 1–2¢ offer in the final minute',
   btc10: 'Bitcoin · final 10 seconds',
+  btc_chart10: 'Bitcoin · final 10 seconds with chart confirmation',
   btcDepth: 'Bitcoin · 1,000 contracts displayed',
   published_sale: 'Published auction price',
   unsold: 'Explicitly unsold lot',
@@ -37,6 +39,9 @@ export function openLedger(directory) {
     CREATE TABLE IF NOT EXISTS windows(ticker TEXT PRIMARY KEY, closeAt INTEGER, checks INTEGER DEFAULT 0,
       firstCheck INTEGER, lastCheck INTEGER);
     CREATE TABLE IF NOT EXISTS results(ticker TEXT PRIMARY KEY, checked INTEGER);
+    CREATE TABLE IF NOT EXISTS btc_chart_windows(ticker TEXT PRIMARY KEY, closeAt INTEGER NOT NULL,
+      strike REAL, requestedAt INTEGER, receivedAt INTEGER, projected REAL, gapBps REAL, side TEXT,
+      error TEXT, result TEXT);
   `);
   return db;
 }
@@ -66,6 +71,29 @@ function bestQuoteAtPrices(book, prices) {
 
 export function bestFavorite(book) {
   return bestQuoteAtPrices(book, [0.98, 0.99]);
+}
+
+export async function captureChart(db, market, read = referencePrices, now = Date.now) {
+  const close = Date.parse(market.close_time);
+  const begin = now();
+  if (!(begin >= close - 14000 && begin < close - 1000)) return;
+  const started = db.prepare('UPDATE btc_chart_windows SET requestedAt=? WHERE ticker=? AND requestedAt IS NULL')
+    .run(begin, market.ticker);
+  if (!started.changes) return;
+  try {
+    if (market.strike_type !== 'greater_or_equal' || !market.rules_primary?.includes('BRTI'))
+      throw Error('Unrecognized Bitcoin settlement terms');
+    const ticks = await read(close / 1000 - 60, close / 1000 - 15);
+    const forecast = chartProjection(ticks, close / 1000, market.floor_strike);
+    if (!forecast) throw Error('Missing chart observations or strike');
+    const received = now();
+    if (received >= close) throw Error('Chart arrived after close');
+    db.prepare('UPDATE btc_chart_windows SET receivedAt=?,projected=?,gapBps=?,side=? WHERE ticker=?')
+      .run(received, forecast.mean, forecast.gapBps, forecast.side, market.ticker);
+  } catch (e) {
+    db.prepare('UPDATE btc_chart_windows SET receivedAt=?,error=? WHERE ticker=?')
+      .run(now(), e.message, market.ticker);
+  }
 }
 
 export function recordBtc(db, market, first, second, multiplier) {
@@ -110,6 +138,12 @@ export function recordBtc(db, market, first, second, multiplier) {
   const favoriteB = bestFavorite(second.body);
   recordOffer('btc60', 60, 1, favoriteA, favoriteB);
   recordOffer('btc10', 10, 1, favoriteA, favoriteB);
+  if (favoriteA && first.requestedAt >= close - 10000) {
+    const chart = db.prepare('SELECT side FROM btc_chart_windows WHERE ticker=? AND closeAt=? AND strike=? AND receivedAt<=? AND ABS(gapBps)>=5')
+      .get(market.ticker, close, market.floor_strike ?? null, first.requestedAt);
+    if (chart?.side === favoriteA.side)
+      recordOffer('btc_chart10', 10, 1, favoriteA, favoriteB);
+  }
   recordOffer('btcDepth', 60, 1000, favoriteA, favoriteB);
   const cheapPrices = [0.01, 0.02];
   recordOffer('btc_underdog', 60, 1,
@@ -150,16 +184,21 @@ export function paperRows(db) {
 export async function settle(db, io) {
   const pending = db
     .prepare(
-      `SELECT DISTINCT p.ticker FROM paper p LEFT JOIN results r USING(ticker)
-    WHERE payout IS NULL AND p.ticker NOT LIKE 'cpc-btc-updown-5m-%' AND (p.strategy NOT IN ('btc60','btc10','btcDepth','btc_underdog','cross_us_btc','cross_us_middle') OR closeAt<=?) AND COALESCE(r.checked,0)<?
+      `SELECT pending.ticker FROM (
+    SELECT ticker FROM paper WHERE payout IS NULL AND ticker NOT LIKE 'cpc-btc-updown-5m-%'
+    AND (strategy NOT IN ('btc60','btc10','btc_chart10','btcDepth','btc_underdog','cross_us_btc','cross_us_middle') OR closeAt<=?)
+    UNION SELECT ticker FROM btc_chart_windows WHERE side IS NOT NULL AND result IS NULL AND closeAt<=?
+    ) pending LEFT JOIN results r USING(ticker) WHERE COALESCE(r.checked,0)<?
     ORDER BY COALESCE(r.checked,0) LIMIT 10`
     )
-    .all(Date.now(), Date.now() - 60000);
+    .all(Date.now(), Date.now(), Date.now() - 60000);
   for (const { ticker } of pending) {
     const { market: m } = (
       await io.get('/markets/' + encodeURIComponent(ticker))
     ).body;
     if (m.ticker !== ticker) throw Error('Unexpected settlement ticker');
+    if (m.status === 'finalized' && ['yes','no','scalar'].includes(m.result))
+      db.prepare('UPDATE btc_chart_windows SET result=? WHERE ticker=? AND result IS NULL').run(m.result, ticker);
     if (m.status === 'finalized' && ['yes', 'no'].includes(m.result)) {
       db.prepare(
         'UPDATE paper SET payout=CASE WHEN side=? THEN quantity ELSE 0 END,result=? WHERE ticker=? AND payout IS NULL'
@@ -214,6 +253,9 @@ export async function observe({ db, config, stop, status }) {
             (a, b) => Date.parse(a.close_time) - Date.parse(b.close_time)
           )[0];
         lastDiscovery = Date.now();
+        if (market)
+          db.prepare('INSERT OR IGNORE INTO btc_chart_windows(ticker,closeAt,strike) VALUES(?,?,?)')
+            .run(market.ticker, Date.parse(market.close_time), market.floor_strike ?? null);
       }
       if (!fee || now - lastFees >= 60000) {
         const { series } = (await io.get('/series/KXBTC15M')).body;
@@ -230,6 +272,7 @@ export async function observe({ db, config, stop, status }) {
       status.ticker = market?.ticker ?? null;
       status.close = market?.close_time ?? null;
       if (left > 0 && left <= 60000) {
+        if (left <= 14000) captureChart(db, market).catch(e => { status.chartError = e.message; });
         const route = '/markets/' + market.ticker + '/orderbook?depth=100';
         const first = await io.get(route);
         await sleep(1000);

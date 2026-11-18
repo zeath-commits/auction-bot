@@ -100,6 +100,12 @@ function paper(d) {
   ]);
   if (selected === 'btc_underdog')
     note('One paper contract per market at the first 1¢ or 2¢ ask in the final minute that holds or improves on a second book check. Net includes modeled taker fees.');
+  if (selected === 'btc_chart10' && d.btcChartCoverage) {
+    const c = d.btcChartCoverage;
+    note('The projection uses 46 one-second chart prices and holds the last price flat for the remaining 14 seconds. A paper entry requires a projected margin of at least 0.05% on the offered side and two subsequent order-book checks at 98¢ or 99¢.');
+    table('Completed Bitcoin windows', ['Discovered', 'Chart requested', 'Ready with 10s left', 'Ready before close', 'Margin reached', 'Correct direction / settled'],
+      [[c.closed, c.attempted, c.atTen, c.beforeClose, c.wide, c.correct + ' / ' + c.settled]]);
+  }
   if (
     ['all', 'sale_depth', 'late_auction', 'sothebys_sold'].includes(selected)
   ) {

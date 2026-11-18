@@ -107,3 +107,19 @@ export function averageAt(prices, end) {
   }
   return Math.round(sum / 60) / 100;
 }
+
+// Fixed before retrieving the historical chart slices for these candidates.
+// At ten seconds to close, the last included one-second candle is four
+// seconds old. Fill the remaining fourteen seconds with its closing price.
+export function chartProjection(prices, close, strike) {
+  if (!Number.isSafeInteger(close) || !(strike > 0) || !Number.isFinite(strike)) return null;
+  let cents = 0, last;
+  for (let t = close - 60; t <= close - 15; t++) {
+    last = prices.get(t);
+    if (!(last > 0) || !Number.isFinite(last)) return null;
+    cents += Math.round(last * 100);
+  }
+  const mean = (cents + 14 * Math.round(last * 100)) / 6000;
+  const gapBps = 10000 * (mean - strike) / strike;
+  return { mean, gapBps, side: mean >= strike ? 'yes' : 'no' };
+}

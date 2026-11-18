@@ -546,6 +546,12 @@ const server = http.createServer((req, res) => {
           replay: replay(),
           cheapTakerReplay: replay(true).map(({day, windows, prints, wins, net}) =>
             ({day, windows, prints, wins, net})),
+          btcChartCoverage: db.prepare(`SELECT COUNT(*) AS closed, COUNT(requestedAt) AS attempted,
+            COUNT(side) AS beforeClose, COUNT(CASE WHEN side IS NOT NULL AND receivedAt<=closeAt-10000 THEN 1 END) AS atTen,
+            COUNT(CASE WHEN abs(gapBps)>=5 THEN 1 END) AS wide,
+            COUNT(CASE WHEN side=result THEN 1 END) AS correct,
+            COUNT(CASE WHEN result IN ('yes','no') THEN 1 END) AS settled
+            FROM btc_chart_windows WHERE closeAt<=?`).get(Date.now()),
           tenSecondValidation:
             json(path.join(ROOT, 'research.json')).tenSecondValidation ?? [],
           research: [

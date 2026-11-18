@@ -5,11 +5,52 @@ import os from 'node:os';
 import path from 'node:path';
 import {
   addPaper,
+  captureChart,
   openLedger,
   paperRows,
   recordBtc,
   settle
 } from '../strategy-monitor.mjs';
+import { chartProjection } from '../bitcoin-reference.mjs';
+
+test('chart-confirmed BTC entries use candles and receipts available before the quote', async () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'bitcoin-chart-'));
+  const db = openLedger(directory);
+  try {
+    const end = Math.floor(Date.now() / 1000) - 100, close = end * 1000;
+    const market = {ticker:'KXBTC15M-CHART', status:'active', close_time:new Date(close).toISOString(),
+      floor_strike:100, strike_type:'greater_or_equal', rules_primary:'Average of BRTI'};
+    const ticks = new Map(Array.from({length:46}, (_,i) => [end - 60 + i, 101]));
+    ticks.set(end-14, 1);
+    assert.equal(chartProjection(ticks,end,100).mean,101);
+    const partial = new Map(ticks);
+    partial.delete(end-25);
+    assert.equal(chartProjection(partial,end,100),null);
+    db.prepare('INSERT INTO btc_chart_windows(ticker,closeAt,strike) VALUES(?,?,?)').run(market.ticker,close,100);
+    let reads = 0;
+    const times = [close-13000,close-8000];
+    await captureChart(db,market,async (start,stop) => {
+      reads++;
+      assert.deepEqual([start,stop],[end-60,end-15]);
+      return ticks;
+    },() => times.shift());
+    const snap = ms => ({requestedAt:ms,receivedAt:ms+30,
+      body:{orderbook_fp:{yes_dollars:[],no_dollars:[['0.0200','1.00']]}}});
+    const entered = () => paperRows(db).filter(r=>r.strategy==='btc_chart10');
+    recordBtc(db,market,snap(close-9000),snap(close-7800),1);
+    assert.equal(entered().length,0);
+    recordBtc(db,market,snap(close-7000),snap(close-5800),1);
+    assert.equal(entered().length,1);
+    await captureChart(db,market,async () => { reads++; },() => close-5000);
+    assert.equal(reads,1);
+    await settle(db, {get: async () => ({body:{market:{...market,status:'finalized',result:'yes'}}})});
+    assert.equal(db.prepare('SELECT result FROM btc_chart_windows').get().result,'yes');
+    assert.equal(entered()[0].payout,1);
+  } finally {
+    db.close();
+    fs.rmSync(directory,{recursive:true,force:true});
+  }
+});
 
 for (const strategy of ['auction_pair', 'cross_us_btc', 'cross_us_middle'])
   test(strategy + ' return waits for both settlements', () => {

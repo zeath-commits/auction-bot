@@ -37,6 +37,11 @@
   "studies": [
     {
       "market": "Kalshi Bitcoin 15-minute",
+      "test": "Price chart confirmation before final-ten-second buys, October 7–November 10",
+      "finding": "Across 3,324 windows, 68 first 98¢ or 99¢ closing trades were favorite-side taker buys of at least one contract. They won 66 times and lost $0.9491 after modeled fees. The projection from 46 one-second Polymarket US chart prices called 40 of 68 outcomes correctly. Requiring a 0.05% margin in the buyer’s direction selected two trades. Both won, for $0.0279. Historical chart retrieval cannot establish when those prices became available."
+    },
+    {
+      "market": "Kalshi Bitcoin 15-minute",
       "test": "First 98¢ or 99¢ print in the final minute, November 11–17",
       "finding": "At one contract per market, the 98¢ cohort won 171 of 176 and lost $1.73 after modeled fees. The 99¢ cohort won 51 of 52 and lost $0.52. Each cohort uses the first qualifying print on either side. The separate 1–2¢ experiment checks whether a buyer could obtain the low-priced side."
     },
