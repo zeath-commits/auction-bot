@@ -36,6 +36,11 @@
   ],
   "studies": [
     {
+      "market": "Bitcoin final-minute favorites observed in paper trading",
+      "test": "Reconciled the first two 98–99¢ entries recorded by the live paper monitor with Kalshi settlement and the complete non-block public trade record for each final minute. Counted same-side buyer executions of at least one contract.",
+      "finding": "On November 18, the 5:00 p.m. Eastern NO entry at 98.7¢ earned 1.21¢ after modeled fees. The 5:45 p.m. YES entry at 98.4¢, recorded with 46.63 seconds left, lost 98.52¢. Kalshi’s final average was $62,431.08 against $62,433.25 required. After that paper entry, buyers traded 4,330.22 YES contracts at exactly 98.4¢, including 25 contracts 0.52 seconds later. Neither market had a qualifying purchase of the recorded side at 98–99¢ in the final ten seconds. Two paper entries produced a combined loss of $0.9731. Public trading volume establishes that other buyers traded at the observed price."
+    },
+    {
       "market": "Repeat purchases across auction thresholds",
       "test": "On 29 sold artworks, started a 15-minute watch at the first whole-share buyer execution through 95¢ at least 30 seconds after the saved sale result. Required another 30 seconds before counting a later purchase. Counted at most one later purchase per artwork.",
       "finding": "Nineteen artworks had an initial purchase. Eight had a qualifying later purchase somewhere on the same artwork. Four had one on the initial threshold and seven had one on a different threshold, with three artworks in both groups. On Rothko, one Above $13M YES traded at 94¢ and 5 minutes 43 seconds later 42 Above $17M YES traded at 93¢. Taking the first later trade per artwork with a five-share cap modeled 32 shares costing $29.93 and paying $32, before operating costs. Actual traders’ executions establish prices and sizes, but another order may not have filled."
