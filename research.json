@@ -80,5 +80,46 @@
       "test": "Magnitude forecast versus quoted price",
       "finding": "One forward paper position. Sequence-specific probability calibration remains uncertain."
     }
+  ],
+  "tenSecondValidation": [
+    {
+      "dates": "Nov 4–10",
+      "windows": 664,
+      "entries": 29,
+      "wins": 29,
+      "net": 0.3999,
+      "takerBuys": 20,
+      "takerNet": 0.3069,
+      "losses": []
+    },
+    {
+      "dates": "Oct 7–Nov 3",
+      "windows": 2660,
+      "entries": 122,
+      "wins": 120,
+      "net": -0.419,
+      "takerBuys": 55,
+      "takerNet": -1.163,
+      "losses": [
+        {
+          "ticker": "KXBTC15M-26OCT160515-15",
+          "at": "2026-10-16T09:14:53.944494Z",
+          "side": "yes",
+          "price": 0.98,
+          "contracts": "57.00",
+          "taker": "yes",
+          "result": "no"
+        },
+        {
+          "ticker": "KXBTC15M-26OCT311015-15",
+          "at": "2026-10-31T14:14:50.185148Z",
+          "side": "yes",
+          "price": 0.99,
+          "contracts": "313.60",
+          "taker": "yes",
+          "result": "no"
+        }
+      ]
+    }
   ]
 }

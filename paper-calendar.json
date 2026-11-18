@@ -1,0 +1,559 @@
+{
+  "createdAt": "2026-11-18T17:33:22.561Z",
+  "auctions": [
+    {
+      "house": "phillips",
+      "sale": "NY011626",
+      "sourceUrl": "https://www.phillips.com/auction/NY011626",
+      "startAt": "2026-11-19T18:55:00Z",
+      "deadline": "2026-11-19T23:00:00Z",
+      "targets": [
+        {
+          "lot": "301",
+          "id": "242508",
+          "artist": "Joseph Yaeger",
+          "title": "As I die laying",
+          "url": "https://www.phillips.com/detail/joseph-yaeger/242508",
+          "event": "KXART-PHI301NOV26",
+          "settlementSources": [
+            {
+              "name": "Artnet",
+              "url": "https://www.artnet.com/"
+            }
+          ],
+          "markets": [
+            {
+              "ticker": "KXART-PHI301NOV26-30000",
+              "primary": "If the sale price including buyer’s premium of the As I die laying (2022; lot 301) by Joseph Yaeger on Artnet is above $30K during Phillips New York's November 2026 Modern & Contemporary Art: Afternoon Session (sale NY011626), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 30000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI301NOV26-40000",
+              "primary": "If the sale price including buyer’s premium of the As I die laying (2022; lot 301) by Joseph Yaeger on Artnet is above $40K during Phillips New York's November 2026 Modern & Contemporary Art: Afternoon Session (sale NY011626), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 40000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI301NOV26-50000",
+              "primary": "If the sale price including buyer’s premium of the As I die laying (2022; lot 301) by Joseph Yaeger on Artnet is above $50K during Phillips New York's November 2026 Modern & Contemporary Art: Afternoon Session (sale NY011626), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 50000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI301NOV26-60000",
+              "primary": "If the sale price including buyer’s premium of the As I die laying (2022; lot 301) by Joseph Yaeger on Artnet is above $60K during Phillips New York's November 2026 Modern & Contemporary Art: Afternoon Session (sale NY011626), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 60000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI301NOV26-70000",
+              "primary": "If the sale price including buyer’s premium of the As I die laying (2022; lot 301) by Joseph Yaeger on Artnet is above $70K during Phillips New York's November 2026 Modern & Contemporary Art: Afternoon Session (sale NY011626), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 70000,
+              "notional": "1.0000"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "house": "christies",
+      "sale": "24499",
+      "sourceUrl": "https://www.christies.com/en/auction/21st-century-evening-sale-24499-nyr",
+      "startAt": "2026-11-19T23:55:00Z",
+      "deadline": "2026-11-20T04:00:00Z",
+      "targets": [
+        {
+          "lot": "24B",
+          "id": "6614148",
+          "artist": "VIJA CELMINS (B. 1938)",
+          "title": "Untitled (Ocean)",
+          "url": "https://www.christies.com/en/lot/lot-6614148?ldp_breadcrumb=back",
+          "event": "KXART-CHR24B19NOV26",
+          "settlementSources": [
+            {
+              "name": "Artnet",
+              "url": "https://www.artnet.com/"
+            }
+          ],
+          "markets": [
+            {
+              "ticker": "KXART-CHR24B19NOV26-6000000",
+              "primary": "If the sale price including buyer’s premium of the Untitled (Ocean) (1990; lot 24B) by Vija Celmins on Artnet is above $6M during Christie's New York 21st Century Evening Sale (sale 24499), beginning November 19, 2026 at 7:00 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 6000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR24B19NOV26-7000000",
+              "primary": "If the sale price including buyer’s premium of the Untitled (Ocean) (1990; lot 24B) by Vija Celmins on Artnet is above $7M during Christie's New York 21st Century Evening Sale (sale 24499), beginning November 19, 2026 at 7:00 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 7000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR24B19NOV26-8000000",
+              "primary": "If the sale price including buyer’s premium of the Untitled (Ocean) (1990; lot 24B) by Vija Celmins on Artnet is above $8M during Christie's New York 21st Century Evening Sale (sale 24499), beginning November 19, 2026 at 7:00 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 8000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR24B19NOV26-10000000",
+              "primary": "If the sale price including buyer’s premium of the Untitled (Ocean) (1990; lot 24B) by Vija Celmins on Artnet is above $10M during Christie's New York 21st Century Evening Sale (sale 24499), beginning November 19, 2026 at 7:00 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 10000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR24B19NOV26-12000000",
+              "primary": "If the sale price including buyer’s premium of the Untitled (Ocean) (1990; lot 24B) by Vija Celmins on Artnet is above $12M during Christie's New York 21st Century Evening Sale (sale 24499), beginning November 19, 2026 at 7:00 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 12000000,
+              "notional": "1.0000"
+            }
+          ]
+        },
+        {
+          "lot": "34B",
+          "id": "6614158",
+          "artist": "JEAN-MICHEL BASQUIAT (1960-1988)",
+          "title": "Untitled (Leonardo and His Five Grotesque Heads)",
+          "url": "https://www.christies.com/en/lot/lot-6614158?ldp_breadcrumb=back",
+          "event": "KXART-CHR34B19NOV26",
+          "settlementSources": [
+            {
+              "name": "Artnet",
+              "url": "https://www.artnet.com/"
+            }
+          ],
+          "markets": [
+            {
+              "ticker": "KXART-CHR34B19NOV26-30000000",
+              "primary": "If the sale price including buyer’s premium of the Untitled (Leonardo and His Five Grotesque Heads) (1983; lot 34B) by Jean-Michel Basquiat on Artnet is above $30M during Christie's New York 21st Century Evening Sale (sale 24499), beginning November 19, 2026 at 7:00 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 30000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR34B19NOV26-35000000",
+              "primary": "If the sale price including buyer’s premium of the Untitled (Leonardo and His Five Grotesque Heads) (1983; lot 34B) by Jean-Michel Basquiat on Artnet is above $35M during Christie's New York 21st Century Evening Sale (sale 24499), beginning November 19, 2026 at 7:00 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 35000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR34B19NOV26-40000000",
+              "primary": "If the sale price including buyer’s premium of the Untitled (Leonardo and His Five Grotesque Heads) (1983; lot 34B) by Jean-Michel Basquiat on Artnet is above $40M during Christie's New York 21st Century Evening Sale (sale 24499), beginning November 19, 2026 at 7:00 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 40000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR34B19NOV26-45000000",
+              "primary": "If the sale price including buyer’s premium of the Untitled (Leonardo and His Five Grotesque Heads) (1983; lot 34B) by Jean-Michel Basquiat on Artnet is above $45M during Christie's New York 21st Century Evening Sale (sale 24499), beginning November 19, 2026 at 7:00 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 45000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR34B19NOV26-50000000",
+              "primary": "If the sale price including buyer’s premium of the Untitled (Leonardo and His Five Grotesque Heads) (1983; lot 34B) by Jean-Michel Basquiat on Artnet is above $50M during Christie's New York 21st Century Evening Sale (sale 24499), beginning November 19, 2026 at 7:00 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 50000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR34B19NOV26-55000000",
+              "primary": "If the sale price including buyer’s premium of the Untitled (Leonardo and His Five Grotesque Heads) (1983; lot 34B) by Jean-Michel Basquiat on Artnet is above $55M during Christie's New York 21st Century Evening Sale (sale 24499), beginning November 19, 2026 at 7:00 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 55000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR34B19NOV26-60000000",
+              "primary": "If the sale price including buyer’s premium of the Untitled (Leonardo and His Five Grotesque Heads) (1983; lot 34B) by Jean-Michel Basquiat on Artnet is above $60M during Christie's New York 21st Century Evening Sale (sale 24499), beginning November 19, 2026 at 7:00 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 60000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR34B19NOV26-65000000",
+              "primary": "If the sale price including buyer’s premium of the Untitled (Leonardo and His Five Grotesque Heads) (1983; lot 34B) by Jean-Michel Basquiat on Artnet is above $65M during Christie's New York 21st Century Evening Sale (sale 24499), beginning November 19, 2026 at 7:00 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 65000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR34B19NOV26-70000000",
+              "primary": "If the sale price including buyer’s premium of the Untitled (Leonardo and His Five Grotesque Heads) (1983; lot 34B) by Jean-Michel Basquiat on Artnet is above $70M during Christie's New York 21st Century Evening Sale (sale 24499), beginning November 19, 2026 at 7:00 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 70000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR34B19NOV26-75000000",
+              "primary": "If the sale price including buyer’s premium of the Untitled (Leonardo and His Five Grotesque Heads) (1983; lot 34B) by Jean-Michel Basquiat on Artnet is above $75M during Christie's New York 21st Century Evening Sale (sale 24499), beginning November 19, 2026 at 7:00 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 75000000,
+              "notional": "1.0000"
+            }
+          ]
+        },
+        {
+          "lot": "41B",
+          "id": "6614165",
+          "artist": "NICOLAS PARTY (B. 1980)",
+          "title": "Landscape",
+          "url": "https://www.christies.com/en/lot/lot-6614165?ldp_breadcrumb=back",
+          "event": "KXART-CHR41B19NOV26",
+          "settlementSources": [
+            {
+              "name": "Artnet",
+              "url": "https://www.artnet.com/"
+            }
+          ],
+          "markets": [
+            {
+              "ticker": "KXART-CHR41B19NOV26-2000000",
+              "primary": "If the sale price including buyer’s premium of the Landscape (2020; lot 41B) by Nicolas Party on Artnet is above $2M during Christie's New York 21st Century Evening Sale (sale 24499), beginning November 19, 2026 at 7:00 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 2000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR41B19NOV26-2500000",
+              "primary": "If the sale price including buyer’s premium of the Landscape (2020; lot 41B) by Nicolas Party on Artnet is above $2.5M during Christie's New York 21st Century Evening Sale (sale 24499), beginning November 19, 2026 at 7:00 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 2500000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR41B19NOV26-3000000",
+              "primary": "If the sale price including buyer’s premium of the Landscape (2020; lot 41B) by Nicolas Party on Artnet is above $3M during Christie's New York 21st Century Evening Sale (sale 24499), beginning November 19, 2026 at 7:00 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 3000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR41B19NOV26-3500000",
+              "primary": "If the sale price including buyer’s premium of the Landscape (2020; lot 41B) by Nicolas Party on Artnet is above $3.5M during Christie's New York 21st Century Evening Sale (sale 24499), beginning November 19, 2026 at 7:00 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 3500000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR41B19NOV26-4000000",
+              "primary": "If the sale price including buyer’s premium of the Landscape (2020; lot 41B) by Nicolas Party on Artnet is above $4M during Christie's New York 21st Century Evening Sale (sale 24499), beginning November 19, 2026 at 7:00 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 4000000,
+              "notional": "1.0000"
+            }
+          ]
+        },
+        {
+          "lot": "45B",
+          "id": "6614169",
+          "artist": "EWA JUSZKIEWICZ (B. 1984)",
+          "title": "Braided Bun",
+          "url": "https://www.christies.com/en/lot/lot-6614169?ldp_breadcrumb=back",
+          "event": "KXART-CHR45B19NOV26",
+          "settlementSources": [
+            {
+              "name": "Artnet",
+              "url": "https://www.artnet.com/"
+            }
+          ],
+          "markets": [
+            {
+              "ticker": "KXART-CHR45B19NOV26-600000",
+              "primary": "If the sale price including buyer’s premium of the Braided Bun (2022; lot 45B) by Ewa Juszkiewicz on Artnet is above $600K during Christie's New York 21st Century Evening Sale (sale 24499), beginning November 19, 2026 at 7:00 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 600000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR45B19NOV26-700000",
+              "primary": "If the sale price including buyer’s premium of the Braided Bun (2022; lot 45B) by Ewa Juszkiewicz on Artnet is above $700K during Christie's New York 21st Century Evening Sale (sale 24499), beginning November 19, 2026 at 7:00 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 700000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR45B19NOV26-800000",
+              "primary": "If the sale price including buyer’s premium of the Braided Bun (2022; lot 45B) by Ewa Juszkiewicz on Artnet is above $800K during Christie's New York 21st Century Evening Sale (sale 24499), beginning November 19, 2026 at 7:00 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 800000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR45B19NOV26-900000",
+              "primary": "If the sale price including buyer’s premium of the Braided Bun (2022; lot 45B) by Ewa Juszkiewicz on Artnet is above $900K during Christie's New York 21st Century Evening Sale (sale 24499), beginning November 19, 2026 at 7:00 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 900000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR45B19NOV26-1000000",
+              "primary": "If the sale price including buyer’s premium of the Braided Bun (2022; lot 45B) by Ewa Juszkiewicz on Artnet is above $1M during Christie's New York 21st Century Evening Sale (sale 24499), beginning November 19, 2026 at 7:00 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 1000000,
+              "notional": "1.0000"
+            }
+          ]
+        },
+        {
+          "lot": "47B",
+          "id": "6614171",
+          "artist": "FRANÇOIS-XAVIER LALANNE (1927-2008)",
+          "title": "'Poisson Paysage V', 2008",
+          "url": "https://www.christies.com/en/lot/lot-6614171?ldp_breadcrumb=back",
+          "event": "KXART-CHR47B19NOV26",
+          "settlementSources": [
+            {
+              "name": "Artnet",
+              "url": "https://www.artnet.com/"
+            }
+          ],
+          "markets": [
+            {
+              "ticker": "KXART-CHR47B19NOV26-3000000",
+              "primary": "If the sale price including buyer’s premium of the Poisson Paysage V (2008; lot 47B) by François-Xavier Lalanne on Artnet is above $3M during Christie's New York 21st Century Evening Sale (sale 24499), beginning November 19, 2026 at 7:00 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 3000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR47B19NOV26-4000000",
+              "primary": "If the sale price including buyer’s premium of the Poisson Paysage V (2008; lot 47B) by François-Xavier Lalanne on Artnet is above $4M during Christie's New York 21st Century Evening Sale (sale 24499), beginning November 19, 2026 at 7:00 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 4000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR47B19NOV26-5000000",
+              "primary": "If the sale price including buyer’s premium of the Poisson Paysage V (2008; lot 47B) by François-Xavier Lalanne on Artnet is above $5M during Christie's New York 21st Century Evening Sale (sale 24499), beginning November 19, 2026 at 7:00 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 5000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR47B19NOV26-6000000",
+              "primary": "If the sale price including buyer’s premium of the Poisson Paysage V (2008; lot 47B) by François-Xavier Lalanne on Artnet is above $6M during Christie's New York 21st Century Evening Sale (sale 24499), beginning November 19, 2026 at 7:00 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 6000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR47B19NOV26-7000000",
+              "primary": "If the sale price including buyer’s premium of the Poisson Paysage V (2008; lot 47B) by François-Xavier Lalanne on Artnet is above $7M during Christie's New York 21st Century Evening Sale (sale 24499), beginning November 19, 2026 at 7:00 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 7000000,
+              "notional": "1.0000"
+            }
+          ]
+        },
+        {
+          "lot": "56B",
+          "id": "6614180",
+          "artist": "YOSHITOMO NARA (B. 1959)",
+          "title": "Miss Forest / Dark Night",
+          "url": "https://www.christies.com/en/lot/lot-6614180?ldp_breadcrumb=back",
+          "event": "KXART-CHR56B19NOV26",
+          "settlementSources": [
+            {
+              "name": "Artnet",
+              "url": "https://www.artnet.com/"
+            }
+          ],
+          "markets": [
+            {
+              "ticker": "KXART-CHR56B19NOV26-1000000",
+              "primary": "If the sale price including buyer’s premium of the Miss Forest / Dark Night (2016; lot 56B) by Yoshitomo Nara on Artnet is above $1M during Christie's New York 21st Century Evening Sale (sale 24499), beginning November 19, 2026 at 7:00 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 1000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR56B19NOV26-1250000",
+              "primary": "If the sale price including buyer’s premium of the Miss Forest / Dark Night (2016; lot 56B) by Yoshitomo Nara on Artnet is above $1.25M during Christie's New York 21st Century Evening Sale (sale 24499), beginning November 19, 2026 at 7:00 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 1250000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR56B19NOV26-1500000",
+              "primary": "If the sale price including buyer’s premium of the Miss Forest / Dark Night (2016; lot 56B) by Yoshitomo Nara on Artnet is above $1.5M during Christie's New York 21st Century Evening Sale (sale 24499), beginning November 19, 2026 at 7:00 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 1500000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR56B19NOV26-1750000",
+              "primary": "If the sale price including buyer’s premium of the Miss Forest / Dark Night (2016; lot 56B) by Yoshitomo Nara on Artnet is above $1.75M during Christie's New York 21st Century Evening Sale (sale 24499), beginning November 19, 2026 at 7:00 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 1750000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR56B19NOV26-2000000",
+              "primary": "If the sale price including buyer’s premium of the Miss Forest / Dark Night (2016; lot 56B) by Yoshitomo Nara on Artnet is above $2M during Christie's New York 21st Century Evening Sale (sale 24499), beginning November 19, 2026 at 7:00 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 2000000,
+              "notional": "1.0000"
+            }
+          ]
+        },
+        {
+          "lot": "57B",
+          "id": "6614181",
+          "artist": "YAYOI KUSAMA (1929-2026)",
+          "title": "Starry Pumpkin",
+          "url": "https://www.christies.com/en/lot/lot-6614181?ldp_breadcrumb=back",
+          "event": "KXART-CHR57B19NOV26",
+          "settlementSources": [
+            {
+              "name": "Artnet",
+              "url": "https://www.artnet.com/"
+            }
+          ],
+          "markets": [
+            {
+              "ticker": "KXART-CHR57B19NOV26-1800000",
+              "primary": "If the sale price including buyer’s premium of the Starry Pumpkin (2021; lot 57B) by Yayoi Kusama on Artnet is above $1.8M during Christie's New York 21st Century Evening Sale (sale 24499), beginning November 19, 2026 at 7:00 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 1800000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR57B19NOV26-2300000",
+              "primary": "If the sale price including buyer’s premium of the Starry Pumpkin (2021; lot 57B) by Yayoi Kusama on Artnet is above $2.3M during Christie's New York 21st Century Evening Sale (sale 24499), beginning November 19, 2026 at 7:00 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 2300000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR57B19NOV26-2800000",
+              "primary": "If the sale price including buyer’s premium of the Starry Pumpkin (2021; lot 57B) by Yayoi Kusama on Artnet is above $2.8M during Christie's New York 21st Century Evening Sale (sale 24499), beginning November 19, 2026 at 7:00 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 2800000,
+              "notional": "1.0000"
+            }
+          ]
+        },
+        {
+          "lot": "5B",
+          "id": "6614129",
+          "artist": "ANDY WARHOL (1928-1987)",
+          "title": "Campbell's Soup Can (Turkey Noodle)",
+          "url": "https://www.christies.com/en/lot/lot-6614129?ldp_breadcrumb=back",
+          "event": "KXART-CHR5B19NOV26",
+          "settlementSources": [
+            {
+              "name": "Artnet",
+              "url": "https://www.artnet.com/"
+            }
+          ],
+          "markets": [
+            {
+              "ticker": "KXART-CHR5B19NOV26-6000000",
+              "primary": "If the sale price including buyer’s premium of the Campbell's Soup Can (Turkey Noodle) (1962; lot 5B) by Andy Warhol on Artnet is above $6M during Christie's New York 21st Century Evening Sale (sale 24499), beginning November 19, 2026 at 7:00 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 6000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR5B19NOV26-7000000",
+              "primary": "If the sale price including buyer’s premium of the Campbell's Soup Can (Turkey Noodle) (1962; lot 5B) by Andy Warhol on Artnet is above $7M during Christie's New York 21st Century Evening Sale (sale 24499), beginning November 19, 2026 at 7:00 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 7000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR5B19NOV26-8000000",
+              "primary": "If the sale price including buyer’s premium of the Campbell's Soup Can (Turkey Noodle) (1962; lot 5B) by Andy Warhol on Artnet is above $8M during Christie's New York 21st Century Evening Sale (sale 24499), beginning November 19, 2026 at 7:00 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 8000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR5B19NOV26-10000000",
+              "primary": "If the sale price including buyer’s premium of the Campbell's Soup Can (Turkey Noodle) (1962; lot 5B) by Andy Warhol on Artnet is above $10M during Christie's New York 21st Century Evening Sale (sale 24499), beginning November 19, 2026 at 7:00 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 10000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR5B19NOV26-12000000",
+              "primary": "If the sale price including buyer’s premium of the Campbell's Soup Can (Turkey Noodle) (1962; lot 5B) by Andy Warhol on Artnet is above $12M during Christie's New York 21st Century Evening Sale (sale 24499), beginning November 19, 2026 at 7:00 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 12000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR5B19NOV26-14000000",
+              "primary": "If the sale price including buyer’s premium of the Campbell's Soup Can (Turkey Noodle) (1962; lot 5B) by Andy Warhol on Artnet is above $14M during Christie's New York 21st Century Evening Sale (sale 24499), beginning November 19, 2026 at 7:00 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 14000000,
+              "notional": "1.0000"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

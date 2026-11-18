@@ -4,11 +4,12 @@ import path from 'node:path';
 import { timingSafeEqual, createHash } from 'node:crypto';
 import { spawn } from 'node:child_process';
 import { ROOT } from './bot.mjs';
-import { Transport } from './transport.mjs';
+import { observePairs, pairSeries } from './auction-pairs.mjs';
 import {
   addPaper,
   observe,
   openLedger,
+  paperRows,
   strategies
 } from './strategy-monitor.mjs';
 
@@ -25,6 +26,9 @@ const config = JSON.parse(
   )
 );
 const status = { state: 'Starting', at: null };
+const pairStatus = Object.fromEntries(
+  Object.entries(pairSeries).map(([k, label]) => [k, { label, at: null }])
+);
 let stopping = false;
 const exists = fs.existsSync;
 function json(file) {
@@ -40,7 +44,15 @@ function records(file) {
 function botReceipts() {
   const rows = records(path.join(runtime, 'live', 'orders.jsonl'));
   const intents = new Map(
-    rows.filter((r) => r.type === 'intent').map((r) => [r.clientOrderId, r])
+    rows
+      .filter(
+        (r) =>
+          r.type === 'intent' &&
+          r.mode === 'live' &&
+          r.clientOrderId &&
+          r.ticker
+      )
+      .map((r) => [r.clientOrderId, r])
   );
   return rows
     .filter(
@@ -48,6 +60,9 @@ function botReceipts() {
         r.mode === 'live' &&
         r.type === 'receipt' &&
         !r.hypothetical &&
+        intents.has(r.clientOrderId) &&
+        r.orderId &&
+        Number.isFinite(r.costCents) &&
         r.filled > 0
     )
     .map((r) => {
@@ -81,7 +96,9 @@ function importAuction() {
       closeAt: row.marketClose
     });
   };
-  const rows = records(path.join(runtime, 'paper', 'orders.jsonl'));
+  const rows = ['paper', 'paper-calendar'].flatMap((dir) =>
+    records(path.join(runtime, dir, 'orders.jsonl'))
+  );
   const receipts = new Set(
     rows
       .filter((r) => r.type === 'receipt' && r.hypothetical)
@@ -177,50 +194,10 @@ function replay() {
   }
   return [...byDay.values()].sort((a, b) => b.day.localeCompare(a.day));
 }
-const account = {
-  state: 'Account API disconnected',
-  asOf: null,
-  fills: [],
-  settlements: []
-};
-async function refreshAccount() {
-  if (
-    !process.env[config.apiKeyIdEnvironmentVariable] ||
-    !(process.env.KALSHI_PRIVATE_KEY_PATH || config.privateKeyPath)
-  )
-    return;
-  try {
-    const io = new Transport(config);
-    await io.loadCredentials(true);
-    const q = '?limit=100&subaccount=' + config.subaccount;
-    const [fills, settled] = await Promise.all(
-      ['/portfolio/fills', '/portfolio/settlements'].map((route) =>
-        io.get(route + q, true)
-      )
-    );
-    account.fills = fills.body.fills.map((r) => ({
-      ticker: r.ticker,
-      at: r.created_time,
-      side: r.side,
-      action: r.action,
-      quantity: r.count_fp,
-      price: r[r.side + '_price_dollars'],
-      fee: r.fee_cost
-    }));
-    account.settlements = settled.body.settlements.map((r) => ({
-      ticker: r.ticker,
-      at: r.settled_time,
-      result: r.market_result,
-      revenue: Number.isFinite(r.revenue) ? r.revenue / 100 : null
-    }));
-    account.asOf = new Date().toISOString();
-    account.state = 'Connected · latest 100 fills and settlements';
-  } catch {
-    account.state = 'Account API unavailable · check credentials or connection';
-  }
-}
-
-const watch = json(path.join(ROOT, 'watchlist.json'));
+const calendars = ['watchlist.json', 'paper-calendar.json'].map((file) => ({
+  extra: file === 'paper-calendar.json',
+  auctions: json(path.join(ROOT, file)).auctions
+}));
 const children = new Set();
 function launchWorker(args) {
   const child = spawn(process.execPath, ['bot.mjs', ...args], {
@@ -272,26 +249,41 @@ const auctionStatus = {
 function runAuctions() {
   if (stopping || exists(path.join(ROOT, 'STOP'))) return;
   const now = Date.now();
-  const current = watch.auctions.some(
-    (a) => now < Date.parse(a.deadline) + config.offerTailHours * 3600000
-  );
-  const christies = watch.auctions.some(
-    (a) => a.house === 'christies' && now < Date.parse(a.deadline)
-  );
-  if (
-    current &&
-    ![...children].some((c) => c.spawnargs.includes('--watch-offers'))
-  )
-    launchWorker(['--paper', '--watch-offers']);
-  if (
-    christies &&
-    ![...children].some((c) => c.spawnargs.includes('--paper-bids'))
-  )
-    launchWorker(['--paper-bids']);
-  auctionStatus.offers = current
+  let offers = false,
+    bids = false;
+  auctionStatus.next = [];
+  for (const { extra, auctions } of calendars) {
+    for (const a of auctions.filter((a) => Date.parse(a.startAt) > now))
+      auctionStatus.next.push({
+        house: a.house,
+        at: a.startAt,
+        targets: a.targets.length
+      });
+    const within = (a, tail = 0) =>
+      now >= Date.parse(a.startAt) && now < Date.parse(a.deadline) + tail;
+    const hasOffers = auctions.some((a) =>
+      within(a, config.offerTailHours * 3600000)
+    );
+    const hasBids = auctions.some((a) => a.house === 'christies' && within(a));
+    const start = (mode, args) => {
+      if (
+        ![...children].some(
+          (c) =>
+            c.spawnargs.includes(mode) &&
+            c.spawnargs.includes('--paper-calendar') === extra
+        )
+      )
+        launchWorker([...args, ...(extra ? ['--paper-calendar'] : [])]);
+    };
+    if (hasOffers) start('--watch-offers', ['--paper', '--watch-offers']);
+    if (hasBids) start('--paper-bids', ['--paper-bids']);
+    offers ||= hasOffers;
+    bids ||= hasBids;
+  }
+  auctionStatus.offers = offers
     ? 'Within configured watch window'
     : 'Outside watch window';
-  auctionStatus.bids = christies
+  auctionStatus.bids = bids
     ? 'Within configured watch window'
     : 'Outside watch window';
 }
@@ -353,17 +345,16 @@ const server = http.createServer((req, res) => {
     if (route === '/api/status' || route === '/api/account') {
       let body;
       if (route === '/api/status') {
-        const paper = db
-          .prepare(
-            'SELECT *, payout-price*quantity-fees AS net FROM paper ORDER BY at DESC'
-          )
-          .all();
+        const paper = paperRows(db);
         body = {
           status,
           auctionStatus,
+          pairStatus,
           strategies,
           paper,
           replay: replay(),
+          tenSecondValidation:
+            json(path.join(ROOT, 'research.json')).tenSecondValidation ?? [],
           research: json(path.join(ROOT, 'research.json')).studies,
           windows: db
             .prepare(
@@ -372,11 +363,7 @@ const server = http.createServer((req, res) => {
             .get()
         };
       } else {
-        const file = path.join(runtime, 'account-history.json');
-        body = {
-          ...account,
-          history: [...(exists(file) ? json(file) : []), ...botReceipts()]
-        };
+        body = { mode: 'paper', history: botReceipts() };
       }
       res
         .writeHead(200, { 'Content-Type': 'application/json' })
@@ -404,13 +391,21 @@ server.listen(port, host, () => {
     }
   }
   importSafe();
+  for (const [series, state] of Object.entries(pairStatus))
+    observePairs({
+      series,
+      db,
+      config,
+      stop: () => stopping || exists(path.join(ROOT, 'STOP')),
+      status: state
+    }).catch((e) => {
+      state.error = e.message;
+    });
   runAuctions();
-  refreshAccount();
   setTimeout(nightlyReplay, 60000).unref();
   setInterval(nightlyReplay, 3600000).unref();
   setInterval(importSafe, 15000).unref();
   setInterval(runAuctions, 60000).unref();
-  setInterval(refreshAccount, 60000).unref();
   observe({
     db,
     config,

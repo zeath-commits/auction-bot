@@ -123,6 +123,32 @@ function paper(d) {
       d.auctionStatus.offers +
       '.'
   );
+  for (const pair of Object.values(d.pairStatus ?? {}))
+    if (pair.at)
+      note(
+        pair.label +
+          ' pairs · ' +
+          (pair.error ??
+            pair.comparisons +
+              ' matched threshold pairs across ' +
+              pair.markets +
+              ' open contracts; ' +
+              pair.candidates +
+              ' quoted below $1 before fees') +
+          ' · ' +
+          time(pair.at)
+      );
+  for (const a of d.auctionStatus.next ?? [])
+    note(
+      'Scheduled ' +
+        a.house +
+        ' paper watch · ' +
+        time(a.at) +
+        ' · ' +
+        a.targets +
+        ' tracked artwork' +
+        (a.targets === 1 ? '' : 's')
+    );
   table(
     'Paper ledger',
     [
@@ -222,6 +248,28 @@ function history(d) {
     'No losses observed in the loaded replay.'
   );
   table(
+    'Final 10 seconds on earlier dates',
+    [
+      'Dates (ET)',
+      'Markets',
+      'Entries',
+      'Wins',
+      'Losses',
+      'Net at standard fee',
+      'Favorite-side taker trades'
+    ],
+    (d.tenSecondValidation ?? []).map((r) => [
+      r.dates,
+      r.windows,
+      r.entries,
+      r.wins,
+      r.entries - r.wins,
+      money(r.net),
+      r.takerBuys
+    ]),
+    'No earlier-date replay loaded.'
+  );
+  table(
     'Other strategy research',
     ['Market', 'Experiment', 'Finding'],
     d.research.map((r) => [r.market, r.test, r.finding]),
@@ -229,53 +277,28 @@ function history(d) {
   );
 }
 function real(a) {
-  note(a.state + (a.asOf ? ' · refreshed ' + time(a.asOf) : ''));
+  note(
+    'The monitor runs in paper mode. This ledger reads confirmed exchange receipts for orders submitted by this bot.'
+  );
   table(
-    'Recorded account trades',
+    'Real bot fills',
     [
+      'Time',
       'Market',
       'Side',
-      'Quantity',
-      'Cost incl. fees',
-      'Evidence',
-      'As of',
+      'Filled quantity',
+      'Cost including fees',
       'Verified realized net'
     ],
     a.history.map((r) => [
+      time(r.at),
       r.ticker,
       r.side,
       r.quantity,
       money(r.cost),
-      r.source,
-      time(r.at),
       money(r.net)
     ]),
-    'No account records imported.'
-  );
-  table(
-    'Exchange fills',
-    ['Time', 'Market', 'Action', 'Side', 'Quantity', 'Price', 'Fees'],
-    a.fills.map((r) => [
-      time(r.at),
-      r.ticker,
-      r.action,
-      r.side,
-      r.quantity,
-      r.price == null ? '—' : money(r.price),
-      r.fee == null ? '—' : money(r.fee)
-    ]),
-    'No recent fills loaded from the account API.'
-  );
-  table(
-    'Exchange settlements',
-    ['Time', 'Market', 'Result', 'Payout'],
-    a.settlements.map((r) => [
-      time(r.at),
-      r.ticker,
-      r.result,
-      money(r.revenue)
-    ]),
-    'No settlement receipts loaded from the account API.'
+    'No confirmed real bot fills.'
   );
 }
 async function load() {

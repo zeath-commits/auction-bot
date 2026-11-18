@@ -67,12 +67,12 @@ export async function scan({auction, io, config, db, log}) {
   return {matchedEvents:matched, eventsWithPublishedBid:bids};
 }
 
-export async function runBidPaper(once=false) {
+export async function runBidPaper(once=false, watchFile='watchlist.json') {
   let raw;
   try { raw=await fs.readFile(path.join(root,'config.json'),'utf8'); }
   catch(e) { if(e.code!=='ENOENT') throw e; raw=await fs.readFile(path.join(root,'config.example.json'),'utf8'); }
   const config=validateConfig(JSON.parse(raw));
-  const {auctions}=validateWatchlist(JSON.parse(await fs.readFile(path.join(root,'watchlist.json'),'utf8')));
+  const {auctions}=validateWatchlist(JSON.parse(await fs.readFile(path.join(root,watchFile),'utf8')));
   const auction=auctions.find(a=>a.house==='christies');
   requireThat(auction && Date.now()<Date.parse(auction.deadline),'No remaining Christie’s watch window');
   const dir=path.join(root,'runtime','paper-bids',auction.sale);

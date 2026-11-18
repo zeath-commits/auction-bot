@@ -21,9 +21,11 @@ test(
         'parsers.mjs',
         'transport.mjs',
         'strategy-monitor.mjs',
+        'auction-pairs.mjs',
         'dashboard.mjs',
         'config.example.json',
         'research.json',
+        'paper-calendar.json',
         'watchlist.json'
       ]) {
         await fs.copyFile(path.join(ROOT, file), path.join(dir, file));
@@ -33,6 +35,36 @@ test(
       await fs.writeFile(
         path.join(dir, 'runtime', 'account-history.json'),
         JSON.stringify([{ ticker: 'PRIVATE-TEST' }])
+      );
+      const live = path.join(dir, 'runtime', 'live');
+      await fs.mkdir(live);
+      const intent = {
+        type: 'intent',
+        mode: 'live',
+        ticker: 'BOT-TEST',
+        side: 'YES',
+        clientOrderId: 'bot-a'
+      };
+      const receipt = {
+        type: 'receipt',
+        mode: 'live',
+        clientOrderId: 'bot-a',
+        orderId: 'exchange-a',
+        filled: 2,
+        costCents: 105
+      };
+      await fs.writeFile(
+        path.join(live, 'orders.jsonl'),
+        [
+          intent,
+          receipt,
+          { ...receipt, clientOrderId: 'orphan' },
+          { ...receipt, mode: 'paper' },
+          { ...receipt, filled: 0 },
+          { ...receipt, hypothetical: true }
+        ]
+          .map((r) => JSON.stringify(r))
+          .join('\n') + '\n'
       );
       // Exercise network-mode authentication on loopback, with no exchange access.
       child = spawn(process.execPath, ['dashboard.mjs'], {
@@ -57,10 +89,13 @@ test(
         Authorization:
           'Basic ' + Buffer.from('owner:test-private').toString('base64')
       };
-      assert.equal(
-        (await (await fetch(base + '/api/account', { headers })).json())
-          .history[0].ticker,
-        'PRIVATE-TEST'
+      const account = await (
+        await fetch(base + '/api/account', { headers })
+      ).json();
+      assert.equal(account.mode, 'paper');
+      assert.deepEqual(
+        account.history.map((r) => [r.ticker, r.quantity, r.cost]),
+        [['BOT-TEST', 2, 1.05]]
       );
       assert.equal(
         (await fetch(base + '/api/account', { headers, method: 'POST' }))

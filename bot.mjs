@@ -156,14 +156,17 @@ export async function preflight(io, watchlist) {
 }
 
 export async function main(args = process.argv.slice(2)) {
+  const calendar = args.includes('--paper-calendar');
+  requireThat(!calendar || (!args.includes('--live') && (args.includes('--paper') || args.includes('--paper-bids'))), 'Additional auction calendar is paper-only');
+  const watchFile = calendar ? 'paper-calendar.json' : 'watchlist.json';
   if (args.includes('--paper-bids')) {
-    requireThat(args.every(a => ['--paper-bids','--once'].includes(a)), 'Bid-threshold mode only supports paper trading');
-    return (await import('./paper-bids.mjs')).runBidPaper(args.includes('--once'));
+    requireThat(args.every(a => ['--paper-bids','--paper-calendar','--once'].includes(a)), 'Bid-threshold mode only supports paper trading');
+    return (await import('./paper-bids.mjs')).runBidPaper(args.includes('--once'),watchFile);
   }
   const offers = args.includes('--watch-offers');
   const accountCheck = args.includes('--check-account');
   requireThat(!accountCheck || args.length===1,'Run account check separately');
-  const known = new Set(['--paper', '--live', '--acknowledge-live-trading', '--preflight', '--watch-offers', '--once', '--help','--check-account']);
+  const known = new Set(['--paper', '--paper-calendar', '--live', '--acknowledge-live-trading', '--preflight', '--watch-offers', '--once', '--help','--check-account']);
   requireThat(args.every(a => known.has(a)) && new Set(args).size === args.length, 'Unknown or duplicate argument');
   if (args.includes('--help')) {
     console.log('node bot.mjs --preflight | --paper [--watch-offers] [--once] | --live [--watch-offers] --acknowledge-live-trading\nDefault: paper. See README.md for setup and limits.');
@@ -188,7 +191,7 @@ export async function main(args = process.argv.slice(2)) {
     return;
   }
   requireThat(!live || config.liveEnabled, 'config.json liveEnabled is false');
-  const watchlist = validateWatchlist(JSON.parse(await fs.readFile(path.join(ROOT, 'watchlist.json'), 'utf8')));
+  const watchlist = validateWatchlist(JSON.parse(await fs.readFile(path.join(ROOT, watchFile), 'utf8')));
   let stopped = false;
   const onSignal = () => { stopped = true; };
   process.on('SIGINT', onSignal); process.on('SIGTERM', onSignal);
@@ -200,7 +203,7 @@ export async function main(args = process.argv.slice(2)) {
   const io = new Transport(config, { live, checkStop: stop });
   let journal;
   const mode = live ? 'live' : 'paper';
-  const runtime = path.join(ROOT, 'runtime', mode);
+  const runtime = path.join(ROOT, 'runtime', calendar ? 'paper-calendar' : mode);
   async function log(type, data) {
     const row = { at: new Date().toISOString(), mode, type, ...data };
     await fs.appendFile(path.join(runtime, 'observations.jsonl'), JSON.stringify(row) + '\n');

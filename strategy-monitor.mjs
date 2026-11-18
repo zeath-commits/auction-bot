@@ -5,6 +5,8 @@ import { setTimeout as sleep } from 'node:timers/promises';
 import { Transport } from './transport.mjs';
 
 export const strategies = {
+  auction_pair: 'Auction · paired thresholds',
+  crypto_pair: 'Crypto · paired thresholds',
   btc60: 'Bitcoin · final minute',
   btc10: 'Bitcoin · final 10 seconds',
   btcDepth: 'Bitcoin · 1,000 contracts displayed',
@@ -113,6 +115,20 @@ export function addPaper(db, r) {
     r.depth ?? null,
     r.closeAt ?? null
   );
+}
+
+export function paperRows(db) {
+  return db
+    .prepare(
+      `SELECT p.*, CASE
+    WHEN p.strategy IN ('auction_pair','crypto_pair') AND peer.payout IS NULL THEN NULL
+    ELSE p.payout-p.price*p.quantity-p.fees END AS net
+    FROM paper p LEFT JOIN paper peer ON p.strategy IN ('auction_pair','crypto_pair')
+    AND peer.id=substr(p.id,1,length(p.id)-length(p.side)) ||
+      (CASE p.side WHEN 'yes' THEN 'no' ELSE 'yes' END)
+    ORDER BY p.at DESC`
+    )
+    .all();
 }
 
 export async function settle(db, io) {

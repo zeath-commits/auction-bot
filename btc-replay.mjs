@@ -2,6 +2,11 @@ import fs from 'node:fs/promises';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { API } from './transport.mjs';
 
+const args = process.argv.slice(2);
+const tenOnly = args[2] === '--final-ten';
+if (args.length !== (tenOnly ? 3 : 2))
+  throw Error('Supply two UTC boundaries and optionally --final-ten');
+
 // Reproduce the original test: first 98c/99c print on either side in the
 // final minute, irrespective of aggressor. A print is never a simulated fill.
 async function get(route) {
@@ -23,7 +28,7 @@ async function replay(market) {
     '/markets/trades?ticker=' +
     market.ticker +
     '&limit=1000&min_ts=' +
-    (end - 60) +
+    (end - (tenOnly ? 10 : 60)) +
     '&max_ts=' +
     end;
   let cursor = '',
@@ -47,6 +52,11 @@ async function replay(market) {
         side,
         price: Number(trade[side + '_price_dollars'])
       };
+      if (tenOnly) {
+        print.count = trade.count_fp;
+        print.taker = trade.taker_outcome_side ?? trade.taker_side;
+        print.id = trade.trade_id;
+      }
       if (!first || print.at < first.at) first = print;
       if (at >= 1000 * (end - 10) && (!finalTen || print.at < finalTen.at))
         finalTen = print;
@@ -63,14 +73,17 @@ async function replay(market) {
   };
 }
 
-const [from, until] = process.argv.slice(2).map(Date.parse);
+const [from, until] = args.slice(0, 2).map(Date.parse);
 const dstDay = [23, 25].includes((until - from) / 3600000);
 if (
   !(until > from && until <= Date.now()) ||
   (!dstDay && (until - from) % 86400000)
 )
   throw Error('Supply past UTC day boundaries');
-const dir = new URL('./runtime/replay/', import.meta.url);
+const dir = new URL(
+  tenOnly ? './runtime/holdout-ten/' : './runtime/replay/',
+  import.meta.url
+);
 await fs.mkdir(dir, { recursive: true });
 for (
   let start = from;
