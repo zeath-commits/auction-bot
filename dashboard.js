@@ -98,6 +98,8 @@ function paper(d) {
       ).size
     ]
   ]);
+  if (selected === 'btc_underdog')
+    note('One paper contract per market at the first 1¢ or 2¢ ask in the final minute that holds or improves on a second book check. Net includes modeled taker fees.');
   if (
     ['all', 'sale_depth', 'late_auction', 'sothebys_sold'].includes(selected)
   ) {
@@ -656,7 +658,7 @@ function history(d) {
     ['Losing favorites', days.reduce((n, r) => n + r.prints - r.wins, 0)]
   ]);
   note(
-    'First 98¢ or 99¢ trade on either side during the final minute of each Kalshi 15-minute BTC market. Gross assumes one contract per qualifying window, before fees. Historical prints do not establish available depth.'
+    'First 98¢ or 99¢ trade on either side during the final minute of each Kalshi 15-minute Bitcoin market. Both Bitcoin replays model one contract per entry at the standard taker fee and direct-member balance precision. Historical prints do not establish available depth.'
   );
   table(
     'Final minute by entry price',
@@ -703,7 +705,7 @@ function history(d) {
     'No completed replay days.'
   );
   table(
-    'Losing trades',
+    'Losing favorite trades',
     ['Print time', 'Market', 'Side', 'Entry', 'Settled'],
     days
       .flatMap((r) => r.losses)
@@ -716,6 +718,14 @@ function history(d) {
       ]),
     'No losses observed in the loaded replay.'
   );
+  table(
+    'Bitcoin 1–2¢ taker buys in the final minute',
+    ['Date (ET)', 'Resolved markets', 'Qualifying buys', 'Wins', 'Losses', 'Modeled net'],
+    (d.cheapTakerReplay ?? []).map(r =>
+      [r.day, r.windows, r.prints, r.wins, r.prints - r.wins, money(r.net)]),
+    'No completed replay days.'
+  );
+  note('Each replay models one contract at the first 1¢ or 2¢ public taker buy of at least one contract per market. The live paper test checks available offers separately.');
   table(
     'Final 10 seconds on earlier dates',
     [

@@ -4,8 +4,9 @@ import { API } from './transport.mjs';
 
 const args = process.argv.slice(2);
 const tenOnly = args[2] === '--final-ten';
-if (args.length !== (tenOnly ? 3 : 2))
-  throw Error('Supply two UTC boundaries and optionally --final-ten');
+const cheapTaker = args[2] === '--cheap-taker';
+if (args.length !== (tenOnly || cheapTaker ? 3 : 2))
+  throw Error('Supply two UTC boundaries and optionally --final-ten or --cheap-taker');
 
 // Reproduce the original test: first 98c/99c print on either side in the
 // final minute, irrespective of aggressor. A print is never a simulated fill.
@@ -43,16 +44,17 @@ async function replay(market) {
       const at = Date.parse(trade.created_time);
       if (trade.is_block_trade || at < 1000 * (end - 60) || at >= 1000 * end)
         continue;
-      const side = ['yes', 'no'].find((k) =>
-        [0.98, 0.99].includes(Number(trade[k + '_price_dollars']))
-      );
+      const prices = cheapTaker ? [0.01, 0.02] : [0.98, 0.99];
+      const side = ['yes', 'no'].find(k => prices.includes(Number(trade[k + '_price_dollars'])));
       if (!side) continue;
+      if (cheapTaker && (trade.ticker !== market.ticker ||
+          (trade.taker_outcome_side ?? trade.taker_side) !== side || !(Number(trade.count_fp) >= 1))) continue;
       const print = {
         at: trade.created_time,
         side,
         price: Number(trade[side + '_price_dollars'])
       };
-      if (tenOnly) {
+      if (tenOnly || cheapTaker) {
         print.count = trade.count_fp;
         print.taker = trade.taker_outcome_side ?? trade.taker_side;
         print.id = trade.trade_id;
@@ -81,7 +83,7 @@ if (
 )
   throw Error('Supply past UTC day boundaries');
 const dir = new URL(
-  tenOnly ? './runtime/holdout-ten/' : './runtime/replay/',
+  cheapTaker ? './runtime/cheap-taker/' : tenOnly ? './runtime/holdout-ten/' : './runtime/replay/',
   import.meta.url
 );
 await fs.mkdir(dir, { recursive: true });

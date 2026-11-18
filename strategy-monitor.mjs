@@ -18,6 +18,7 @@ export const strategies = {
   auction_pair: 'Auction · paired thresholds',
   crypto_pair: 'Crypto · paired thresholds',
   btc60: 'Bitcoin · final minute',
+  btc_underdog: 'Bitcoin · 1–2¢ offer in the final minute',
   btc10: 'Bitcoin · final 10 seconds',
   btcDepth: 'Bitcoin · 1,000 contracts displayed',
   published_sale: 'Published auction price',
@@ -40,7 +41,7 @@ export function openLedger(directory) {
   return db;
 }
 
-export function bestFavorite(book) {
+function bestQuoteAtPrices(book, prices) {
   const fp = book?.orderbook_fp;
   if (!Array.isArray(fp?.yes_dollars) || !Array.isArray(fp?.no_dollars))
     return null;
@@ -57,10 +58,14 @@ export function bestFavorite(book) {
     const size = valid
       .filter(([p]) => p === bid)
       .reduce((sum, [, n]) => sum + n, 0);
-    if ([0.98, 0.99].includes(price) && size >= 1)
+    if (prices.includes(price) && size >= 1)
       choices.push({ side, price, size });
   }
   return choices.length === 1 ? choices[0] : null;
+}
+
+export function bestFavorite(book) {
+  return bestQuoteAtPrices(book, [0.98, 0.99]);
 }
 
 export function recordBtc(db, market, first, second, multiplier) {
@@ -81,17 +86,10 @@ export function recordBtc(db, market, first, second, multiplier) {
     `INSERT INTO windows VALUES(?,?,1,?,?) ON CONFLICT(ticker) DO UPDATE SET
     checks=checks+1,lastCheck=excluded.lastCheck`
   ).run(market.ticker, close, observed, observed);
-  const a = bestFavorite(first.body),
-    b = bestFavorite(second.body);
-  if (!a || !b || b.side !== a.side || b.price > a.price) return;
-  const depth = Math.min(a.size, b.size);
-  for (const [strategy, seconds, minimumSize] of [
-    ['btc60', 60, 1],
-    ['btc10', 10, 1],
-    ['btcDepth', 60, 1000]
-  ]) {
-    if (first.requestedAt < close - seconds * 1000 || depth < minimumSize)
-      continue;
+  function recordOffer(strategy, seconds, minimumSize, a, b) {
+    if (!a || !b || b.side !== a.side || b.price > a.price) return;
+    const depth = Math.min(a.size, b.size);
+    if (first.requestedAt < close - seconds * 1000 || depth < minimumSize) return;
     const fee =
       Math.ceil(0.07 * multiplier * b.price * (1 - b.price) * 10000 - 1e-9) /
       10000;
@@ -108,6 +106,14 @@ export function recordBtc(db, market, first, second, multiplier) {
       closeAt: close
     });
   }
+  const favoriteA = bestFavorite(first.body);
+  const favoriteB = bestFavorite(second.body);
+  recordOffer('btc60', 60, 1, favoriteA, favoriteB);
+  recordOffer('btc10', 10, 1, favoriteA, favoriteB);
+  recordOffer('btcDepth', 60, 1000, favoriteA, favoriteB);
+  const cheapPrices = [0.01, 0.02];
+  recordOffer('btc_underdog', 60, 1,
+    bestQuoteAtPrices(first.body, cheapPrices), bestQuoteAtPrices(second.body, cheapPrices));
 }
 
 export function addPaper(db, r) {
@@ -145,7 +151,7 @@ export async function settle(db, io) {
   const pending = db
     .prepare(
       `SELECT DISTINCT p.ticker FROM paper p LEFT JOIN results r USING(ticker)
-    WHERE payout IS NULL AND p.ticker NOT LIKE 'cpc-btc-updown-5m-%' AND (p.strategy NOT IN ('btc60','btc10','btcDepth','cross_us_btc','cross_us_middle') OR closeAt<=?) AND COALESCE(r.checked,0)<?
+    WHERE payout IS NULL AND p.ticker NOT LIKE 'cpc-btc-updown-5m-%' AND (p.strategy NOT IN ('btc60','btc10','btcDepth','btc_underdog','cross_us_btc','cross_us_middle') OR closeAt<=?) AND COALESCE(r.checked,0)<?
     ORDER BY COALESCE(r.checked,0) LIMIT 10`
     )
     .all(Date.now(), Date.now() - 60000);

@@ -36,6 +36,11 @@
   ],
   "studies": [
     {
+      "market": "Kalshi Bitcoin 15-minute",
+      "test": "First 98¢ or 99¢ print in the final minute, November 11–17",
+      "finding": "At one contract per market, the 98¢ cohort won 171 of 176 and lost $1.73 after modeled fees. The 99¢ cohort won 51 of 52 and lost $0.52. Each cohort uses the first qualifying print on either side. The separate 1–2¢ experiment checks whether a buyer could obtain the low-priced side."
+    },
+    {
       "market": "Auction sale prices",
       "test": "Artnet unsold settlement precedent",
       "finding": "For the Williams FW16B at Sotheby’s on November 16, Kalshi recorded Unsold and finalized all six thresholds NO. The six thresholds share one auction result. This is one precedent for a bought-in lot. Withdrawals are tracked separately."

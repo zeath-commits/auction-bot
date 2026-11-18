@@ -169,18 +169,18 @@ function importAuction() {
     }
 }
 const cachedDays = new Map();
-function replay() {
-  const dir = path.join(runtime, 'replay');
+function replay(cheapTaker = false) {
+  const dir = path.join(runtime, cheapTaker ? 'cheap-taker' : 'replay');
   const baseline = path.join(ROOT, 'replay-baseline.json');
   const byDay = new Map(
-    (exists(baseline) ? json(baseline) : []).map((r) => [r.day, r])
+    (!cheapTaker && exists(baseline) ? json(baseline) : []).map((r) => [r.day, r])
   );
   for (const f of (exists(dir) ? fs.readdirSync(dir) : []).filter((f) =>
     /^\d{4}-\d{2}-\d{2}\.json$/.test(f)
   )) {
     const file = path.join(dir, f);
     const stamp = fs.statSync(file).mtimeMs;
-    const cached = cachedDays.get(f);
+    const cached = cachedDays.get(file);
     if (cached?.stamp === stamp) {
       byDay.set(cached.day, cached.summary);
       continue;
@@ -205,7 +205,7 @@ function replay() {
       listed: listed ?? rows.length,
       possible: possible ?? 96,
       prints: prints.length,
-      byPrice: [0.98, 0.99].map((price) => {
+      byPrice: (cheapTaker ? [0.01, 0.02] : [0.98, 0.99]).map((price) => {
         const cohort = prints.filter((r) => r.first.price === price);
         return {
           price,
@@ -231,7 +231,7 @@ function replay() {
         .filter((r) => r.first.side !== r.result)
         .map((r) => ({ ticker: r.ticker, ...r.first, result: r.result }))
     });
-    cachedDays.set(f, { stamp, day, summary: byDay.get(day) });
+    cachedDays.set(file, { stamp, day, summary: byDay.get(day) });
   }
   return [...byDay.values()].sort((a, b) => b.day.localeCompare(a.day));
 }
@@ -357,6 +357,8 @@ function nightlyReplay() {
   )
     launch('auction-tape-replay.mjs', readDesktopAuction, ['--desktop']);
   if (!replay().some((r) => r.day === day)) launch('btc-replay.mjs');
+  if (!exists(path.join(runtime, 'cheap-taker', day + '.json')))
+    launch('btc-replay.mjs', undefined, [from, to, '--cheap-taker']);
   const first = Date.parse(from) / 1000,
     end = Date.parse(to) / 1000,
     files = [];
@@ -542,6 +544,8 @@ const server = http.createServer((req, res) => {
           strategies,
           paper,
           replay: replay(),
+          cheapTakerReplay: replay(true).map(({day, windows, prints, wins, net}) =>
+            ({day, windows, prints, wins, net})),
           tenSecondValidation:
             json(path.join(ROOT, 'research.json')).tenSecondValidation ?? [],
           research: [

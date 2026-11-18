@@ -100,6 +100,25 @@ test('BTC strategies require repeatable size and settle each paper variant only 
       rows().map((r) => r.payout),
       [0, 0, 0]
     );
+    const cheap = (ms, bid, size = '1.00') => {
+      const snapshot = book(ms, '0.0500');
+      snapshot.body.orderbook_fp.yes_dollars = [[bid, size]];
+      return snapshot;
+    };
+    const candidate = { ...market, ticker: 'KXBTC15M-UNDERDOG' };
+    const recordCheap = (a,b) => recordBtc(db, candidate, a, b, 1);
+    recordCheap(cheap(close-6000,'0.9900'), cheap(close-4500,'0.9800'));
+    recordCheap(cheap(close-6000,'0.9800'), cheap(close-4500,'0.9800','0.99'));
+    assert.equal(rows().length, 3);
+    const confirm = () => recordCheap(cheap(close-6000,'0.9800'), cheap(close-4500,'0.9900'));
+    confirm();
+    confirm();
+    const cheapRows = () => rows().filter(r => r.strategy === 'btc_underdog');
+    assert.deepEqual(cheapRows().map(r => [r.side,r.quantity,r.price,r.fees]), [['no',1,0.01,0.0007]]);
+    await settle(db, { get: async () => ({
+      body: { market: { ...candidate, status: 'finalized', result: 'no' } }
+    }) });
+    assert.equal(cheapRows()[0].payout, 1);
   } finally {
     db.close();
     fs.rmSync(dir, { recursive: true, force: true });
