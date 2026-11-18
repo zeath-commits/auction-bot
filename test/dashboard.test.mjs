@@ -23,6 +23,8 @@ test(
         'strategy-monitor.mjs',
         'auction-pairs.mjs',
         'late-auction.mjs',
+        'us-bitcoin-paper.mjs',
+        'bitcoin-reference.mjs',
         'watch-offers.mjs',
         'paper-unsold.mjs',
         'dashboard.mjs',

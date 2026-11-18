@@ -36,6 +36,21 @@
   ],
   "studies": [
     {
+      "market": "Polymarket international BTC 5m",
+      "test": "First 98¢ or 99¢ taker buy in the last ten seconds, Nov 11–17 ET",
+      "finding": "79 qualifying buys across 2,016 resolved windows. All 79 won, for $1.15 modeled net after fees at one share each. Nov 17 contributed 8 wins and $0.13. The preceding six days contributed 71 wins and $1.02. None of the first qualifying buys reached 1,000 shares. Block timestamps can lag matching, and a past buyer’s price does not establish available depth."
+    },
+    {
+      "market": "Polymarket US and Kalshi BTC",
+      "test": "Shared quarter-hour settlements, Nov 4–17 ET",
+      "finding": "All 1,318 comparable closes reported identical final Bitcoin prices and different opening strikes. Ten additional Kalshi closes had no corresponding US listing. The live test prices ten lower-strike Up and higher-strike Down pairs after fees. Both legs must fill and the exchanges must use the same closing value for the $10 minimum payout to hold."
+    },
+    {
+      "market": "Polymarket US BTC reference chart",
+      "test": "Reconstruct official opening and closing values, Nov 17 ET",
+      "finding": "Across 288 markets, the chart reconstruction never matched both official values for the same market. The live strategies use published contract strikes and order books."
+    },
+    {
       "market": "Fine art",
       "test": "Public result versus settlement source",
       "finding": "105 thresholds on 14 earlier lots matched. Several thresholds shared the same auction result."

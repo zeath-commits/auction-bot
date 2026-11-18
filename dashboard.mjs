@@ -6,6 +6,7 @@ import { spawn } from 'node:child_process';
 import { ROOT } from './bot.mjs';
 import { observePairs, pairSeries } from './auction-pairs.mjs';
 import { observeLateAuctions } from './late-auction.mjs';
+import { observeUS } from './us-bitcoin-paper.mjs';
 import {
   addPaper,
   observe,
@@ -28,6 +29,7 @@ const config = JSON.parse(
 );
 const status = { state: 'Starting', at: null };
 const lateAuctionStatus = { at: null };
+const usBitcoinStatus = { at: null };
 const pairStatus = Object.fromEntries(
   Object.entries(pairSeries).map(([k, label]) => [k, { label, at: null }])
 );
@@ -210,17 +212,20 @@ function launchWorker(args) {
   children.add(child);
   child.on('exit', () => children.delete(child));
 }
-let replayProcess;
+const runningReplays = new Set();
+let latestGlobalStudy = null;
 function nightlyReplay() {
-  if (stopping || replayProcess || exists(path.join(ROOT, 'STOP'))) return;
+  if (stopping || exists(path.join(ROOT, 'STOP'))) return;
   const fmt = new Intl.DateTimeFormat('en-CA', {
     timeZone: 'America/New_York',
     year: 'numeric',
     month: '2-digit',
     day: '2-digit'
   });
-  const day = fmt.format(Date.now() - 86400000);
-  if (replay().some((r) => r.day === day)) return;
+  const today = fmt.format(Date.now());
+  const day = new Date(Date.parse(today + 'T00:00:00Z') - 86400000)
+    .toISOString()
+    .slice(0, 10);
   // Convert each Eastern midnight separately so DST days span 23 or 25 hours.
   function midnight(date) {
     const anchor = Date.parse(date + 'T00:00:00Z');
@@ -229,20 +234,59 @@ function nightlyReplay() {
       ? guessed.toISOString()
       : new Date(anchor + 5 * 3600000).toISOString();
   }
-  const tomorrow = new Date(Date.parse(day + 'T00:00:00Z') + 86400000)
-    .toISOString()
-    .slice(0, 10);
-  const child = spawn(
-    process.execPath,
-    ['btc-replay.mjs', midnight(day), midnight(tomorrow)],
-    { cwd: ROOT, windowsHide: true, stdio: 'inherit' }
-  );
-  replayProcess = child;
-  children.add(child);
-  child.on('exit', () => {
-    children.delete(child);
-    replayProcess = null;
-  });
+  const from = midnight(day),
+    to = midnight(today);
+  function launch(script, done) {
+    if (runningReplays.has(script)) return;
+    const child = spawn(process.execPath, [script, from, to], {
+      cwd: ROOT,
+      windowsHide: true,
+      stdio: 'inherit'
+    });
+    children.add(child);
+    runningReplays.add(script);
+    child.once('close', (code) => {
+      children.delete(child);
+      runningReplays.delete(script);
+      if (code === 0) done?.();
+    });
+  }
+  if (!replay().some((r) => r.day === day)) launch('btc-replay.mjs');
+  const first = Date.parse(from) / 1000,
+    end = Date.parse(to) / 1000,
+    files = [];
+  for (let t = first; t < end; t += 86400)
+    files.push(
+      path.join(
+        runtime,
+        'polymarket-replay',
+        t + '-' + Math.min(end, t + 86400) + '.json'
+      )
+    );
+  function summarize() {
+    if (!files.every(exists)) return;
+    const rows = files.flatMap(json),
+      hits = rows.filter((r) => r.first);
+    const wins = hits.filter((r) => r.net > 0).length;
+    const net = hits.reduce((sum, r) => sum + r.net, 0);
+    latestGlobalStudy = {
+      market: 'Polymarket international BTC 5m',
+      test: day + ' ET historical buys',
+      finding:
+        rows.length +
+        ' windows, ' +
+        rows.filter((r) => r.excluded).length +
+        ' excluded. ' +
+        wins +
+        ' wins in ' +
+        hits.length +
+        ' qualifying buys. Modeled net at one share each $' +
+        net.toFixed(2) +
+        '.'
+    };
+  }
+  if (files.every(exists)) summarize();
+  else launch('polymarket-replay.mjs', summarize);
 }
 const auctionStatus = {
   offers: 'Outside watch window',
@@ -353,12 +397,21 @@ const server = http.createServer((req, res) => {
           auctionStatus,
           pairStatus,
           lateAuctionStatus,
+          usBitcoinStatus,
+          usCoverage: db
+            .prepare(
+              'SELECT COUNT(*) AS windows,COALESCE(SUM(last10),0) AS last10,COALESCE(SUM(pairChecks),0) AS paired,MIN(minCost) AS minCost FROM us_samples'
+            )
+            .get(),
           strategies,
           paper,
           replay: replay(),
           tenSecondValidation:
             json(path.join(ROOT, 'research.json')).tenSecondValidation ?? [],
-          research: json(path.join(ROOT, 'research.json')).studies,
+          research: [
+            ...(latestGlobalStudy ? [latestGlobalStudy] : []),
+            ...json(path.join(ROOT, 'research.json')).studies
+          ],
           windows: db
             .prepare(
               'SELECT COUNT(*) AS n,COALESCE(SUM(checks),0) AS checks FROM windows'
@@ -394,6 +447,14 @@ server.listen(port, host, () => {
     }
   }
   importSafe();
+  observeUS({
+    db,
+    config,
+    stop: () => stopping || exists(path.join(ROOT, 'STOP')),
+    status: usBitcoinStatus
+  }).catch((e) => {
+    usBitcoinStatus.error = e.message;
+  });
   observeLateAuctions({
     db,
     config,

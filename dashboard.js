@@ -110,7 +110,7 @@ function paper(d) {
       })
   );
   note(
-    'Each BTC strategy models one contract. The size test requires at least 1,000 contracts visible on both checks. Strategies can overlap on the same market. Sale-window auction entries use a fee reserve. Later offers use estimated taker fees.'
+    'BTC closing-favorite tests model one contract per market. The size test requires 1,000 visible on both checks. Cross-venue tests model ten pairs. Strategies can overlap. Sale-window auction entries use a fee reserve. Later offers use estimated taker fees.'
   );
   note(
     'BTC monitor · ' +
@@ -153,6 +153,24 @@ function paper(d) {
         time(late.at)
     );
   }
+  if (d.usBitcoinStatus?.at)
+    note(
+      'Polymarket US · ' +
+        (d.usBitcoinStatus.error ?? d.usBitcoinStatus.state) +
+        ' · ' +
+        d.usCoverage.last10 +
+        ' final-ten-second checks · ' +
+        d.usCoverage.paired +
+        ' priced two-venue comparisons · ' +
+        (d.usBitcoinStatus.stale ?? 0) +
+        ' stale or late reads skipped since startup' +
+        (d.usCoverage.minCost != null
+          ? ' · lowest combined cost for ten pairs ' +
+            money(d.usCoverage.minCost)
+          : '') +
+        ' · ' +
+        time(d.usBitcoinStatus.at)
+    );
   if (selected === 'all' || selected === 'late_auction') {
     const positions = rows.filter(
       (r) => r.strategy === 'late_auction' && r.payout == null
