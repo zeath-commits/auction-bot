@@ -113,6 +113,24 @@ export function parseReport(station, p) {
     Number(d.hour) < 12
   )
     return null;
+  const monthIndex = 'JAN FEB MAR APR MAY JUN JUL AUG SEP OCT NOV DEC'
+    .split(' ')
+    .indexOf(heading[2].slice(0, 3));
+  const dayStart = Date.UTC(
+    Number(d.year),
+    monthIndex,
+    Number(d.day),
+    station.cli === 'MDW' ? 6 : 5
+  );
+  const peak = s
+    .slice(temp.index + temp[0].length)
+    .match(/^[ \t]*(\d{1,2}):?(\d{2})[ \t]+(AM|PM)\b/);
+  const validPeak = peak && +peak[1] >= 1 && +peak[1] <= 12 && +peak[2] < 60;
+  const peakAt = validPeak
+    ? dayStart +
+      (((+peak[1] % 12) + (peak[3] === 'PM' ? 12 : 0)) * 60 + Number(peak[2])) *
+        60000
+    : null;
   const suffix =
     d.year.slice(-2) + d.month.toUpperCase() + d.day.padStart(2, '0');
   return {
@@ -120,6 +138,8 @@ export function parseReport(station, p) {
     ts: t,
     issuedAt: p.issuanceTime,
     high: Number(temp[1]),
+    dayStart,
+    peakAt,
     date: d.month + ' ' + d.day + ', ' + d.year,
     event: station.series + '-' + suffix
   };

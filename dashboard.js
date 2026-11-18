@@ -142,6 +142,7 @@ function paper(d) {
         'Station',
         'Latest check',
         'Reported high',
+        'Station check',
         'Crossed thresholds',
         'Repeated offers'
       ],
@@ -149,10 +150,23 @@ function paper(d) {
         city,
         r.error ?? r.state,
         r.high != null ? r.high + '°F' : null,
+        r.stationError ??
+          (r.stationMaximum != null ? r.stationMaximum + '°F' : null),
         r.thresholds,
         r.offers
       ])
     );
+    if (d.weatherStatus.stationGroups?.length)
+      table(
+        'Weather paper entries by station evidence',
+        ['Station check', 'Entries', 'Settled', 'Settled net'],
+        d.weatherStatus.stationGroups.map((x) => [
+          x.label,
+          x.entries,
+          x.settled,
+          money(x.net)
+        ])
+      );
     note(
       'Reports checked ' +
         time(d.weatherStatus.at) +

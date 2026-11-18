@@ -1,3 +1,8 @@
+import {
+  stationMessages,
+  stationEvidence,
+  stationSupports
+} from './weather-station.mjs';
 import fs from 'node:fs/promises';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { Transport } from './transport.mjs';
@@ -54,7 +59,41 @@ export async function observeWeather({ db, config, status, stop }) {
   db.exec(
     'CREATE TABLE IF NOT EXISTS weather_report_reads(id TEXT PRIMARY KEY, event TEXT, at INTEGER, detail TEXT);CREATE TABLE IF NOT EXISTS weather_quote_checks(id TEXT, at INTEGER, ticker TEXT, detail TEXT,PRIMARY KEY(id,at,ticker))'
   );
+  db.exec(
+    'CREATE TABLE IF NOT EXISTS weather_station_checks(id TEXT PRIMARY KEY, at INTEGER, detail TEXT); CREATE TABLE IF NOT EXISTS weather_station_entries(id TEXT PRIMARY KEY, report TEXT, label TEXT)'
+  );
   const cached = new Map();
+  function startStationCheck(station, r) {
+    const cache = cached.get(station.cli);
+    if (cache.loading || cache.proof || stop()) return;
+    const previous = db
+      .prepare('SELECT detail FROM weather_station_checks WHERE id=?')
+      .get(r.id);
+    if (previous) {
+      cache.proof = JSON.parse(previous.detail).evidence;
+      return;
+    }
+    cache.loading = true;
+    stationMessages(station, r.ts)
+      .then(({ url, rows }) => {
+        if (stop()) return;
+        const evidence = stationEvidence(station, r, rows);
+        if (!evidence.observations && !evidence.intervals)
+          throw Error('No eligible station messages');
+        db.prepare(
+          'INSERT OR IGNORE INTO weather_station_checks VALUES(?,?,?)'
+        ).run(r.id, Date.now(), JSON.stringify({ url, rows, evidence }));
+        cache.proof = evidence;
+        cache.stationError = null;
+      })
+      .catch((e) => {
+        cache.stationError = e.message;
+      })
+      .finally(() => {
+        cache.loading = false;
+      });
+  }
+
   async function check(station) {
     const now = Date.now(),
       local = localParts(station, now);
@@ -112,6 +151,7 @@ export async function observeWeather({ db, config, status, stop }) {
       issuedAt: r.issuedAt,
       report: r.id
     };
+    startStationCheck(station, r);
     if (age < 60000)
       return { ...info, state: 'Waiting for one-minute entry delay' };
     const markets = await eventMarkets(station, r);
@@ -133,6 +173,8 @@ export async function observeWeather({ db, config, status, stop }) {
       throw Error('Weather fee schedule changed');
     if (!exchange.body.trading_active || !exchange.body.exchange_active)
       return { ...info, state: 'Exchange unavailable' };
+    // Freeze what this worker actually had in hand before the first book request.
+    const proof = cached.get(station.cli).proof;
     const a = await snapshot(io, eligible);
     await sleep(1000);
     const [again, b] = await Promise.all([
@@ -186,6 +228,23 @@ export async function observeWeather({ db, config, status, stop }) {
             10000,
           closeAt: Date.parse(m.close_time)
         });
+        const label = !proof
+          ? 'Unavailable'
+          : proof.contradicted
+            ? 'Conflicting report'
+            : proof.maximum === null
+              ? 'Unavailable'
+              : stationSupports(proof, m, side)
+                ? 'Supported'
+                : 'Unconfirmed';
+        db.prepare(
+          'INSERT OR IGNORE INTO weather_station_entries SELECT id,?,? FROM paper WHERE id=? AND at=?'
+        ).run(
+          r.id,
+          label,
+          'weather_high/' + m.ticker,
+          new Date(b.at).toISOString()
+        );
       }
       db.exec('COMMIT');
     } catch (e) {
@@ -195,6 +254,8 @@ export async function observeWeather({ db, config, status, stop }) {
     return {
       ...info,
       state: 'Checking published high',
+      stationMaximum: proof?.maximum ?? null,
+      stationError: cached.get(station.cli).stationError ?? null,
       thresholds: eligible.length,
       offers
     };
@@ -240,6 +301,11 @@ export async function observeWeather({ db, config, status, stop }) {
         nextReview = Date.now() + 60000;
       }
     }
+    status.stationGroups = db
+      .prepare(
+        `SELECT COALESCE(e.label,'Unavailable') AS label, COUNT(*) AS entries,COUNT(p.payout) AS settled,SUM(p.payout-p.price*p.quantity-p.fees) AS net FROM paper p LEFT JOIN weather_station_entries e ON p.id=e.id WHERE p.strategy='weather_high' GROUP BY 1`
+      )
+      .all();
     status.cities = Object.fromEntries(
       checks.map((x, i) => [
         stations[i].city,

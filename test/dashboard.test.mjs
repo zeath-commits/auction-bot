@@ -31,6 +31,7 @@ test(
         'sale-timing.mjs',
         'nba-paper.mjs',
         'weather-paper.mjs',
+        'weather-station.mjs',
         'weather-high.mjs',
         'sothebys-bid-calendar.json',
         'watch-offers.mjs',
