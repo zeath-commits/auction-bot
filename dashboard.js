@@ -112,6 +112,10 @@ function paper(d) {
       table('Joining an existing 99.9¢ bid', ['Bids observed','Settlements reviewed','Volume covered queue + 100','Winning side among those'],
         [[q.trials,q.reviewed,q.cleared,q.wins]]);
       note('The queue estimate uses the larger depth on two reads. It counts subsequent trades starting 500 milliseconds later. Actual queue priority is unknown.');
+      table('Recent 99.9¢ bids', ['Market','Bid side','Simulated arrival','Contracts ahead','Later matching volume','Settlement'],
+        (d.btc999Recent ?? []).map(r=>[r.ticker,r.side.toUpperCase(),time(r.arrival),
+          r.ahead.toLocaleString(),r.volume?.toLocaleString() ?? 'Pending',r.result?.toUpperCase() ?? 'Pending']),
+        'Waiting for a bid to appear on two fresh book reads.');
     }
   }
   if (selected === 'art_record_pair') {

@@ -580,6 +580,7 @@ const server = http.createServer((req, res) => {
             count(CASE WHEN volume>=ahead+100 THEN 1 END) AS cleared,
             count(CASE WHEN volume>=ahead+100 AND result=side THEN 1 END) AS wins
             FROM btc_999_queue`).get(),
+          btc999Recent: db.prepare('SELECT ticker,side,arrival,ahead,volume,result FROM btc_999_queue ORDER BY arrival DESC LIMIT 12').all(),
           research: [
             ...(desktopAuctionStudy ? [desktopAuctionStudy] : []),
             ...(latestGlobalStudy ? [latestGlobalStudy] : []),
