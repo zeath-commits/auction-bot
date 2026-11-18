@@ -17,6 +17,7 @@ import {
 } from './auction-portfolio.mjs';
 import { observeNBA } from './nba-paper.mjs';
 import { observeRecordPair } from './art-record-pair.mjs';
+import { observeRangeBids } from './art-range-bids.mjs';
 import { observeCS2 } from './esports-paper.mjs';
 import { observeUS } from './us-bitcoin-paper.mjs';
 import { observeSothebysBids } from './sothebys-bids.mjs';
@@ -47,6 +48,7 @@ const usBitcoinStatus = { at: null };
 const sothebysStatus = {};
 const nbaStatus = {};
 const recordPairStatus = {};
+const rangeBidStatus = {};
 const cs2Status = {};
 const auctionExits = {};
 const weatherStatus = {};
@@ -521,6 +523,8 @@ const server = http.createServer((req, res) => {
           soldLimits: soldLimits.summary(),
           nbaStatus,
           recordPairStatus,
+          rangeBidStatus,
+          rangeBidEvidence: db.prepare('SELECT detail FROM art_range_signals').all().map(r=>JSON.parse(r.detail)),
           cs2Status,
           auctionPortfolio: auctionPortfolio(db),
           catalogComparison: { observedAt: catalogObservedAt, source: catalogSource, cases: catalogCases },
@@ -600,6 +604,9 @@ server.listen(port, host, () => {
     }
   }
   importSafe();
+  observeRangeBids({db,config,status:rangeBidStatus,
+    stop:() => stopping || exists(path.join(ROOT,'STOP'))
+  }).catch(e => {rangeBidStatus.error=e.message;});
   observeRecordPair({db,config,status:recordPairStatus,
     stop:() => stopping || exists(path.join(ROOT,'STOP'))
   }).catch(e => {recordPairStatus.error=e.message;});

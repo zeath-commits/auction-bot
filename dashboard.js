@@ -111,6 +111,15 @@ function paper(d) {
     if (d.recordPairStatus?.at) note((d.recordPairStatus.error ?? d.recordPairStatus.strikes+' eligible lot thresholds')+
       ' · checked '+time(d.recordPairStatus.at));
   }
+  if (selected === 'art_range_bids') {
+    note('Five simulated Kalshi YES shares per artwork when bids on mutually exclusive Polymarket ranges entirely above the threshold exceed the Kalshi cost by at least 2¢ per share on two checks. The reference measures what other traders bid. It does not establish the chance of winning.');
+    table('Range bids at entry',['Kalshi market','Qualifying ranges','Combined bids','Cost per share with fees','Difference'],(d.rangeBidEvidence ?? []).map(r=>{
+      const p=r.second.pick;
+      return [p.ticker,p.supporting.map(b=>b.label).join(', '),money(p.reference),money(p.price+p.fees/5),(p.gap*100).toFixed(2)+'¢'];
+    }), 'No paper entries yet.');
+    for (const [title,r] of Object.entries(d.rangeBidStatus?.lots ?? {})) note(title+' · '+r.state);
+    if (d.rangeBidStatus?.ended) note('Pre-auction test ended.');
+  }
   if (selected === 'btc_chart10' && d.btcChartCoverage) {
     const c = d.btcChartCoverage;
     note('The projection uses 46 one-second chart prices and holds the last price flat for the remaining 14 seconds. A paper entry requires a projected margin of at least 0.05% on the offered side and two subsequent order-book checks at 98¢ or 99¢.');

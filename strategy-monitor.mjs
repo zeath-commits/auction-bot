@@ -21,6 +21,7 @@ export const strategies = {
   sale_depth: 'Auction · available quantity after confirmed results',
   auction_pair: 'Auction · paired thresholds',
   art_record_pair: 'Auction · Van Gogh annual record and individual lot',
+  art_range_bids: 'Auction · Polymarket range bids vs. Kalshi thresholds',
   crypto_pair: 'Crypto · paired thresholds',
   btc60: 'Bitcoin · final minute',
   btc_band60: 'Bitcoin · final minute, all prices from 98¢ to 99¢',
