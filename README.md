@@ -13,7 +13,7 @@ npm run paper
 
 The paper worker needs no API credentials or package installation. The bundled watchlist covers the November 17, 2026 sales and expires after those auctions. Review the sale windows, lot identities, contract rules, and market tickers before using a new watchlist.
 
-For hosting, select a background worker, use `npm run paper` as its start command, and give one instance persistent writable storage at `runtime/` for the SQLite ledger. [Operating details](README.txt) cover the configuration, separate final-result strategy, and limits of the simulated results.
+For Railway, deploy the repository root as a background worker. Railpack detects `npm start`, which runs the offer watcher in paper mode. Use a single instance and mount persistent storage at `/app/runtime` to keep its journal across deployments. The worker has no HTTP listener. The alternative `npm run paper` command runs the bid and unsold experiments with their SQLite ledger. [Operating details](README.txt) cover the configuration and limits of the simulated results.
 
 ## Watch for later offers
 
