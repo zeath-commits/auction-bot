@@ -37,6 +37,11 @@
   "studies": [
     {
       "market": "Kalshi Bitcoin 15-minute",
+      "test": "First 1¢ or 2¢ taker buy in the final minute, November 4–17",
+      "finding": "Across 1,328 resolved markets, 469 had a qualifying non-block buy of at least one contract. Seven won. At one contract per entry the modeled net after fees was −$1.5172. November 4–10 lost $2.3870 and November 11–17 gained $0.8698. The 1¢ and 2¢ entry groups both lost money across the full period."
+    },
+    {
+      "market": "Kalshi Bitcoin 15-minute",
       "test": "Price chart confirmation before final-ten-second buys, October 7–November 10",
       "finding": "Across 3,324 windows, 68 first 98¢ or 99¢ closing trades were favorite-side taker buys of at least one contract. They won 66 times and lost $0.9491 after modeled fees. The projection from 46 one-second Polymarket US chart prices called 40 of 68 outcomes correctly. Requiring a 0.05% margin in the buyer’s direction selected two trades. Both won, for $0.0279. Historical chart retrieval cannot establish when those prices became available."
     },
