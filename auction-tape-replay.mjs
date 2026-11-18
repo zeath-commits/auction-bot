@@ -34,16 +34,26 @@ export function matchBook(books, trade) {
   return book.levels.find(([p]) => p === trade.price)?.[1] ?? 0;
 }
 
-export function simulate(trades, maxPerTicker, delayMs, requireBook) {
-  const used = new Set(),
+export function simulate(
+  trades,
+  maxPerEntry,
+  delayMs,
+  requireBook,
+  repeatAfterMs = Infinity
+) {
+  const used = new Map(),
     entries = [];
   let cash = 100000,
     payout = 0,
     unsettled = 0;
   for (const t of trades) {
-    if (used.has(t.ticker) || t.elapsedMs < delayMs) continue;
+    if (
+      t.elapsedMs < delayMs ||
+      (used.has(t.ticker) && t.elapsedMs - used.get(t.ticker) < repeatAfterMs)
+    )
+      continue;
     let quantity = Math.min(
-      maxPerTicker,
+      maxPerEntry,
       Math.floor(t.size),
       requireBook ? t.shown : Infinity
     );
@@ -60,7 +70,7 @@ export function simulate(trades, maxPerTicker, delayMs, requireBook) {
     cash -= debit;
     payout += t.won ? quantity * 100 : 0;
     if (t.won == null) unsettled += debit;
-    used.add(t.ticker);
+    used.set(t.ticker, t.elapsedMs);
     entries.push({
       ticker: t.ticker,
       event: t.event,
@@ -75,11 +85,39 @@ export function simulate(trades, maxPerTicker, delayMs, requireBook) {
   }
   return {
     entries,
+    tickers: used.size,
     lots: new Set(entries.map((e) => e.artwork)).size,
     quantity: entries.reduce((n, e) => n + e.quantity, 0),
     cost: (100000 - cash) / 100,
     pendingCost: unsettled / 100,
     net: unsettled ? null : (payout + cash - 100000) / 100
+  };
+}
+
+function microseconds(at) {
+  const fraction = at.match(/\.(\d+)Z$/)?.[1] ?? '';
+  return Date.parse(at) * 1000 + Number(fraction.padEnd(6, '0').slice(3, 6));
+}
+
+export function repeatStudy(trades) {
+  // Fills at a common timestamp can belong to the same incoming order.
+  // Use only the highest observed qualifying price in each such group.
+  const groups = new Map();
+  for (const t of trades) {
+    const timestamp = microseconds(t.at),
+      key = t.ticker + '/' + timestamp,
+      prior = groups.get(key);
+    if (!prior || t.price > prior.price) groups.set(key, { ...t, timestamp });
+    else if (t.price === prior.price)
+      prior.size = Math.round((prior.size + t.size) * 100) / 100;
+  }
+  const prints = [...groups.values()].sort(
+    (a, b) => a.timestamp - b.timestamp || a.ticker.localeCompare(b.ticker)
+  );
+  return {
+    first: simulate(prints, 5, 30000, false),
+    repeat: simulate(prints, 5, 30000, false, 60000),
+    volumeLimited: simulate(prints, Infinity, 30000, false, 60000)
   };
 }
 
@@ -122,7 +160,7 @@ async function readTape(lot, m, c) {
         r.taker_book_side !== (side === 'yes' ? 'bid' : 'ask') ||
         price <= 0 ||
         price > 0.95 ||
-        size < 1
+        size <= 0
       )
         continue;
       const trade = {
@@ -131,7 +169,7 @@ async function readTape(lot, m, c) {
         artwork: lot.sale + '/' + lot.lot,
         id: r.trade_id,
         at: r.created_time,
-        elapsedMs: at - from,
+        elapsedMs: (microseconds(r.created_time) - from * 1000) / 1000,
         price,
         size,
         side,
@@ -244,7 +282,10 @@ async function main() {
       trades.push(...(await readTape(lot, m, c)));
     }
   }
-  trades.sort((a, b) => a.at.localeCompare(b.at) || a.id.localeCompare(b.id));
+  trades.sort(
+    (a, b) =>
+      microseconds(a.at) - microseconds(b.at) || a.id.localeCompare(b.id)
+  );
   const models = [];
   for (const delay of [0, 5, 30, 60, 300])
     for (const max of [1, 5, 1000])
@@ -260,7 +301,8 @@ async function main() {
     checked,
     pending,
     trades,
-    models
+    models,
+    repeated: repeatStudy(trades)
   };
   const dir = new URL('./runtime/', import.meta.url);
   await fs.mkdir(dir, { recursive: true });

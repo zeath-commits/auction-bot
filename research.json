@@ -37,6 +37,11 @@
   "studies": [
     {
       "market": "Sotheby's auction results",
+      "test": "November 16 · repeat purchases after a public result",
+      "finding": "Across 24 thresholds with buys at 95¢ or less at least 30 seconds after a result, 11 had another eligible buy at least a minute later. Grouping simultaneous fills, a five-share cap gave $6.29 modeled net for first buys and $17.47 including repeats. Using the full printed quantity up to $1,000 of cash gave $103.13 modeled net on $999.87, with $708.83 of cost on the Rothko alone. This assumes taking the place of actual buyers. Available depth at those times is unknown."
+    },
+    {
+      "market": "Sotheby's auction results",
       "test": "November 16 · 14 artworks across two sales",
       "finding": "All 105 thresholds settled on the side implied by the published sale prices. Buyers took that side at 95¢ or less on 25 thresholds after the result was seen. On three thresholds a buyer traded at the exact price seen in an archived book 1–30 seconds earlier. Capping entries at five shares per threshold and the smaller of observed and traded size gave seven shares, $6.46 modeled cost and $0.54 modeled net. Archive coverage was incomplete."
     },

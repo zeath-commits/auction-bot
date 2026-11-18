@@ -66,7 +66,9 @@ test('sale and post-sale depth scans share cash, verify both books, and record t
       labels: { currency_txt: 'USD' }
     }) +
     ';</script>';
-  let books = 0;
+  let books = 0,
+    quantity = '10.00',
+    bid = '0.1000';
   const io = {
     request: async () => ({ text: html, requestedAt: Date.now() }),
     get: async (p) => {
@@ -88,7 +90,7 @@ test('sale and post-sale depth scans share cash, verify both books, and record t
             {
               ticker,
               orderbook_fp: {
-                no_dollars: [['0.1000', ++books === 1 ? '12.00' : '10.00']]
+                no_dollars: [[bid, ++books === 1 ? '12.00' : quantity]]
               }
             }
           ]
@@ -143,6 +145,22 @@ test('sale and post-sale depth scans share cash, verify both books, and record t
         .n,
       1
     );
+    db.prepare("UPDATE paper SET payout=1000 WHERE id='prior'").run();
+    await scanAuctionDepth(opts, 'late_auction');
+    const owned = () =>
+      db
+        .prepare('SELECT SUM(quantity) AS n FROM paper WHERE ticker=?')
+        .get(ticker).n;
+    assert.equal(owned(), 10);
+    bid = '0.1700';
+    await scanAuctionDepth(opts, 'late_auction');
+    assert.equal(owned(), 10);
+    quantity = '13.00';
+    await scanAuctionDepth(opts, 'late_auction');
+    assert.equal(owned(), 13);
+    assert.equal(opts.status.addedContracts, 3);
+    await scanAuctionDepth(opts, 'late_auction');
+    assert.equal(owned(), 13);
   } finally {
     db.close();
     fs.rmSync(dir, { recursive: true, force: true });

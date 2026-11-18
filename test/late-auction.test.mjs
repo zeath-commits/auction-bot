@@ -75,4 +75,12 @@ test('late auction sizing uses repeat depth, fees, and available cash', () => {
   assert.equal(persistentOffer(a, b, 'NO', 0.9813), null);
   assert.equal(persistentOffer(a, b, 'NO', 0.9814).quantity, 1);
   assert.equal(persistentOffer(a, book('0', '0'), 'NO', 1000), null);
+  // Reserve the original 125 contracts first. Repricing or temporary removal
+  // does not make an existing block available a second time.
+  assert.equal(persistentOffer(a, b, 'NO', 1000, 125), null);
+  const expanded = book('125', '4');
+  const extra = persistentOffer(expanded, expanded, 'NO', 1000, 125);
+  assert.equal(extra.quantity, 4);
+  assert.equal(extra.price, 0.99);
+  assert.equal(persistentOffer(expanded, a, 'NO', 1000, 126), null);
 });

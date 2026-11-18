@@ -281,6 +281,18 @@ function nightlyReplay() {
           ? 'Payouts for selected trades are pending.'
           : 'Modeled net after settlement $' + m.net.toFixed(2) + '.')
     };
+    const repeat = d.repeated?.repeat;
+    if (repeat)
+      desktopAuctionStudy.finding +=
+        ' Grouping simultaneous fills and allowing another purchase after 60 seconds gave ' +
+        repeat.entries.length +
+        ' modeled entries across ' +
+        repeat.tickers +
+        ' thresholds, ' +
+        repeat.quantity +
+        ' shares and $' +
+        repeat.cost.toFixed(2) +
+        ' in cost.';
     return d;
   }
   const auction = readDesktopAuction();

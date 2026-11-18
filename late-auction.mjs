@@ -101,24 +101,45 @@ function charge(price, quantity) {
 
 // Use whole contracts and take only volume visible at the same price on
 // both reads. The exchange does not disclose queue identities in this feed.
-export function persistentOffer(first, second, side, cash) {
-  const original = new Map(
-    askLevels(first, side, 99).map((l) => [l.price, l.quantity])
-  );
+export function persistentOffer(
+  first,
+  second,
+  side,
+  cash,
+  previouslyBought = 0
+) {
+  if (!Number.isSafeInteger(previouslyBought) || previouslyBought < 0)
+    throw Error('Invalid previous paper quantity');
+  const firstLevels = askLevels(first, side, 99);
+  const original = new Map(firstLevels.map((l) => [l.price, l.quantity]));
+  if (original.size !== firstLevels.length)
+    throw Error('Repeated price in returned order book');
   let quantity = 0,
     principal = 0,
     fees = 0,
     displayed = 0;
-  const levels = [];
+  const levels = [],
+    seen = new Set();
+  let reserved = previouslyBought;
   for (const level of askLevels(second, side, 99)) {
+    if (seen.has(level.price))
+      throw Error('Repeated price in returned order book');
+    seen.add(level.price);
     const price = level.price / scale;
     const depth = Math.floor(
       Math.min(original.get(level.price) ?? 0, level.quantity) / scale
     );
     displayed += depth;
+    // The book has no order identities. Reserve the earlier paper units at the
+    // cheapest visible prices, even if quotes were cancelled or repriced.
+    const overlap = Math.min(reserved, depth);
+    reserved -= overlap;
     const available = cash - principal - fees;
     const unit = price + 0.07 * price * (1 - price);
-    let count = Math.min(depth, Math.floor((available + 1e-10) / unit));
+    let count = Math.min(
+      depth - overlap,
+      Math.floor((available + 1e-10) / unit)
+    );
     if (count > 0 && count * price + charge(price, count) > available + 1e-9)
       count--;
     if (count <= 0) continue;
@@ -176,9 +197,30 @@ export async function scanAuctionDepth(
     quoted: 0,
     unconfirmed: [],
     sourceErrors: 0,
-    newEntries: 0
+    newEntries: 0,
+    priorBooks: 0,
+    expandedBooks: 0,
+    addedContracts: 0
   };
-  const already = db.prepare('SELECT 1 FROM paper WHERE id=?');
+  const holdings =
+    db.prepare(`SELECT p.side,p.quantity,p.payout,e.detail FROM paper p LEFT JOIN late_evidence e ON e.id=p.id
+    WHERE p.ticker=? AND p.strategy IN (?,?)`);
+  function inventory(ticker, side, signal) {
+    const rows = holdings.all(ticker, duringSale, afterSale);
+    let quantity = 0;
+    for (const row of rows) {
+      const evidence = row.detail && JSON.parse(row.detail);
+      if (
+        row.payout !== null ||
+        row.side !== side.toLowerCase() ||
+        evidence?.kind !== signal.kind ||
+        evidence.amount !== signal.amount
+      )
+        return null;
+      quantity += row.quantity;
+    }
+    return { quantity, entries: rows.length };
+  }
   for (const auction of auctions) {
     if (auctionPhase(auction, Date.now(), config.offerTailHours) !== strategy)
       continue;
@@ -243,9 +285,20 @@ export async function scanAuctionDepth(
         return side && askLevels(b, side, 99).some((l) => l.quantity >= scale);
       });
       totals.quoted += offers.length;
-      const pending = offers.filter(
-        (m) => !already.get(afterSale + '/' + m.ticker)
-      );
+      const pending = offers.filter((m) => {
+        const side = offerSide(sig, m.floor_strike),
+          prior = inventory(m.ticker, side, sig);
+        if (!prior) return false;
+        const depth = askLevels(first.get(m.ticker).body, side, 99).reduce(
+          (n, l) => n + Math.floor(l.quantity / scale),
+          0
+        );
+        if (prior.entries) {
+          totals.priorBooks++;
+          if (depth > prior.quantity) totals.expandedBooks++;
+        }
+        return depth > prior.quantity;
+      });
       if (!pending.length) continue;
       // Trade-date status and rule verification apply to the entire batch.
       if (sig.kind === 'unsold') await verifyTerms(io);
@@ -280,11 +333,19 @@ export async function scanAuctionDepth(
             config.maxSourceAgeMs
         )
           continue;
-        // Keep one entry per ticker as a sale moves from one watch period to the next.
-        const id = afterSale + '/' + m.ticker,
-          side = offerSide(confirmed, m.floor_strike);
+        const side = offerSide(confirmed, m.floor_strike);
         db.exec('BEGIN IMMEDIATE');
         try {
+          const prior = inventory(m.ticker, side, confirmed);
+          if (!prior) {
+            db.exec('COMMIT');
+            continue;
+          }
+          const id =
+            afterSale +
+            '/' +
+            m.ticker +
+            (prior.entries ? '/' + (prior.entries + 1) : '');
           const { spent } = db
             .prepare(
               'SELECT COALESCE(SUM(price*quantity+fees-COALESCE(payout,0)),0) AS spent FROM paper WHERE strategy IN (?,?)'
@@ -294,9 +355,10 @@ export async function scanAuctionDepth(
             first.get(m.ticker).body,
             read.body,
             side,
-            portfolio - spent
+            portfolio - spent,
+            prior.quantity
           );
-          if (q && !already.get(id)) {
+          if (q) {
             addPaper(db, {
               id,
               strategy,
@@ -310,6 +372,8 @@ export async function scanAuctionDepth(
               closeAt: Date.parse(m.close_time)
             });
             const detail = {
+              previouslyBought: prior.quantity,
+              confirmedDepth: q.displayed,
               source: confirmed.url,
               kind: sig.kind,
               amount: sig.amount,
@@ -323,6 +387,7 @@ export async function scanAuctionDepth(
               JSON.stringify(detail)
             );
             totals.newEntries++;
+            if (prior.entries) totals.addedContracts += q.quantity;
           }
           db.exec('COMMIT');
         } catch (e) {

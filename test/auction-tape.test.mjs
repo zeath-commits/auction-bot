@@ -1,7 +1,33 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { matchBook, simulate } from '../auction-tape-replay.mjs';
+import { matchBook, simulate, repeatStudy } from '../auction-tape-replay.mjs';
 import { auctionPhase } from '../late-auction.mjs';
+
+test('repeat purchases group simultaneous executions and require a full minute between entries', () => {
+  const t = Date.parse('2026-11-16T22:00Z');
+  const trade = (ms, price, size) => ({
+    ticker: 'A',
+    artwork: '1',
+    event: 'E',
+    at: new Date(t + ms).toISOString(),
+    elapsedMs: ms,
+    price,
+    size,
+    won: true
+  });
+  const s = repeatStudy([
+    trade(30000, 0.8, 10),
+    trade(30000, 0.93, 1.5),
+    trade(30000, 0.93, 1.5),
+    trade(89999, 0.94, 5),
+    trade(90000, 0.91, 5)
+  ]);
+  assert.equal(s.first.quantity, 3);
+  assert.equal(s.first.entries[0].price, 0.93);
+  assert.equal(s.repeat.entries.length, 2);
+  assert.equal(s.repeat.quantity, 8);
+  assert.equal(s.repeat.tickers, 1);
+});
 
 test('archive only corroborates fresh prior visible quantity at the executed price', () => {
   const b = { at: '2026-11-16T20:00:00Z', levels: [[0.93, 2]] };

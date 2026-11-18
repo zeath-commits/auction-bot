@@ -271,28 +271,55 @@ function paper(d) {
     );
   }
   if (['all', 'late_auction', 'sale_depth'].includes(selected)) {
-    const positions = rows.filter(
+    const positions = new Map();
+    for (const r of rows.filter(
       (r) =>
         ['late_auction', 'sale_depth'].includes(r.strategy) && r.payout == null
-    );
-    if (positions.length)
+    )) {
+      const key = r.ticker + '/' + r.side;
+      const p = positions.get(key) ?? {
+        ticker: r.ticker,
+        side: r.side,
+        quantity: 0,
+        cost: 0,
+        entries: 0
+      };
+      p.quantity += r.quantity;
+      p.cost += r.price * r.quantity + r.fees;
+      p.entries++;
+      positions.set(key, p);
+    }
+    if (positions.size)
       table(
         'Open auction positions sized from available offers',
         [
           'Market',
           'Side',
+          'Entries',
           'Contracts',
           'Cost at risk incl. fees',
           'Net if side wins'
         ],
-        positions.map((r) => [
+        [...positions.values()].map((r) => [
           r.ticker,
           r.side.toUpperCase(),
+          r.entries,
           r.quantity,
-          money(r.quantity * r.price + r.fees),
-          money(r.quantity * (1 - r.price) - r.fees)
+          money(r.cost),
+          money(r.quantity - r.cost)
         ])
       );
+    for (const scan of [d.lateAuctionStatus, d.lateAuctionStatus?.saleDepth])
+      if (scan?.priorBooks > 0)
+        note(
+          'Existing paper positions · ' +
+            scan.priorBooks +
+            ' books with offers · ' +
+            scan.expandedBooks +
+            ' showing more shares than previously modeled on the first check · ' +
+            scan.addedContracts +
+            ' additional shares recorded after confirmation.'
+        );
   }
   const upcoming = d.auctionStatus.next ?? [];
   if (
