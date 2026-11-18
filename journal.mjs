@@ -1,0 +1,51 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { requireThat } from './core.mjs';
+
+export class Journal {
+  constructor(directory, mode) { this.directory = directory; this.mode = mode; this.entries = []; }
+  async open() {
+    await fs.mkdir(this.directory, { recursive: true });
+    this.lockPath = path.join(this.directory, 'process.lock');
+    this.lock = await fs.open(this.lockPath, 'wx');
+    await this.lock.writeFile(JSON.stringify({ pid: process.pid, mode: this.mode, startedAt: new Date().toISOString() }));
+    this.path = path.join(this.directory, 'orders.jsonl');
+    try {
+      const text = await fs.readFile(this.path, 'utf8');
+      requireThat(!text || text.endsWith('\n'), 'Incomplete journal; manual reconciliation required');
+      this.entries = text.split('\n').filter(Boolean).map(x => JSON.parse(x));
+      const ids = new Set();
+      for (const row of this.entries) {
+        requireThat(row.mode === this.mode && ['intent', 'receipt', 'unknown'].includes(row.type), 'Invalid journal entry');
+        if (row.type === 'intent') {
+          requireThat(!ids.has(row.clientOrderId) && Number.isSafeInteger(row.quote?.reserveCents) && row.quote.reserveCents > 0 && row.artworkKey,
+            'Invalid journal intent');
+          ids.add(row.clientOrderId);
+        } else requireThat(ids.has(row.clientOrderId), 'Receipt without intent');
+      }
+    } catch (e) { if (e.code !== 'ENOENT') throw e; }
+    return this;
+  }
+  async append(entry) {
+    const row = { ...entry, mode: this.mode, recordedAt: new Date().toISOString() };
+    const f = await fs.open(this.path, 'a');
+    try { await f.writeFile(JSON.stringify(row) + '\n'); await f.sync(); } finally { await f.close(); }
+    this.entries.push(row);
+  }
+  intents() { return this.entries.filter(x => x.type === 'intent'); }
+  unresolved() {
+    return this.intents().filter(x => !this.entries.some(r => r.type === 'receipt' && r.clientOrderId === x.clientOrderId));
+  }
+  blocked(key) { return this.intents().some(x => x.artworkKey === key); }
+  checkBudget(candidate, config) {
+    requireThat(this.unresolved().length === 0, 'Unresolved order intent; inspect exchange and journal before restarting');
+    requireThat(!this.blocked(candidate.artworkKey), 'Artwork already attempted');
+    requireThat(this.intents().length < config.maxOrders, 'Order count budget exhausted');
+    requireThat(candidate.quote.reserveCents <= config.maxOrderCostCents, 'Order cost cap exceeded');
+    const total = this.intents().reduce((n, x) => n + x.quote.reserveCents, 0);
+    requireThat(total + candidate.quote.reserveCents <= config.maxTotalReservedCents, 'Total reserved budget exhausted');
+  }
+  async close() {
+    if (this.lock) { await this.lock.close(); this.lock = null; await fs.unlink(this.lockPath); }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "liveEnabled": false,
+  "pollIntervalMs": 10000,
+  "requestTimeoutMs": 8000,
+  "maxSourceAgeMs": 15000,
+  "maxQuoteAgeMs": 2000,
+  "maxHttpAgeSeconds": 30,
+  "contractsPerOrder": 1,
+  "maxPriceCents": 95,
+  "minConditionalProfitCents": 2,
+  "maxOrderCostCents": 100,
+  "maxTotalReservedCents": 500,
+  "maxOrders": 5,
+  "subaccount": 0,
+  "privateKeyPath": "",
+  "apiKeyIdEnvironmentVariable": "KALSHI_API_KEY_ID"
+}

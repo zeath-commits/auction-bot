@@ -1,0 +1,1543 @@
+{
+  "createdAt": "2026-11-17T17:59:16.948Z",
+  "auctions": [
+    {
+      "house": "phillips",
+      "sale": "NY010726",
+      "sourceUrl": "https://www.phillips.com/auctions/auction/NY010726",
+      "startAt": "2026-11-17T21:25:00Z",
+      "deadline": "2026-11-18T02:00:00Z",
+      "targets": [
+        {
+          "lot": "2",
+          "id": "235946",
+          "artist": "Joseph Yaeger",
+          "title": "My determinate",
+          "url": "https://www.phillips.com/detail/joseph-yaeger/235946",
+          "event": "KXART-PHI2NOV26",
+          "settlementSources": [
+            {
+              "name": "Artnet",
+              "url": "https://www.artnet.com/"
+            }
+          ],
+          "markets": [
+            {
+              "ticker": "KXART-PHI2NOV26-80000",
+              "primary": "If the sale price including buyer’s premium of the My determinate (2021; lot 2) by Joseph Yaeger on Artnet is above $80K during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 80000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI2NOV26-100000",
+              "primary": "If the sale price including buyer’s premium of the My determinate (2021; lot 2) by Joseph Yaeger on Artnet is above $100K during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 100000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI2NOV26-120000",
+              "primary": "If the sale price including buyer’s premium of the My determinate (2021; lot 2) by Joseph Yaeger on Artnet is above $120K during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 120000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI2NOV26-140000",
+              "primary": "If the sale price including buyer’s premium of the My determinate (2021; lot 2) by Joseph Yaeger on Artnet is above $140K during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 140000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI2NOV26-160000",
+              "primary": "If the sale price including buyer’s premium of the My determinate (2021; lot 2) by Joseph Yaeger on Artnet is above $160K during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 160000,
+              "notional": "1.0000"
+            }
+          ]
+        },
+        {
+          "lot": "6",
+          "id": "237038",
+          "artist": "Agnes Martin",
+          "title": "Untitled #6",
+          "url": "https://www.phillips.com/detail/agnes-martin/237038",
+          "event": "KXART-PHI6NOV26",
+          "settlementSources": [
+            {
+              "name": "Artnet",
+              "url": "https://www.artnet.com/"
+            }
+          ],
+          "markets": [
+            {
+              "ticker": "KXART-PHI6NOV26-2500000",
+              "primary": "If the sale price including buyer’s premium of the Untitled #6 (2002; lot 6) by Agnes Martin on Artnet is above $2.5M during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 2500000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI6NOV26-3000000",
+              "primary": "If the sale price including buyer’s premium of the Untitled #6 (2002; lot 6) by Agnes Martin on Artnet is above $3M during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 3000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI6NOV26-3500000",
+              "primary": "If the sale price including buyer’s premium of the Untitled #6 (2002; lot 6) by Agnes Martin on Artnet is above $3.5M during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 3500000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI6NOV26-4000000",
+              "primary": "If the sale price including buyer’s premium of the Untitled #6 (2002; lot 6) by Agnes Martin on Artnet is above $4M during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 4000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI6NOV26-4500000",
+              "primary": "If the sale price including buyer’s premium of the Untitled #6 (2002; lot 6) by Agnes Martin on Artnet is above $4.5M during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 4500000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI6NOV26-5000000",
+              "primary": "If the sale price including buyer’s premium of the Untitled #6 (2002; lot 6) by Agnes Martin on Artnet is above $5M during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 5000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI6NOV26-5500000",
+              "primary": "If the sale price including buyer’s premium of the Untitled #6 (2002; lot 6) by Agnes Martin on Artnet is above $5.5M during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 5500000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI6NOV26-6000000",
+              "primary": "If the sale price including buyer’s premium of the Untitled #6 (2002; lot 6) by Agnes Martin on Artnet is above $6M during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 6000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI6NOV26-6500000",
+              "primary": "If the sale price including buyer’s premium of the Untitled #6 (2002; lot 6) by Agnes Martin on Artnet is above $6.5M during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 6500000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI6NOV26-7000000",
+              "primary": "If the sale price including buyer’s premium of the Untitled #6 (2002; lot 6) by Agnes Martin on Artnet is above $7M during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 7000000,
+              "notional": "1.0000"
+            }
+          ]
+        },
+        {
+          "lot": "9",
+          "id": "241743",
+          "artist": "Amedeo Modigliani",
+          "title": "Tête",
+          "url": "https://www.phillips.com/detail/amedeo-modigliani/241743",
+          "event": "KXART-MODTETE17NOV26",
+          "settlementSources": [
+            {
+              "name": "Artnet",
+              "url": "https://www.artnet.com/"
+            }
+          ],
+          "markets": [
+            {
+              "ticker": "KXART-MODTETE17NOV26-22000000",
+              "primary": "If the sale price including buyer’s premium of the Tête by Amedeo Modigliani is above $22M at the Phillips New York November evening sale during November 9-20, 2026, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.",
+              "strikeType": "greater",
+              "threshold": 22000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-MODTETE17NOV26-24000000",
+              "primary": "If the sale price including buyer’s premium of the Tête by Amedeo Modigliani is above $24M at the Phillips New York November evening sale during November 9-20, 2026, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.",
+              "strikeType": "greater",
+              "threshold": 24000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-MODTETE17NOV26-26000000",
+              "primary": "If the sale price including buyer’s premium of the Tête by Amedeo Modigliani is above $26M at the Phillips New York November evening sale during November 9-20, 2026, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.",
+              "strikeType": "greater",
+              "threshold": 26000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-MODTETE17NOV26-28000000",
+              "primary": "If the sale price including buyer’s premium of the Tête by Amedeo Modigliani is above $28M at the Phillips New York November evening sale during November 9-20, 2026, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.",
+              "strikeType": "greater",
+              "threshold": 28000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-MODTETE17NOV26-30000000",
+              "primary": "If the sale price including buyer’s premium of the Tête by Amedeo Modigliani is above $30M at the Phillips New York November evening sale during November 9-20, 2026, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.",
+              "strikeType": "greater",
+              "threshold": 30000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-MODTETE17NOV26-32000000",
+              "primary": "If the sale price including buyer’s premium of the Tête by Amedeo Modigliani is above $32M at the Phillips New York November evening sale during November 9-20, 2026, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.",
+              "strikeType": "greater",
+              "threshold": 32000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-MODTETE17NOV26-34000000",
+              "primary": "If the sale price including buyer’s premium of the Tête by Amedeo Modigliani is above $34M at the Phillips New York November evening sale during November 9-20, 2026, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.",
+              "strikeType": "greater",
+              "threshold": 34000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-MODTETE17NOV26-36000000",
+              "primary": "If the sale price including buyer’s premium of the Tête by Amedeo Modigliani is above $36M at the Phillips New York November evening sale during November 9-20, 2026, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.",
+              "strikeType": "greater",
+              "threshold": 36000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-MODTETE17NOV26-38000000",
+              "primary": "If the sale price including buyer’s premium of the Tête by Amedeo Modigliani is above $38M at the Phillips New York November evening sale during November 9-20, 2026, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.",
+              "strikeType": "greater",
+              "threshold": 38000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-MODTETE17NOV26-40000000",
+              "primary": "If the sale price including buyer’s premium of the Tête by Amedeo Modigliani is above $40M at the Phillips New York November evening sale during November 9-20, 2026, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.",
+              "strikeType": "greater",
+              "threshold": 40000000,
+              "notional": "1.0000"
+            }
+          ]
+        },
+        {
+          "lot": "11",
+          "id": "239920",
+          "artist": "François-Xavier Lalanne",
+          "title": "Babouin",
+          "url": "https://www.phillips.com/detail/francoisxavier-lalanne/239920",
+          "event": "KXART-PHI11NOV26",
+          "settlementSources": [
+            {
+              "name": "Artnet",
+              "url": "https://www.artnet.com/"
+            }
+          ],
+          "markets": [
+            {
+              "ticker": "KXART-PHI11NOV26-500000",
+              "primary": "If the sale price including buyer’s premium of the Babouin (1984; lot 11) by François-Xavier Lalanne on Artnet is above $500K during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 500000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI11NOV26-1000000",
+              "primary": "If the sale price including buyer’s premium of the Babouin (1984; lot 11) by François-Xavier Lalanne on Artnet is above $1M during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 1000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI11NOV26-1500000",
+              "primary": "If the sale price including buyer’s premium of the Babouin (1984; lot 11) by François-Xavier Lalanne on Artnet is above $1.5M during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 1500000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI11NOV26-2000000",
+              "primary": "If the sale price including buyer’s premium of the Babouin (1984; lot 11) by François-Xavier Lalanne on Artnet is above $2M during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 2000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI11NOV26-2500000",
+              "primary": "If the sale price including buyer’s premium of the Babouin (1984; lot 11) by François-Xavier Lalanne on Artnet is above $2.5M during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 2500000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI11NOV26-3000000",
+              "primary": "If the sale price including buyer’s premium of the Babouin (1984; lot 11) by François-Xavier Lalanne on Artnet is above $3M during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 3000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI11NOV26-3500000",
+              "primary": "If the sale price including buyer’s premium of the Babouin (1984; lot 11) by François-Xavier Lalanne on Artnet is above $3.5M during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 3500000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI11NOV26-4000000",
+              "primary": "If the sale price including buyer’s premium of the Babouin (1984; lot 11) by François-Xavier Lalanne on Artnet is above $4M during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 4000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI11NOV26-4500000",
+              "primary": "If the sale price including buyer’s premium of the Babouin (1984; lot 11) by François-Xavier Lalanne on Artnet is above $4.5M during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 4500000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI11NOV26-5000000",
+              "primary": "If the sale price including buyer’s premium of the Babouin (1984; lot 11) by François-Xavier Lalanne on Artnet is above $5M during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 5000000,
+              "notional": "1.0000"
+            }
+          ]
+        },
+        {
+          "lot": "12",
+          "id": "241817",
+          "artist": "David Hockney",
+          "title": "David, Celia, Stephen and Ian, London 1982",
+          "url": "https://www.phillips.com/detail/david-hockney/241817",
+          "event": "KXART-DAV26",
+          "settlementSources": [
+            {
+              "name": "Artnet",
+              "url": "https://www.artnet.com/"
+            }
+          ],
+          "markets": [
+            {
+              "ticker": "KXART-DAV26-8000000",
+              "primary": "If the sale price including buyer’s premium of the David, Celia, Stephen and Ian, London 1982 by David Hockney on Artnet is above $8M during the live auction beginning November 17, 2026 at 4:30 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.",
+              "strikeType": "greater",
+              "threshold": 8000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-DAV26-9000000",
+              "primary": "If the sale price including buyer’s premium of the David, Celia, Stephen and Ian, London 1982 by David Hockney on Artnet is above $9M during the live auction beginning November 17, 2026 at 4:30 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.",
+              "strikeType": "greater",
+              "threshold": 9000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-DAV26-10000000",
+              "primary": "If the sale price including buyer’s premium of the David, Celia, Stephen and Ian, London 1982 by David Hockney on Artnet is above $10M during the live auction beginning November 17, 2026 at 4:30 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.",
+              "strikeType": "greater",
+              "threshold": 10000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-DAV26-11000000",
+              "primary": "If the sale price including buyer’s premium of the David, Celia, Stephen and Ian, London 1982 by David Hockney on Artnet is above $11M during the live auction beginning November 17, 2026 at 4:30 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.",
+              "strikeType": "greater",
+              "threshold": 11000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-DAV26-12000000",
+              "primary": "If the sale price including buyer’s premium of the David, Celia, Stephen and Ian, London 1982 by David Hockney on Artnet is above $12M during the live auction beginning November 17, 2026 at 4:30 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.",
+              "strikeType": "greater",
+              "threshold": 12000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-DAV26-13000000",
+              "primary": "If the sale price including buyer’s premium of the David, Celia, Stephen and Ian, London 1982 by David Hockney on Artnet is above $13M during the live auction beginning November 17, 2026 at 4:30 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.",
+              "strikeType": "greater",
+              "threshold": 13000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-DAV26-14000000",
+              "primary": "If the sale price including buyer’s premium of the David, Celia, Stephen and Ian, London 1982 by David Hockney on Artnet is above $14M during the live auction beginning November 17, 2026 at 4:30 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.",
+              "strikeType": "greater",
+              "threshold": 14000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-DAV26-15000000",
+              "primary": "If the sale price including buyer’s premium of the David, Celia, Stephen and Ian, London 1982 by David Hockney on Artnet is above $15M during the live auction beginning November 17, 2026 at 4:30 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.",
+              "strikeType": "greater",
+              "threshold": 15000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-DAV26-16000000",
+              "primary": "If the sale price including buyer’s premium of the David, Celia, Stephen and Ian, London 1982 by David Hockney on Artnet is above $16M during the live auction beginning November 17, 2026 at 4:30 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.",
+              "strikeType": "greater",
+              "threshold": 16000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-DAV26-17000000",
+              "primary": "If the sale price including buyer’s premium of the David, Celia, Stephen and Ian, London 1982 by David Hockney on Artnet is above $17M during the live auction beginning November 17, 2026 at 4:30 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.",
+              "strikeType": "greater",
+              "threshold": 17000000,
+              "notional": "1.0000"
+            }
+          ]
+        },
+        {
+          "lot": "17",
+          "id": "240873",
+          "artist": "Derek Fordjour",
+          "title": "Haberdashery",
+          "url": "https://www.phillips.com/detail/derek-fordjour/240873",
+          "event": "KXART-PHI17NOV26",
+          "settlementSources": [
+            {
+              "name": "Artnet",
+              "url": "https://www.artnet.com/"
+            }
+          ],
+          "markets": [
+            {
+              "ticker": "KXART-PHI17NOV26-250000",
+              "primary": "If the sale price including buyer’s premium of the Haberdashery (2018; lot 17) by Derek Fordjour on Artnet is above $250K during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 250000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI17NOV26-300000",
+              "primary": "If the sale price including buyer’s premium of the Haberdashery (2018; lot 17) by Derek Fordjour on Artnet is above $300K during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 300000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI17NOV26-350000",
+              "primary": "If the sale price including buyer’s premium of the Haberdashery (2018; lot 17) by Derek Fordjour on Artnet is above $350K during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 350000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI17NOV26-450000",
+              "primary": "If the sale price including buyer’s premium of the Haberdashery (2018; lot 17) by Derek Fordjour on Artnet is above $450K during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 450000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI17NOV26-550000",
+              "primary": "If the sale price including buyer’s premium of the Haberdashery (2018; lot 17) by Derek Fordjour on Artnet is above $550K during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 550000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI17NOV26-600000",
+              "primary": "If the sale price including buyer’s premium of the Haberdashery (2018; lot 17) by Derek Fordjour on Artnet is above $600K during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 600000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI17NOV26-650000",
+              "primary": "If the sale price including buyer’s premium of the Haberdashery (2018; lot 17) by Derek Fordjour on Artnet is above $650K during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 650000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI17NOV26-700000",
+              "primary": "If the sale price including buyer’s premium of the Haberdashery (2018; lot 17) by Derek Fordjour on Artnet is above $700K during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 700000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI17NOV26-750000",
+              "primary": "If the sale price including buyer’s premium of the Haberdashery (2018; lot 17) by Derek Fordjour on Artnet is above $750K during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 750000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI17NOV26-800000",
+              "primary": "If the sale price including buyer’s premium of the Haberdashery (2018; lot 17) by Derek Fordjour on Artnet is above $800K during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 800000,
+              "notional": "1.0000"
+            }
+          ]
+        },
+        {
+          "lot": "18",
+          "id": "242279",
+          "artist": "Anselm Kiefer",
+          "title": "Melancholia",
+          "url": "https://www.phillips.com/detail/anselm-kiefer/242279",
+          "event": "KXART-PHI18NOV26",
+          "settlementSources": [
+            {
+              "name": "Artnet",
+              "url": "https://www.artnet.com/"
+            }
+          ],
+          "markets": [
+            {
+              "ticker": "KXART-PHI18NOV26-500000",
+              "primary": "If the sale price including buyer’s premium of the Melancholia (2005; lot 18) by Anselm Kiefer on Artnet is above $500K during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 500000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI18NOV26-550000",
+              "primary": "If the sale price including buyer’s premium of the Melancholia (2005; lot 18) by Anselm Kiefer on Artnet is above $550K during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 550000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI18NOV26-600000",
+              "primary": "If the sale price including buyer’s premium of the Melancholia (2005; lot 18) by Anselm Kiefer on Artnet is above $600K during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 600000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI18NOV26-650000",
+              "primary": "If the sale price including buyer’s premium of the Melancholia (2005; lot 18) by Anselm Kiefer on Artnet is above $650K during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 650000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI18NOV26-750000",
+              "primary": "If the sale price including buyer’s premium of the Melancholia (2005; lot 18) by Anselm Kiefer on Artnet is above $750K during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 750000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI18NOV26-800000",
+              "primary": "If the sale price including buyer’s premium of the Melancholia (2005; lot 18) by Anselm Kiefer on Artnet is above $800K during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 800000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI18NOV26-850000",
+              "primary": "If the sale price including buyer’s premium of the Melancholia (2005; lot 18) by Anselm Kiefer on Artnet is above $850K during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 850000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI18NOV26-900000",
+              "primary": "If the sale price including buyer’s premium of the Melancholia (2005; lot 18) by Anselm Kiefer on Artnet is above $900K during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 900000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI18NOV26-950000",
+              "primary": "If the sale price including buyer’s premium of the Melancholia (2005; lot 18) by Anselm Kiefer on Artnet is above $950K during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 950000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI18NOV26-1000000",
+              "primary": "If the sale price including buyer’s premium of the Melancholia (2005; lot 18) by Anselm Kiefer on Artnet is above $1M during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 1000000,
+              "notional": "1.0000"
+            }
+          ]
+        },
+        {
+          "lot": "19",
+          "id": "238383",
+          "artist": "David Hammons",
+          "title": "Untitled",
+          "url": "https://www.phillips.com/detail/david-hammons/238383",
+          "event": "KXART-PHI19NOV26",
+          "settlementSources": [
+            {
+              "name": "Artnet",
+              "url": "https://www.artnet.com/"
+            }
+          ],
+          "markets": [
+            {
+              "ticker": "KXART-PHI19NOV26-300000",
+              "primary": "If the sale price including buyer’s premium of the Untitled (1975; lot 19) by David Hammons on Artnet is above $300K during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 300000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI19NOV26-400000",
+              "primary": "If the sale price including buyer’s premium of the Untitled (1975; lot 19) by David Hammons on Artnet is above $400K during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 400000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI19NOV26-500000",
+              "primary": "If the sale price including buyer’s premium of the Untitled (1975; lot 19) by David Hammons on Artnet is above $500K during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 500000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI19NOV26-600000",
+              "primary": "If the sale price including buyer’s premium of the Untitled (1975; lot 19) by David Hammons on Artnet is above $600K during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 600000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI19NOV26-700000",
+              "primary": "If the sale price including buyer’s premium of the Untitled (1975; lot 19) by David Hammons on Artnet is above $700K during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 700000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI19NOV26-800000",
+              "primary": "If the sale price including buyer’s premium of the Untitled (1975; lot 19) by David Hammons on Artnet is above $800K during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 800000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI19NOV26-900000",
+              "primary": "If the sale price including buyer’s premium of the Untitled (1975; lot 19) by David Hammons on Artnet is above $900K during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 900000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI19NOV26-1000000",
+              "primary": "If the sale price including buyer’s premium of the Untitled (1975; lot 19) by David Hammons on Artnet is above $1M during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 1000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI19NOV26-1100000",
+              "primary": "If the sale price including buyer’s premium of the Untitled (1975; lot 19) by David Hammons on Artnet is above $1.1M during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 1100000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI19NOV26-1200000",
+              "primary": "If the sale price including buyer’s premium of the Untitled (1975; lot 19) by David Hammons on Artnet is above $1.2M during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 1200000,
+              "notional": "1.0000"
+            }
+          ]
+        },
+        {
+          "lot": "22",
+          "id": "241905",
+          "artist": "Avery Singer",
+          "title": "JUUL Smoke",
+          "url": "https://www.phillips.com/detail/avery-singer/241905",
+          "event": "KXART-PHI22NOV26",
+          "settlementSources": [
+            {
+              "name": "Artnet",
+              "url": "https://www.artnet.com/"
+            }
+          ],
+          "markets": [
+            {
+              "ticker": "KXART-PHI22NOV26-400000",
+              "primary": "If the sale price including buyer’s premium of the JUUL Smoke (2021; lot 22) by Avery Singer on Artnet is above $400K during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 400000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI22NOV26-500000",
+              "primary": "If the sale price including buyer’s premium of the JUUL Smoke (2021; lot 22) by Avery Singer on Artnet is above $500K during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 500000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI22NOV26-600000",
+              "primary": "If the sale price including buyer’s premium of the JUUL Smoke (2021; lot 22) by Avery Singer on Artnet is above $600K during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 600000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI22NOV26-700000",
+              "primary": "If the sale price including buyer’s premium of the JUUL Smoke (2021; lot 22) by Avery Singer on Artnet is above $700K during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 700000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI22NOV26-800000",
+              "primary": "If the sale price including buyer’s premium of the JUUL Smoke (2021; lot 22) by Avery Singer on Artnet is above $800K during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 800000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI22NOV26-900000",
+              "primary": "If the sale price including buyer’s premium of the JUUL Smoke (2021; lot 22) by Avery Singer on Artnet is above $900K during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 900000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI22NOV26-1000000",
+              "primary": "If the sale price including buyer’s premium of the JUUL Smoke (2021; lot 22) by Avery Singer on Artnet is above $1M during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 1000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PHI22NOV26-1100000",
+              "primary": "If the sale price including buyer’s premium of the JUUL Smoke (2021; lot 22) by Avery Singer on Artnet is above $1.1M during Phillips New York's November 2026 Modern & Contemporary Art Evening Sale (sale NY010726), then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Phillips. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 1100000,
+              "notional": "1.0000"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "house": "christies",
+      "sale": "24266",
+      "sourceUrl": "https://www.christies.com/en/auction/auction-24266-nyr",
+      "startAt": "2026-11-17T23:25:00Z",
+      "deadline": "2026-11-18T05:00:00Z",
+      "targets": [
+        {
+          "lot": "7A",
+          "id": "6614728",
+          "artist": "YVES TANGUY (1900-1955)",
+          "title": "Qui répondra?",
+          "url": "https://www.christies.com/en/lot/lot-6614728?ldp_breadcrumb=back",
+          "event": "KXART-CHR7A17NOV26",
+          "settlementSources": [
+            {
+              "name": "Artnet",
+              "url": "https://www.artnet.com/"
+            }
+          ],
+          "markets": [
+            {
+              "ticker": "KXART-CHR7A17NOV26-2000000",
+              "primary": "If the sale price including buyer’s premium of the Qui répondra? (1948; lot 7A) by Yves Tanguy on Artnet is above $2M during Christie's New York 20th Century Evening Sale (sale 24266), beginning November 17, 2026 at 6:30 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 2000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR7A17NOV26-2500000",
+              "primary": "If the sale price including buyer’s premium of the Qui répondra? (1948; lot 7A) by Yves Tanguy on Artnet is above $2.5M during Christie's New York 20th Century Evening Sale (sale 24266), beginning November 17, 2026 at 6:30 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 2500000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR7A17NOV26-3000000",
+              "primary": "If the sale price including buyer’s premium of the Qui répondra? (1948; lot 7A) by Yves Tanguy on Artnet is above $3M during Christie's New York 20th Century Evening Sale (sale 24266), beginning November 17, 2026 at 6:30 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 3000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR7A17NOV26-4000000",
+              "primary": "If the sale price including buyer’s premium of the Qui répondra? (1948; lot 7A) by Yves Tanguy on Artnet is above $4M during Christie's New York 20th Century Evening Sale (sale 24266), beginning November 17, 2026 at 6:30 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 4000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR7A17NOV26-5000000",
+              "primary": "If the sale price including buyer’s premium of the Qui répondra? (1948; lot 7A) by Yves Tanguy on Artnet is above $5M during Christie's New York 20th Century Evening Sale (sale 24266), beginning November 17, 2026 at 6:30 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 5000000,
+              "notional": "1.0000"
+            }
+          ]
+        },
+        {
+          "lot": "8A",
+          "id": "6614729",
+          "artist": "ALBERTO GIACOMETTI (1901-1966)",
+          "title": "Figure, demie grandeur (no. 2)",
+          "url": "https://www.christies.com/en/lot/lot-6614729?ldp_breadcrumb=back",
+          "event": "KXART-CHR8A17NOV26",
+          "settlementSources": [
+            {
+              "name": "Artnet",
+              "url": "https://www.artnet.com/"
+            }
+          ],
+          "markets": [
+            {
+              "ticker": "KXART-CHR8A17NOV26-20000000",
+              "primary": "If the sale price including buyer’s premium of the Figure, demie grandeur (no. 2) (c. 1949; lot 8A) by Alberto Giacometti on Artnet is above $20M during Christie's New York 20th Century Evening Sale (sale 24266), beginning November 17, 2026 at 6:30 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 20000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR8A17NOV26-25000000",
+              "primary": "If the sale price including buyer’s premium of the Figure, demie grandeur (no. 2) (c. 1949; lot 8A) by Alberto Giacometti on Artnet is above $25M during Christie's New York 20th Century Evening Sale (sale 24266), beginning November 17, 2026 at 6:30 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 25000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR8A17NOV26-30000000",
+              "primary": "If the sale price including buyer’s premium of the Figure, demie grandeur (no. 2) (c. 1949; lot 8A) by Alberto Giacometti on Artnet is above $30M during Christie's New York 20th Century Evening Sale (sale 24266), beginning November 17, 2026 at 6:30 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 30000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR8A17NOV26-35000000",
+              "primary": "If the sale price including buyer’s premium of the Figure, demie grandeur (no. 2) (c. 1949; lot 8A) by Alberto Giacometti on Artnet is above $35M during Christie's New York 20th Century Evening Sale (sale 24266), beginning November 17, 2026 at 6:30 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 35000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR8A17NOV26-40000000",
+              "primary": "If the sale price including buyer’s premium of the Figure, demie grandeur (no. 2) (c. 1949; lot 8A) by Alberto Giacometti on Artnet is above $40M during Christie's New York 20th Century Evening Sale (sale 24266), beginning November 17, 2026 at 6:30 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 40000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR8A17NOV26-45000000",
+              "primary": "If the sale price including buyer’s premium of the Figure, demie grandeur (no. 2) (c. 1949; lot 8A) by Alberto Giacometti on Artnet is above $45M during Christie's New York 20th Century Evening Sale (sale 24266), beginning November 17, 2026 at 6:30 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 45000000,
+              "notional": "1.0000"
+            }
+          ]
+        },
+        {
+          "lot": "12A",
+          "id": "6614733",
+          "artist": "WASSILY KANDINSKY (1866-1944)",
+          "title": "Betonte Ecken",
+          "url": "https://www.christies.com/en/lot/lot-6614733?ldp_breadcrumb=back",
+          "event": "KXART-CHR12A17NOV26",
+          "settlementSources": [
+            {
+              "name": "Artnet",
+              "url": "https://www.artnet.com/"
+            }
+          ],
+          "markets": [
+            {
+              "ticker": "KXART-CHR12A17NOV26-60000000",
+              "primary": "If the sale price including buyer’s premium of the Betonte Ecken (1922–1923; lot 12A) by Wassily Kandinsky on Artnet is above $60M during Christie's New York 20th Century Evening Sale (sale 24266), beginning November 17, 2026 at 6:30 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 60000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR12A17NOV26-70000000",
+              "primary": "If the sale price including buyer’s premium of the Betonte Ecken (1922–1923; lot 12A) by Wassily Kandinsky on Artnet is above $70M during Christie's New York 20th Century Evening Sale (sale 24266), beginning November 17, 2026 at 6:30 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 70000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR12A17NOV26-80000000",
+              "primary": "If the sale price including buyer’s premium of the Betonte Ecken (1922–1923; lot 12A) by Wassily Kandinsky on Artnet is above $80M during Christie's New York 20th Century Evening Sale (sale 24266), beginning November 17, 2026 at 6:30 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 80000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR12A17NOV26-90000000",
+              "primary": "If the sale price including buyer’s premium of the Betonte Ecken (1922–1923; lot 12A) by Wassily Kandinsky on Artnet is above $90M during Christie's New York 20th Century Evening Sale (sale 24266), beginning November 17, 2026 at 6:30 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 90000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR12A17NOV26-100000000",
+              "primary": "If the sale price including buyer’s premium of the Betonte Ecken (1922–1923; lot 12A) by Wassily Kandinsky on Artnet is above $100M during Christie's New York 20th Century Evening Sale (sale 24266), beginning November 17, 2026 at 6:30 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 100000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR12A17NOV26-110000000",
+              "primary": "If the sale price including buyer’s premium of the Betonte Ecken (1922–1923; lot 12A) by Wassily Kandinsky on Artnet is above $110M during Christie's New York 20th Century Evening Sale (sale 24266), beginning November 17, 2026 at 6:30 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 110000000,
+              "notional": "1.0000"
+            }
+          ]
+        },
+        {
+          "lot": "15A",
+          "id": "6614736",
+          "artist": "CLAUDE MONET (1840-1926)",
+          "title": "Champ d'avoine et coquelicots",
+          "url": "https://www.christies.com/en/lot/lot-6614736?ldp_breadcrumb=back",
+          "event": "KXART-KOCHMON20NOV26",
+          "settlementSources": [
+            {
+              "name": "Artnet",
+              "url": "https://www.artnet.com/"
+            }
+          ],
+          "markets": [
+            {
+              "ticker": "KXART-KOCHMON20NOV26-8000000",
+              "primary": "If the sale price including buyer’s premium of the Champ d'avoine et coquelicots by Claude Monet is above $8M at the Christie’s auctions of the William I. Koch Collection in New York on November 17–18, 2026, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.",
+              "strikeType": "greater",
+              "threshold": 8000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-KOCHMON20NOV26-10000000",
+              "primary": "If the sale price including buyer’s premium of the Champ d'avoine et coquelicots by Claude Monet is above $10M at the Christie’s auctions of the William I. Koch Collection in New York on November 17–18, 2026, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.",
+              "strikeType": "greater",
+              "threshold": 10000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-KOCHMON20NOV26-12000000",
+              "primary": "If the sale price including buyer’s premium of the Champ d'avoine et coquelicots by Claude Monet is above $12M at the Christie’s auctions of the William I. Koch Collection in New York on November 17–18, 2026, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.",
+              "strikeType": "greater",
+              "threshold": 12000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-KOCHMON20NOV26-14000000",
+              "primary": "If the sale price including buyer’s premium of the Champ d'avoine et coquelicots by Claude Monet is above $14M at the Christie’s auctions of the William I. Koch Collection in New York on November 17–18, 2026, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.",
+              "strikeType": "greater",
+              "threshold": 14000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-KOCHMON20NOV26-16000000",
+              "primary": "If the sale price including buyer’s premium of the Champ d'avoine et coquelicots by Claude Monet is above $16M at the Christie’s auctions of the William I. Koch Collection in New York on November 17–18, 2026, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.",
+              "strikeType": "greater",
+              "threshold": 16000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-KOCHMON20NOV26-18000000",
+              "primary": "If the sale price including buyer’s premium of the Champ d'avoine et coquelicots by Claude Monet is above $18M at the Christie’s auctions of the William I. Koch Collection in New York on November 17–18, 2026, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.",
+              "strikeType": "greater",
+              "threshold": 18000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-KOCHMON20NOV26-20000000",
+              "primary": "If the sale price including buyer’s premium of the Champ d'avoine et coquelicots by Claude Monet is above $20M at the Christie’s auctions of the William I. Koch Collection in New York on November 17–18, 2026, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.",
+              "strikeType": "greater",
+              "threshold": 20000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-KOCHMON20NOV26-22000000",
+              "primary": "If the sale price including buyer’s premium of the Champ d'avoine et coquelicots by Claude Monet is above $22M at the Christie’s auctions of the William I. Koch Collection in New York on November 17–18, 2026, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.",
+              "strikeType": "greater",
+              "threshold": 22000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-KOCHMON20NOV26-24000000",
+              "primary": "If the sale price including buyer’s premium of the Champ d'avoine et coquelicots by Claude Monet is above $24M at the Christie’s auctions of the William I. Koch Collection in New York on November 17–18, 2026, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.",
+              "strikeType": "greater",
+              "threshold": 24000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-KOCHMON20NOV26-26000000",
+              "primary": "If the sale price including buyer’s premium of the Champ d'avoine et coquelicots by Claude Monet is above $26M at the Christie’s auctions of the William I. Koch Collection in New York on November 17–18, 2026, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.",
+              "strikeType": "greater",
+              "threshold": 26000000,
+              "notional": "1.0000"
+            }
+          ]
+        },
+        {
+          "lot": "20A",
+          "id": "6614741",
+          "artist": "GUSTAV KLIMT (1862-1918)",
+          "title": "Litzlbergkeller",
+          "url": "https://www.christies.com/en/lot/lot-6614741?ldp_breadcrumb=back",
+          "event": "KXART-KLILIT18NOV26",
+          "settlementSources": [
+            {
+              "name": "Artnet",
+              "url": "https://www.artnet.com/"
+            }
+          ],
+          "markets": [
+            {
+              "ticker": "KXART-KLILIT18NOV26-50000000",
+              "primary": "If the sale price including buyer’s premium of the Litzlbergkeller  by Gustav Klimt on Artnet is above $50M at the Christie's New York auction on November 17, 2026, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.",
+              "strikeType": "greater",
+              "threshold": 50000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-KLILIT18NOV26-60000000",
+              "primary": "If the sale price including buyer’s premium of the Litzlbergkeller  by Gustav Klimt on Artnet is above $60M at the Christie's New York auction on November 17, 2026, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.",
+              "strikeType": "greater",
+              "threshold": 60000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-KLILIT18NOV26-70000000",
+              "primary": "If the sale price including buyer’s premium of the Litzlbergkeller  by Gustav Klimt on Artnet is above $70M at the Christie's New York auction on November 17, 2026, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.",
+              "strikeType": "greater",
+              "threshold": 70000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-KLILIT18NOV26-80000000",
+              "primary": "If the sale price including buyer’s premium of the Litzlbergkeller  by Gustav Klimt on Artnet is above $80M at the Christie's New York auction on November 17, 2026, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.",
+              "strikeType": "greater",
+              "threshold": 80000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-KLILIT18NOV26-90000000",
+              "primary": "If the sale price including buyer’s premium of the Litzlbergkeller  by Gustav Klimt on Artnet is above $90M at the Christie's New York auction on November 17, 2026, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.",
+              "strikeType": "greater",
+              "threshold": 90000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-KLILIT18NOV26-100000000",
+              "primary": "If the sale price including buyer’s premium of the Litzlbergkeller  by Gustav Klimt on Artnet is above $100M at the Christie's New York auction on November 17, 2026, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.",
+              "strikeType": "greater",
+              "threshold": 100000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-KLILIT18NOV26-110000000",
+              "primary": "If the sale price including buyer’s premium of the Litzlbergkeller  by Gustav Klimt on Artnet is above $110M at the Christie's New York auction on November 17, 2026, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.",
+              "strikeType": "greater",
+              "threshold": 110000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-KLILIT18NOV26-120000000",
+              "primary": "If the sale price including buyer’s premium of the Litzlbergkeller  by Gustav Klimt on Artnet is above $120M at the Christie's New York auction on November 17, 2026, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.",
+              "strikeType": "greater",
+              "threshold": 120000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-KLILIT18NOV26-130000000",
+              "primary": "If the sale price including buyer’s premium of the Litzlbergkeller  by Gustav Klimt on Artnet is above $130M at the Christie's New York auction on November 17, 2026, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.",
+              "strikeType": "greater",
+              "threshold": 130000000,
+              "notional": "1.0000"
+            }
+          ]
+        },
+        {
+          "lot": "20A",
+          "id": "6614741",
+          "artist": "GUSTAV KLIMT (1862-1918)",
+          "title": "Litzlbergkeller",
+          "url": "https://www.christies.com/en/lot/lot-6614741?ldp_breadcrumb=back",
+          "event": "KXART-KLILITR18NOV26",
+          "settlementSources": [
+            {
+              "name": "Artnet",
+              "url": "https://www.artnet.com/"
+            }
+          ],
+          "markets": [
+            {
+              "ticker": "KXART-KLILITR18NOV26-236400000",
+              "primary": "If the sale price including buyer’s premium of the Litzlbergkeller  by Gustav Klimt on Artnet is above $236.4M at the Christie's New York auction on November 17, 2026, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.",
+              "strikeType": "greater",
+              "threshold": 236400000,
+              "notional": "1.0000"
+            }
+          ]
+        },
+        {
+          "lot": "26A",
+          "id": "6614747",
+          "artist": "PABLO PICASSO (1881-1973)",
+          "title": "Le Baiser",
+          "url": "https://www.christies.com/en/lot/lot-6614747?ldp_breadcrumb=back",
+          "event": "KXART-PICBAI18NOV26",
+          "settlementSources": [
+            {
+              "name": "Artnet",
+              "url": "https://www.artnet.com/"
+            }
+          ],
+          "markets": [
+            {
+              "ticker": "KXART-PICBAI18NOV26-20000000",
+              "primary": "If the sale price including buyer’s premium of the Le Baiser by Pablo Picasso is above $20M at the Christie's New York Heroes & Lovers auction on November 17, 2026, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.",
+              "strikeType": "greater",
+              "threshold": 20000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PICBAI18NOV26-30000000",
+              "primary": "If the sale price including buyer’s premium of the Le Baiser by Pablo Picasso is above $30M at the Christie's New York Heroes & Lovers auction on November 17, 2026, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.",
+              "strikeType": "greater",
+              "threshold": 30000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PICBAI18NOV26-40000000",
+              "primary": "If the sale price including buyer’s premium of the Le Baiser by Pablo Picasso is above $40M at the Christie's New York Heroes & Lovers auction on November 17, 2026, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.",
+              "strikeType": "greater",
+              "threshold": 40000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PICBAI18NOV26-50000000",
+              "primary": "If the sale price including buyer’s premium of the Le Baiser by Pablo Picasso is above $50M at the Christie's New York Heroes & Lovers auction on November 17, 2026, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.",
+              "strikeType": "greater",
+              "threshold": 50000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PICBAI18NOV26-60000000",
+              "primary": "If the sale price including buyer’s premium of the Le Baiser by Pablo Picasso is above $60M at the Christie's New York Heroes & Lovers auction on November 17, 2026, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.",
+              "strikeType": "greater",
+              "threshold": 60000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PICBAI18NOV26-70000000",
+              "primary": "If the sale price including buyer’s premium of the Le Baiser by Pablo Picasso is above $70M at the Christie's New York Heroes & Lovers auction on November 17, 2026, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.",
+              "strikeType": "greater",
+              "threshold": 70000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PICBAI18NOV26-80000000",
+              "primary": "If the sale price including buyer’s premium of the Le Baiser by Pablo Picasso is above $80M at the Christie's New York Heroes & Lovers auction on November 17, 2026, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.",
+              "strikeType": "greater",
+              "threshold": 80000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PICBAI18NOV26-90000000",
+              "primary": "If the sale price including buyer’s premium of the Le Baiser by Pablo Picasso is above $90M at the Christie's New York Heroes & Lovers auction on November 17, 2026, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.",
+              "strikeType": "greater",
+              "threshold": 90000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-PICBAI18NOV26-100000000",
+              "primary": "If the sale price including buyer’s premium of the Le Baiser by Pablo Picasso is above $100M at the Christie's New York Heroes & Lovers auction on November 17, 2026, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.",
+              "strikeType": "greater",
+              "threshold": 100000000,
+              "notional": "1.0000"
+            }
+          ]
+        },
+        {
+          "lot": "39A",
+          "id": "6614760",
+          "artist": "ANDY WARHOL (1928-1987)",
+          "title": "Self-Portrait",
+          "url": "https://www.christies.com/en/lot/lot-6614760?ldp_breadcrumb=back",
+          "event": "KXART-CHR39A17NOV26",
+          "settlementSources": [
+            {
+              "name": "Artnet",
+              "url": "https://www.artnet.com/"
+            }
+          ],
+          "markets": [
+            {
+              "ticker": "KXART-CHR39A17NOV26-14000000",
+              "primary": "If the sale price including buyer’s premium of the Self-Portrait (1986; lot 39A) by Andy Warhol on Artnet is above $14M during Christie's New York 20th Century Evening Sale (sale 24266), beginning November 17, 2026 at 6:30 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 14000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR39A17NOV26-16000000",
+              "primary": "If the sale price including buyer’s premium of the Self-Portrait (1986; lot 39A) by Andy Warhol on Artnet is above $16M during Christie's New York 20th Century Evening Sale (sale 24266), beginning November 17, 2026 at 6:30 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 16000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR39A17NOV26-18000000",
+              "primary": "If the sale price including buyer’s premium of the Self-Portrait (1986; lot 39A) by Andy Warhol on Artnet is above $18M during Christie's New York 20th Century Evening Sale (sale 24266), beginning November 17, 2026 at 6:30 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 18000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR39A17NOV26-20000000",
+              "primary": "If the sale price including buyer’s premium of the Self-Portrait (1986; lot 39A) by Andy Warhol on Artnet is above $20M during Christie's New York 20th Century Evening Sale (sale 24266), beginning November 17, 2026 at 6:30 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 20000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR39A17NOV26-22000000",
+              "primary": "If the sale price including buyer’s premium of the Self-Portrait (1986; lot 39A) by Andy Warhol on Artnet is above $22M during Christie's New York 20th Century Evening Sale (sale 24266), beginning November 17, 2026 at 6:30 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 22000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR39A17NOV26-24000000",
+              "primary": "If the sale price including buyer’s premium of the Self-Portrait (1986; lot 39A) by Andy Warhol on Artnet is above $24M during Christie's New York 20th Century Evening Sale (sale 24266), beginning November 17, 2026 at 6:30 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 24000000,
+              "notional": "1.0000"
+            }
+          ]
+        },
+        {
+          "lot": "45A",
+          "id": "6614766",
+          "artist": "FERNANDO BOTERO (1932-2023)",
+          "title": "The Arnolfini Portrait, after van Eyck",
+          "url": "https://www.christies.com/en/lot/lot-6614766?ldp_breadcrumb=back",
+          "event": "KXART-CHR45A17NOV26",
+          "settlementSources": [
+            {
+              "name": "Artnet",
+              "url": "https://www.artnet.com/"
+            }
+          ],
+          "markets": [
+            {
+              "ticker": "KXART-CHR45A17NOV26-1000000",
+              "primary": "If the sale price including buyer’s premium of the The Arnolfini Portrait, after van Eyck (1978; lot 45A) by Fernando Botero on Artnet is above $1M during Christie's New York 20th Century Evening Sale (sale 24266), beginning November 17, 2026 at 6:30 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 1000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR45A17NOV26-1250000",
+              "primary": "If the sale price including buyer’s premium of the The Arnolfini Portrait, after van Eyck (1978; lot 45A) by Fernando Botero on Artnet is above $1.25M during Christie's New York 20th Century Evening Sale (sale 24266), beginning November 17, 2026 at 6:30 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 1250000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR45A17NOV26-1500000",
+              "primary": "If the sale price including buyer’s premium of the The Arnolfini Portrait, after van Eyck (1978; lot 45A) by Fernando Botero on Artnet is above $1.5M during Christie's New York 20th Century Evening Sale (sale 24266), beginning November 17, 2026 at 6:30 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 1500000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR45A17NOV26-1750000",
+              "primary": "If the sale price including buyer’s premium of the The Arnolfini Portrait, after van Eyck (1978; lot 45A) by Fernando Botero on Artnet is above $1.75M during Christie's New York 20th Century Evening Sale (sale 24266), beginning November 17, 2026 at 6:30 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 1750000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR45A17NOV26-2000000",
+              "primary": "If the sale price including buyer’s premium of the The Arnolfini Portrait, after van Eyck (1978; lot 45A) by Fernando Botero on Artnet is above $2M during Christie's New York 20th Century Evening Sale (sale 24266), beginning November 17, 2026 at 6:30 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 2000000,
+              "notional": "1.0000"
+            }
+          ]
+        },
+        {
+          "lot": "59A",
+          "id": "6614780",
+          "artist": "EDGAR DEGAS (1834-1917)",
+          "title": "Scène de ballet",
+          "url": "https://www.christies.com/en/lot/lot-6614780?ldp_breadcrumb=back",
+          "event": "KXART-CHR59A17NOV26",
+          "settlementSources": [
+            {
+              "name": "Artnet",
+              "url": "https://www.artnet.com/"
+            }
+          ],
+          "markets": [
+            {
+              "ticker": "KXART-CHR59A17NOV26-3000000",
+              "primary": "If the sale price including buyer’s premium of the Scène de ballet (c. 1879; lot 59A) by Edgar Degas on Artnet is above $3M during Christie's New York 20th Century Evening Sale (sale 24266), beginning November 17, 2026 at 6:30 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 3000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR59A17NOV26-4000000",
+              "primary": "If the sale price including buyer’s premium of the Scène de ballet (c. 1879; lot 59A) by Edgar Degas on Artnet is above $4M during Christie's New York 20th Century Evening Sale (sale 24266), beginning November 17, 2026 at 6:30 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 4000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR59A17NOV26-5000000",
+              "primary": "If the sale price including buyer’s premium of the Scène de ballet (c. 1879; lot 59A) by Edgar Degas on Artnet is above $5M during Christie's New York 20th Century Evening Sale (sale 24266), beginning November 17, 2026 at 6:30 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 5000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR59A17NOV26-6000000",
+              "primary": "If the sale price including buyer’s premium of the Scène de ballet (c. 1879; lot 59A) by Edgar Degas on Artnet is above $6M during Christie's New York 20th Century Evening Sale (sale 24266), beginning November 17, 2026 at 6:30 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 6000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR59A17NOV26-7000000",
+              "primary": "If the sale price including buyer’s premium of the Scène de ballet (c. 1879; lot 59A) by Edgar Degas on Artnet is above $7M during Christie's New York 20th Century Evening Sale (sale 24266), beginning November 17, 2026 at 6:30 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 7000000,
+              "notional": "1.0000"
+            }
+          ]
+        },
+        {
+          "lot": "72A",
+          "id": "6614793",
+          "artist": "FRIDA KAHLO (1907-1954)",
+          "title": "Congreso de los pueblos por la paz",
+          "url": "https://www.christies.com/en/lot/lot-6614793?ldp_breadcrumb=back",
+          "event": "KXART-CHR72A17NOV26",
+          "settlementSources": [
+            {
+              "name": "Artnet",
+              "url": "https://www.artnet.com/"
+            }
+          ],
+          "markets": [
+            {
+              "ticker": "KXART-CHR72A17NOV26-2500000",
+              "primary": "If the sale price including buyer’s premium of the Congreso de los pueblos por la paz (1952; lot 72A) by Frida Kahlo on Artnet is above $2.5M during Christie's New York 20th Century Evening Sale (sale 24266), beginning November 17, 2026 at 6:30 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 2500000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR72A17NOV26-3000000",
+              "primary": "If the sale price including buyer’s premium of the Congreso de los pueblos por la paz (1952; lot 72A) by Frida Kahlo on Artnet is above $3M during Christie's New York 20th Century Evening Sale (sale 24266), beginning November 17, 2026 at 6:30 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 3000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR72A17NOV26-3500000",
+              "primary": "If the sale price including buyer’s premium of the Congreso de los pueblos por la paz (1952; lot 72A) by Frida Kahlo on Artnet is above $3.5M during Christie's New York 20th Century Evening Sale (sale 24266), beginning November 17, 2026 at 6:30 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 3500000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR72A17NOV26-4000000",
+              "primary": "If the sale price including buyer’s premium of the Congreso de los pueblos por la paz (1952; lot 72A) by Frida Kahlo on Artnet is above $4M during Christie's New York 20th Century Evening Sale (sale 24266), beginning November 17, 2026 at 6:30 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 4000000,
+              "notional": "1.0000"
+            },
+            {
+              "ticker": "KXART-CHR72A17NOV26-4500000",
+              "primary": "If the sale price including buyer’s premium of the Congreso de los pueblos por la paz (1952; lot 72A) by Frida Kahlo on Artnet is above $4.5M during Christie's New York 20th Century Evening Sale (sale 24266), beginning November 17, 2026 at 6:30 PM EST, then the market resolves to Yes.",
+              "secondary": "All sale prices and sales totals used for this market will include the buyer’s premium. In the Artnet Price Database, “P” indicates that the buyer’s premium is included, while “H” indicates the hammer price only.\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Christie's. All trademarks, logos, and brand names are the property of their respective owners.",
+              "strikeType": "greater",
+              "threshold": 4500000,
+              "notional": "1.0000"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
