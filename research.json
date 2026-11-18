@@ -36,6 +36,21 @@
   ],
   "studies": [
     {
+      "market": "Resting bids after the first published Sotheby’s price",
+      "test": "Exploratory replay of all five November 18 artworks. Selected each threshold with no whole offer through 95¢ in the first complete post-publication book within three seconds. Modeled a five-contract bid at 95¢ arriving one second after the snapshot. Counted public sales strictly below that price through five minutes after publication. Each hypothetical purchase is charged the full 95¢ plus a conservative taker fee. The replay uses subsequent trades by others.",
+      "finding": "Van Gogh was the only artwork with qualifying sales. After the published $190.43M price, 24.08 YES above $180M sold below the limit, and 403.62 NO above $260M sold below it. The five-contract cap limits the illustration to ten contracts, $9.54 total cost and 46¢ net if both outcomes settle as indicated. Monet had buys from available offers. Renoir, Cézanne and Pissarro had neither result-side buyer executions through 95¢ nor sales below the resting limit after modeled arrival. The new Phillips and Christie’s recorder preserves the first book even when the indicated side has no offer; those contracts use Artnet for settlement."
+    },
+    {
+      "market": "Cézanne pre-auction price comparison",
+      "test": "The bot recorded five YES above $120M at 81¢ ($4.11 including fees) when bids for higher Polymarket ranges summed to 87.3¢. Rechecked all 108 subsequent archived pre-auction Kalshi snapshots for the cost of selling those five contracts and reconciled the first later public buyer with the paper entry.",
+      "finding": "The price difference still qualified in 83 snapshots. No snapshot offered a profitable exit on all five shares. The best exit modeled a 48¢ loss. Shortly before the auction the YES ask was 98¢ while the best bid was only 18¢. A public buyer paid 81¢ for ten shares about 39 minutes after the paper entry. Both Sotheby’s pages subsequently reported $111.01M, pointing to a $4.11 paper loss if Kalshi settles accordingly."
+    },
+    {
+      "market": "Post-publication liquidity on three additional artworks",
+      "test": "Sampled all nine Kalshi thresholds at fixed times for Renoir, Cézanne and Pissarro. Required an exchange timestamp after the first public sale price and at least one whole contract. These observations were scheduled before any of the three results.",
+      "finding": "Sotheby’s catalog and corresponding lot pages agreed on Renoir at $27.5M, Cézanne at $111.01M and Pissarro at $24.2M. Six usable snapshots per lot in the first 31 seconds showed no offers through 99¢ on any of the result-indicated sides. The original, slower book collector missed its three-second window on all three lots. The additional snapshots provide the evidence for the empty books."
+    },
+    {
       "market": "How long the November 18 auction offers lasted",
       "test": "For Monet and van Gogh, checked non-block buyer executions on the indicated side of all 18 thresholds in the five minutes after our first public sale-price receipt. For Renoir, Cézanne and Pissarro, an additional observer samples all nine thresholds at receipt and after 1, 2.25, 4, 7, 15 and 30 seconds. It excludes snapshots whose exchange timestamp could predate the result. These samples are separate from the original three-second test.",
       "finding": "For Monet above $20M, a second snapshot 11.011 seconds after publication showed 23 YES at 64¢. Another 23 traded at 64¢ at +14.098 seconds. The first and second Sotheby’s reads had the same cached generation. There were no buyer executions at 95¢ or less on the sale-price-indicated sides from +15 seconds through five minutes. For van Gogh, one NO above $260M traded at 94¢ at +27.484 seconds. For Renoir, Sotheby’s catalog and lot page agreed on $27.5M. All six independently timestamped snapshots between +1 and +30.2 seconds had zero whole contracts offered through 99¢ on the indicated sides."

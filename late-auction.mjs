@@ -172,6 +172,8 @@ export async function scanAuctionDepth(
   { db, io, auctions, config, stop, status },
   strategy
 ) {
+  if (strategy === duringSale)
+    db.exec('CREATE TABLE IF NOT EXISTS auction_first_sale_books(signal TEXT,ticker TEXT,requested INTEGER,received INTEGER,httpDate TEXT,cacheAge TEXT,book TEXT,PRIMARY KEY(signal,ticker))');
   const open = new Set();
   let cursor = '';
   const seen = new Set();
@@ -275,6 +277,22 @@ export async function scanAuctionDepth(
       if (!markets.length) continue;
       const first = await books(io, markets);
       totals.books += first.size;
+      // Preserve the first batch even when no one is offering the result side.
+      // The sale evidence and market rules are already matched above. Raw headers
+      // let the replay exclude books that might have been cached before publication.
+      if (strategy === duringSale && sig.kind === 'published_sale') {
+        const signal = [target.event, sig.kind, sig.amount].join('/');
+        const insert = db.prepare('INSERT OR IGNORE INTO auction_first_sale_books VALUES(?,?,?,?,?,?,?)');
+        db.exec('BEGIN IMMEDIATE');
+        try {
+          for (const [ticker, read] of first)
+            insert.run(signal,ticker,read.requestedAt,read.receivedAt,read.httpDate??null,read.cacheAge??null,JSON.stringify(read.body));
+          db.exec('COMMIT');
+        } catch (e) {
+          db.exec('ROLLBACK');
+          throw e;
+        }
+      }
       const offers = markets.filter((m) => {
         const side = offerSide(sig, m.floor_strike),
           b = first.get(m.ticker).body;

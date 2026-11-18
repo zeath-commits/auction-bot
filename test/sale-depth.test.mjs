@@ -59,7 +59,7 @@ test('sale and post-sale depth scans share cash, verify both books, and record t
     is_in_progress: false,
     is_auction_over: true
   };
-  const html =
+  let html =
     '<script>window.chrComponents.lots = ' +
     JSON.stringify({
       data: { lots: [raw], total_hits_filtered: 1 },
@@ -90,7 +90,7 @@ test('sale and post-sale depth scans share cash, verify both books, and record t
             {
               ticker,
               orderbook_fp: {
-                no_dollars: [[bid, ++books === 1 ? '12.00' : quantity]]
+                no_dollars: bid===null ? [] : [[bid, ++books === 1 ? '12.00' : quantity]]
               }
             }
           ]
@@ -161,6 +161,19 @@ test('sale and post-sale depth scans share cash, verify both books, and record t
     assert.equal(opts.status.addedContracts, 3);
     await scanAuctionDepth(opts, 'late_auction');
     assert.equal(owned(), 13);
+    const firstBooks = db.prepare('SELECT signal,book FROM auction_first_sale_books ORDER BY signal');
+    const original = firstBooks.all();
+    assert.equal(original.length,1);
+    assert.equal(JSON.parse(original[0].book).orderbook_fp.no_dollars[0][1],'12.00');
+    auction.deadline = new Date(Date.now()+60000).toISOString();
+    html = html.replace('"price_realised":15','"price_realised":16').replace('USD 15','USD 16');
+    bid = null;
+    await scanAuctionDepth(opts,'sale_depth');
+    assert.equal(opts.status.quoted,0);
+    const after = firstBooks.all();
+    assert.deepEqual(after[0],original[0]);
+    assert.equal(after.length,2);
+    assert.deepEqual(JSON.parse(after[1].book).orderbook_fp.no_dollars,[]);
   } finally {
     db.close();
     fs.rmSync(dir, { recursive: true, force: true });
