@@ -5,6 +5,7 @@
   "start": "2026-11-18T22:55:00Z",
   "scheduled": "2026-11-18T23:00:00Z",
   "end": "2026-11-19T03:00:00Z",
+  "settlementWatchEnd": "2026-11-19T15:00:00Z",
   "targets": [
     {
       "lot": "4",

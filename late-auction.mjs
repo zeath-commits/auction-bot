@@ -93,10 +93,27 @@ export async function auditArtCoverage(io, auctions) {
   } while (cursor);
   return summary;
 }
+export function auctionDepthCash(db) {
+  const { spent } = db
+    .prepare(
+      "SELECT COALESCE(SUM(price*quantity+fees-COALESCE(payout,0)),0) AS spent FROM paper WHERE strategy IN ('sale_depth','late_auction','sothebys_sold')"
+    )
+    .get();
+  return portfolio - spent;
+}
 function charge(price, quantity) {
   return (
     Math.ceil(0.07 * quantity * price * (1 - price) * 10000 - 1e-9) / 10000
   );
+}
+
+export function affordableLevel(price, quantity, cash) {
+  const unit = price + 0.07 * price * (1 - price);
+  let count = Math.min(quantity, Math.floor((cash + 1e-10) / unit));
+  if (count > 0 && count * price + charge(price, count) > cash + 1e-9) count--;
+  if (count <= 0) return null;
+  const fee = charge(price, count);
+  return count * (1 - price) > fee ? { price, quantity: count, fee } : null;
 }
 
 // Use whole contracts and take only volume visible at the same price on
@@ -134,21 +151,16 @@ export function persistentOffer(
     // cheapest visible prices, even if quotes were cancelled or repriced.
     const overlap = Math.min(reserved, depth);
     reserved -= overlap;
-    const available = cash - principal - fees;
-    const unit = price + 0.07 * price * (1 - price);
-    let count = Math.min(
+    const fill = affordableLevel(
+      price,
       depth - overlap,
-      Math.floor((available + 1e-10) / unit)
+      cash - principal - fees
     );
-    if (count > 0 && count * price + charge(price, count) > available + 1e-9)
-      count--;
-    if (count <= 0) continue;
-    const fee = charge(price, count);
-    if (count * (1 - price) <= fee) continue;
-    levels.push({ price, quantity: count, fee });
-    quantity += count;
-    principal += count * price;
-    fees += fee;
+    if (!fill) continue;
+    levels.push(fill);
+    quantity += fill.quantity;
+    principal += fill.quantity * price;
+    fees += fill.fee;
   }
   return quantity
     ? { quantity, price: principal / quantity, fees, levels, displayed }
@@ -346,16 +358,11 @@ export async function scanAuctionDepth(
             '/' +
             m.ticker +
             (prior.entries ? '/' + (prior.entries + 1) : '');
-          const { spent } = db
-            .prepare(
-              'SELECT COALESCE(SUM(price*quantity+fees-COALESCE(payout,0)),0) AS spent FROM paper WHERE strategy IN (?,?)'
-            )
-            .get(duringSale, afterSale);
           const q = persistentOffer(
             first.get(m.ticker).body,
             read.body,
             side,
-            portfolio - spent,
+            auctionDepthCash(db),
             prior.quantity
           );
           if (q) {

@@ -26,6 +26,7 @@ test(
         'us-bitcoin-paper.mjs',
         'bitcoin-reference.mjs',
         'sothebys-bids.mjs',
+        'sothebys-sold.mjs',
         'nba-paper.mjs',
         'sothebys-bid-calendar.json',
         'watch-offers.mjs',

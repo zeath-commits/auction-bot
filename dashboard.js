@@ -155,7 +155,9 @@ function paper(d) {
           time(pair.at)
       );
   if (
-    ['all', 'sothebys_live_bid', 'sothebys_bid_high'].includes(selected) &&
+    ['all', 'sothebys_live_bid', 'sothebys_bid_high', 'sothebys_sold'].includes(
+      selected
+    ) &&
     d.sothebysStatus?.scheduled
   ) {
     const s = d.sothebysStatus;
@@ -177,7 +179,20 @@ function paper(d) {
         ' fresh catalog reads'
     );
     view.append(p);
-    if (['sothebys_live_bid', 'sothebys_bid_high'].includes(selected))
+    if (s.sold)
+      note(
+        s.sold.error ??
+          s.sold.published +
+            ' published sale prices � ' +
+            s.sold.books +
+            ' threshold books checked at ' +
+            time(s.sold.at)
+      );
+    if (
+      ['sothebys_live_bid', 'sothebys_bid_high', 'sothebys_sold'].includes(
+        selected
+      )
+    )
       for (const t of s.targets) {
         const link = el('a', t.title),
           p = el('p');

@@ -6,6 +6,7 @@ import { Transport } from './transport.mjs';
 
 export const strategies = {
   nba_five: 'NBA · five-point lead with 35–50 seconds left',
+  sothebys_sold: 'Sotheby’s · published sale price and available quantity',
   sothebys_live_bid: 'Sotheby’s · live bids above a threshold',
   sothebys_bid_high: 'Sotheby’s · live bid with a 97–98¢ offer',
   us_btc10: 'Polymarket US · BTC final 10 seconds',

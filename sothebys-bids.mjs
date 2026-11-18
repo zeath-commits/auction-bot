@@ -6,6 +6,8 @@ import { Transport } from './transport.mjs';
 import { askLevels, checkFees, checkMarketActive } from './core.mjs';
 import { addPaper } from './strategy-monitor.mjs';
 
+import { initSoldStudy, scanSold } from './sothebys-sold.mjs';
+
 const calendar = JSON.parse(
   fs.readFileSync(new URL('./sothebys-bid-calendar.json', import.meta.url))
 );
@@ -94,6 +96,13 @@ async function source() {
     at,
     generation,
     age,
+    soldFresh:
+      at - start <= 2000 &&
+      Number.isFinite(generation) &&
+      at - generation >= -1000 &&
+      at - generation <= 120000 &&
+      age >= 0 &&
+      age <= 120,
     fresh:
       at - start <= 2000 &&
       Number.isFinite(generation) &&
@@ -173,11 +182,15 @@ export async function observeSothebysBids({ db, config, stop, status }) {
     state: 'Scheduled',
     at: new Date().toISOString()
   });
-  let previous = new Map();
+  initSoldStudy(db);
+  let previous = new Map(),
+    previousSold = new Map();
+  const deadline = Date.parse(calendar.settlementWatchEnd);
   while (!stop()) {
     const now = Date.now(),
       toStart = Date.parse(calendar.start) - now;
-    if (now >= Date.parse(calendar.end)) {
+    const tail = now >= Date.parse(calendar.end);
+    if (now >= deadline) {
       status.state = 'Window ended';
       status.at = new Date().toISOString();
       return;
@@ -186,7 +199,7 @@ export async function observeSothebysBids({ db, config, stop, status }) {
       await sleep(Math.min(60000, toStart));
       continue;
     }
-    let delay = 10000;
+    let delay = tail ? 60000 : 10000;
     try {
       const s = await source(),
         next = new Map();
@@ -197,7 +210,7 @@ export async function observeSothebysBids({ db, config, stop, status }) {
         Number(s.fresh),
         JSON.stringify(s)
       );
-      const live = s.fresh ? s.lots.filter((l) => l.bid !== null) : [];
+      const live = s.fresh && !tail ? s.lots.filter((l) => l.bid !== null) : [];
       for (const l of live) {
         const t = calendar.targets.find((t) => t.event === l.event),
           markets = (await marketList(io, t)).filter(
@@ -264,9 +277,31 @@ export async function observeSothebysBids({ db, config, stop, status }) {
         }
       }
       previous = next;
+      try {
+        const sold = await scanSold({
+          db,
+          io,
+          source: s,
+          targets: calendar.targets,
+          marketList,
+          previous: previousSold,
+          stop,
+          tail,
+          deadline
+        });
+        previousSold = sold.next;
+        status.sold = { ...sold.status, at: new Date().toISOString() };
+      } catch (e) {
+        previousSold.clear();
+        status.sold = { error: e.message, at: new Date().toISOString() };
+      }
       Object.assign(status, {
         at: new Date().toISOString(),
-        state: s.fresh ? 'Watching live bids' : 'Stale or slow catalog read',
+        state: s.fresh
+          ? tail
+            ? 'Watching published sale prices'
+            : 'Watching bids and published sale prices'
+          : 'Stale or slow catalog read',
         liveLots: live.length,
         crossed,
         priced,
@@ -274,6 +309,7 @@ export async function observeSothebysBids({ db, config, stop, status }) {
       });
     } catch (e) {
       previous.clear();
+      previousSold.clear();
       status.state = 'Retrying public data';
       status.error = e.message;
       status.at = new Date().toISOString();
