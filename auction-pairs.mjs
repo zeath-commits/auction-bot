@@ -6,20 +6,26 @@ import { addPaper } from './strategy-monitor.mjs';
 export const pairSeries = {
   KXART: 'Auction',
   KXBTCD: 'Bitcoin price',
-  KXETHD: 'Ethereum price'
+  KXETHD: 'Ethereum price',
+  KXINXU: 'S&P 500',
+  KXNASDAQ100U: 'Nasdaq-100'
 };
+
+const indexStep = { KXINXU: 0.0001, KXNASDAQ100U: 0.01 };
 
 // With the same lot, source, time and settlement terms, lower YES and higher
 // NO pay at least one dollar together under ordinary binary settlement.
 function rulesKey(m, now) {
+  const series = m.event_ticker?.split('-')[0];
+  const index = Object.hasOwn(indexStep, series);
   if (
     m.status !== 'active' ||
     m.result ||
     Date.parse(m.close_time) <= now ||
-    !Object.hasOwn(pairSeries, m.event_ticker?.split('-')[0]) ||
+    !Object.hasOwn(pairSeries, series) ||
     m.market_type !== 'binary' ||
     Number(m.notional_value_dollars) !== 1 ||
-    m.strike_type !== 'greater' ||
+    m.strike_type !== (index ? 'greater_or_equal' : 'greater') ||
     !m.rules_secondary
   )
     return null;
@@ -33,7 +39,10 @@ function rulesKey(m, now) {
     Number(number.replaceAll(',', '')) *
     { '': 1, K: 1e3, M: 1e6, B: 1e9 }[scale.toUpperCase()];
   if (
-    threshold !== m.floor_strike ||
+    !Number.isFinite(m.floor_strike) ||
+    (index
+      ? !Number.isInteger(m.floor_strike) || threshold !== m.floor_strike - indexStep[series]
+      : threshold !== m.floor_strike) ||
     !Number.isFinite(Date.parse(m.close_time))
   )
     return null;
@@ -70,7 +79,7 @@ export function ladderCandidates(markets, now) {
 }
 
 function fee(p) {
-  return Math.ceil(0.07 * p * (1 - p) * 10000 - 1e-9) / 10000;
+  return Math.ceil(0.07 * p * (1 - p) * 100 - 1e-9) / 100;
 }
 export function costedPair(books) {
   const legs = books.map((b, i) => {
@@ -97,7 +106,10 @@ export function costedPair(books) {
 export async function observePairs({ db, config, stop, status, series }) {
   if (!Object.hasOwn(pairSeries, series))
     throw Error('Unknown threshold series');
+  const strategy = series === 'KXART' ? 'auction_pair'
+    : Object.hasOwn(indexStep, series) ? 'index_pair' : 'crypto_pair';
   const io = new Transport({ ...config, maxHttpAgeSeconds: 2 });
+  if (strategy === 'index_pair') await sleep(series === 'KXINXU' ? 3000 : 6000);
   while (!stop()) {
     try {
       let markets = [],
@@ -106,14 +118,16 @@ export async function observePairs({ db, config, stop, status, series }) {
       do {
         const data = (
           await io.get(
-            '/markets?series_ticker=' +
+            (strategy === 'index_pair' ? '/events?with_nested_markets=true&limit=100' : '/markets?limit=1000') +
+              '&series_ticker=' +
               series +
-              '&status=open&limit=1000' +
+              '&status=open' +
               (cursor ? '&cursor=' + encodeURIComponent(cursor) : '')
           )
         ).body;
+        const page = strategy === 'index_pair' ? data.events.flatMap(e => e.markets) : data.markets;
         markets.push(
-          ...data.markets.filter((m) =>
+          ...page.filter((m) =>
             m.event_ticker?.startsWith(series + '-')
           )
         );
@@ -143,7 +157,7 @@ export async function observePairs({ db, config, stop, status, series }) {
       for (const { low, high } of pairs) {
         if (stop()) return;
         const id =
-          (series === 'KXART' ? 'auction-pair/' : 'crypto-pair/') +
+          strategy.replace('_', '-') + '/' +
           low.event_ticker +
           '/';
         if (db.prepare('SELECT 1 FROM paper WHERE id=?').get(id + 'yes'))
@@ -197,7 +211,7 @@ export async function observePairs({ db, config, stop, status, series }) {
           legs.forEach((leg, i) =>
             addPaper(db, {
               id: id + leg.side,
-              strategy: series === 'KXART' ? 'auction_pair' : 'crypto_pair',
+              strategy,
               ticker: tickers[i],
               at: new Date(now).toISOString(),
               quantity: 1,

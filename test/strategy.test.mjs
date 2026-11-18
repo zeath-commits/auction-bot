@@ -52,7 +52,7 @@ test('chart-confirmed BTC entries use candles and receipts available before the 
   }
 });
 
-for (const strategy of ['auction_pair', 'art_record_pair', 'cross_us_btc', 'cross_us_middle'])
+for (const strategy of ['auction_pair', 'art_record_pair', 'index_pair', 'cross_us_btc', 'cross_us_middle'])
   test(strategy + ' return waits for both settlements', () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'paper-pair-'));
     const db = openLedger(dir);

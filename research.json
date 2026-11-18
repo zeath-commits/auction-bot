@@ -36,6 +36,11 @@
   ],
   "studies": [
     {
+      "market": "S&P 500 and Nasdaq-100 hourly thresholds",
+      "test": "Checked the 35 latest finalized hourly events on each index at 4:13 p.m. ET on November 18, 2026. Compared lower YES and higher NO under matching rules.",
+      "finding": "All 70 events had consistent payouts across their thresholds. These events span six trading dates. Historical results validate the payoff relationship only. The first live scan found zero pairs offered below $1 across 3,220 open contracts. New paper entries require two fresh order-book checks and a positive margin after reserving whole-cent fees on each leg."
+    },
+    {
       "market": "Van Gogh annual record and individual lot",
       "test": "Cost if one leg of the first 16 paper pairs filled alone",
       "finding": "The pair cost $15.85 including entry fees. If only the 16 annual YES shares had filled, the repeated bids in the entry books would have returned $14.29 after modeled sale fees, an 87¢ loss. If only the painting NO shares had filled, there were no bids to exit and 69¢ of entry cost was exposed. The modeled gain if one leg per pair ultimately pays is 15¢. These were paper entries."

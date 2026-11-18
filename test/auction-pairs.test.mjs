@@ -57,5 +57,26 @@ test('two-leg executable-depth model includes both taker fees', () => {
   ];
   assert.ok(costedPair(pair('0.58', '2.0')));
   assert.equal(costedPair(pair('0.42', '2.0')), null);
+  // Before rounding, 0.41 + 0.55 plus the two fees is below a dollar.
+  assert.equal(costedPair(pair('0.45', '2.0')), null);
   assert.equal(costedPair(pair('0.58', '0.99')), null);
+});
+
+test('index pairs require the published cutoff and the same observation time', () => {
+  for (const [series, step] of [['KXINXU', 0.0001], ['KXNASDAQ100U', 0.01]]) {
+    const market = (floor, hour = 10) => ({
+      event_ticker: series + '-TEST', market_type: 'binary', status: 'active',
+      notional_value_dollars: '1.0000', floor_strike: floor, strike_type: 'greater_or_equal',
+      rules_primary: 'If the index at ' + hour + 'am is above ' + (floor - step) + ', then Yes.',
+      rules_secondary: 'Same source.', close_time: '2027-01-01T15:00:00Z',
+      yes_ask_dollars: '0.44', no_ask_dollars: '0.46'
+    });
+    const low = market(7400), high = market(7500);
+    const count = other => ladderCandidates([low, other], Date.parse('2026-11-18')).comparisons;
+    assert.equal(count(high), 1);
+    assert.equal(count(market(7500, 11)), 0);
+    assert.equal(count({...high, floor_strike: 7499}), 0);
+    assert.equal(count({...high, strike_type: 'greater'}), 0);
+    assert.equal(count({...high, rules_secondary: 'Different source.'}), 0);
+  }
 });

@@ -23,6 +23,7 @@ export const strategies = {
   art_record_pair: 'Auction · Van Gogh annual record and individual lot',
   art_range_bids: 'Auction · Polymarket range bids vs. Kalshi thresholds',
   crypto_pair: 'Crypto · paired thresholds',
+  index_pair: 'Stock indices · paired thresholds',
   btc60: 'Bitcoin · final minute',
   btc_band60: 'Bitcoin · final minute, all prices from 98¢ to 99¢',
   btc_underdog: 'Bitcoin · 1–2¢ offer in the final minute',
@@ -180,9 +181,9 @@ export function paperRows(db) {
   return db
     .prepare(
       `SELECT p.*, CASE
-    WHEN p.strategy IN ('auction_pair','art_record_pair','crypto_pair','cross_us_btc','cross_us_middle') AND peer.payout IS NULL THEN NULL
+    WHEN p.strategy IN ('auction_pair','art_record_pair','crypto_pair','index_pair','cross_us_btc','cross_us_middle') AND peer.payout IS NULL THEN NULL
     ELSE p.payout-p.price*p.quantity-p.fees END AS net
-    FROM paper p LEFT JOIN paper peer ON p.strategy IN ('auction_pair','art_record_pair','crypto_pair','cross_us_btc','cross_us_middle')
+    FROM paper p LEFT JOIN paper peer ON p.strategy IN ('auction_pair','art_record_pair','crypto_pair','index_pair','cross_us_btc','cross_us_middle')
     AND peer.id=substr(p.id,1,length(p.id)-length(p.side)) ||
       (CASE p.side WHEN 'yes' THEN 'no' ELSE 'yes' END)
     ORDER BY p.at DESC`
