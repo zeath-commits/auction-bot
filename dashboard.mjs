@@ -6,6 +6,8 @@ import { spawn } from 'node:child_process';
 import { ROOT } from './bot.mjs';
 import { observePairs, pairSeries } from './auction-pairs.mjs';
 import { observeLateAuctions } from './late-auction.mjs';
+import { openSoldLimits } from './sold-limits.mjs';
+import { Transport } from './transport.mjs';
 import { observeNBA } from './nba-paper.mjs';
 import { observeUS } from './us-bitcoin-paper.mjs';
 import { observeSothebysBids } from './sothebys-bids.mjs';
@@ -19,6 +21,7 @@ import {
 
 const runtime = path.join(ROOT, 'runtime');
 const db = openLedger(runtime);
+const soldLimits = openSoldLimits(runtime);
 const config = JSON.parse(
   fs.readFileSync(
     path.join(
@@ -462,6 +465,7 @@ const server = http.createServer((req, res) => {
           lateAuctionStatus,
           usBitcoinStatus,
           sothebysStatus,
+          soldLimits: soldLimits.summary(),
           nbaStatus,
           sothebysCoverage: db
             .prepare(
@@ -540,6 +544,7 @@ server.listen(port, host, () => {
     db,
     config,
     status: sothebysStatus,
+    limits: soldLimits,
     stop: () => stopping || exists(path.join(ROOT, 'STOP'))
   }).catch((e) => {
     sothebysStatus.error = e.message;
@@ -576,6 +581,20 @@ server.listen(port, host, () => {
   setInterval(nightlyReplay, 3600000).unref();
   setInterval(importSafe, 15000).unref();
   setInterval(runAuctions, 60000).unref();
+  const soldIO = new Transport(config);
+  const reconcileLimits = () => {
+    if (!stopping && !exists(path.join(ROOT, 'STOP')))
+      soldLimits
+        .reconcile(soldIO)
+        .then(() => {
+          delete sothebysStatus.settlementError;
+        })
+        .catch((e) => {
+          sothebysStatus.settlementError = e.message;
+        });
+  };
+  reconcileLimits();
+  setInterval(reconcileLimits, 60000).unref();
   observe({
     db,
     config,

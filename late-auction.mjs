@@ -123,11 +123,12 @@ export function persistentOffer(
   second,
   side,
   cash,
-  previouslyBought = 0
+  previouslyBought = 0,
+  maxCents = 99
 ) {
   if (!Number.isSafeInteger(previouslyBought) || previouslyBought < 0)
     throw Error('Invalid previous paper quantity');
-  const firstLevels = askLevels(first, side, 99);
+  const firstLevels = askLevels(first, side, maxCents);
   const original = new Map(firstLevels.map((l) => [l.price, l.quantity]));
   if (original.size !== firstLevels.length)
     throw Error('Repeated price in returned order book');
@@ -138,7 +139,7 @@ export function persistentOffer(
   const levels = [],
     seen = new Set();
   let reserved = previouslyBought;
-  for (const level of askLevels(second, side, 99)) {
+  for (const level of askLevels(second, side, maxCents)) {
     if (seen.has(level.price))
       throw Error('Repeated price in returned order book');
     seen.add(level.price);

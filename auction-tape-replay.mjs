@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { pathToFileURL } from 'node:url';
 import { API } from './transport.mjs';
+import { persistentOffer } from './late-auction.mjs';
 
 async function get(route) {
   for (let attempt = 0; attempt < 5; attempt++) {
@@ -39,7 +40,8 @@ export function simulate(
   maxPerEntry,
   delayMs,
   requireBook,
-  repeatAfterMs = Infinity
+  repeatAfterMs = Infinity,
+  positiveUpsideOnly = false
 ) {
   const used = new Map(),
     entries = [];
@@ -67,6 +69,7 @@ export function simulate(
       quantity--;
     if (!quantity) continue;
     const debit = Math.ceil(quantity * cents - 1e-9) + fee(quantity);
+    if (positiveUpsideOnly && debit >= quantity * 100) continue;
     cash -= debit;
     payout += t.won ? quantity * 100 : 0;
     if (t.won == null) unsettled += debit;
@@ -99,7 +102,7 @@ function microseconds(at) {
   return Date.parse(at) * 1000 + Number(fraction.padEnd(6, '0').slice(3, 6));
 }
 
-export function repeatStudy(trades) {
+function groupedExecutions(trades) {
   // Fills at a common timestamp can belong to the same incoming order.
   // Use only the highest observed qualifying price in each such group.
   const groups = new Map();
@@ -111,13 +114,161 @@ export function repeatStudy(trades) {
     else if (t.price === prior.price)
       prior.size = Math.round((prior.size + t.size) * 100) / 100;
   }
-  const prints = [...groups.values()].sort(
+  return [...groups.values()].sort(
     (a, b) => a.timestamp - b.timestamp || a.ticker.localeCompare(b.ticker)
   );
+}
+
+export function repeatStudy(trades) {
+  const prints = groupedExecutions(trades);
   return {
     first: simulate(prints, 5, 30000, false),
     repeat: simulate(prints, 5, 30000, false, 60000),
     volumeLimited: simulate(prints, Infinity, 30000, false, 60000)
+  };
+}
+
+// Compare price caps on the same time-ordered executions and bankroll.
+// Missing the first eligible execution at each threshold models a competing buyer.
+export function priceSensitivity(tape) {
+  const grouped = groupedExecutions(tape),
+    models = [];
+  for (const delay of [30, 300])
+    for (const cap of [0.95, 0.98, 0.99])
+      for (const missFirst of [false, true]) {
+        const seen = new Set();
+        const prints = grouped.filter((t) => {
+          if (t.elapsedMs < delay * 1000 || t.price > cap || t.size < 1)
+            return false;
+          const first = !seen.has(t.ticker);
+          seen.add(t.ticker);
+          return !missFirst || !first;
+        });
+        const run = (rows) =>
+          simulate(rows, Infinity, delay * 1000, false, 60000, true);
+        const result = run(prints);
+        const lots = new Map();
+        for (const e of result.entries) {
+          const row = lots.get(e.artwork) ?? {
+            artwork: e.artwork,
+            costCents: 0,
+            netCents: 0
+          };
+          row.costCents += e.debitCents;
+          row.netCents =
+            e.netCents === null || row.netCents === null
+              ? null
+              : row.netCents + e.netCents;
+          lots.set(e.artwork, row);
+        }
+        const ranked = [...lots.values()].sort((a, b) =>
+          result.pendingCost
+            ? b.costCents - a.costCents
+            : b.netCents - a.netCents
+        );
+        const top = ranked[0] ?? null;
+        const excluded = top
+          ? run(prints.filter((t) => t.artwork !== top.artwork))
+          : null;
+        models.push({
+          delay,
+          cap,
+          missFirst,
+          entries: result.entries.length,
+          lots: result.lots,
+          tickers: result.tickers,
+          quantity: result.quantity,
+          cost: result.cost,
+          pendingCost: result.pendingCost,
+          net: result.net,
+          top,
+          withoutTop: excluded && {
+            cost: excluded.cost,
+            net: excluded.net,
+            quantity: excluded.quantity
+          }
+        });
+      }
+  return {
+    publicExecutions: tape.length,
+    groupedExecutions: grouped.length,
+    models
+  };
+}
+
+// Reconstruct only the depth frozen in the original <=95-cent book archive.
+// Removing the first unit per ticker represents a competing small buyer.
+// Previously attributed units remain reserved if displayed volume reappears.
+export function confirmedDepthReplay(lots, checked, competitorUnits) {
+  const outcomes = new Map(checked.map((c) => [c.ticker, c.aligned]));
+  const books = lots
+    .flatMap((l) =>
+      l.books.map((b) => ({
+        ...b,
+        event: l.event,
+        artwork: l.sale + '/' + l.lot,
+        seenAt: l.seenAt
+      }))
+    )
+    .sort(
+      (a, b) =>
+        Date.parse(a.at) - Date.parse(b.at) || a.ticker.localeCompare(b.ticker)
+    );
+  const previous = new Map(),
+    held = new Map(),
+    entries = [];
+  let cash = 1000;
+  for (const b of books) {
+    if (Date.parse(b.at) < Date.parse(b.seenAt)) continue;
+    const sideBook = {
+      orderbook_fp: {
+        no_dollars: b.levels.map(([price, quantity]) => [
+          (1 - price).toFixed(6),
+          String(quantity)
+        ])
+      }
+    };
+    const prior = previous.get(b.ticker);
+    previous.set(b.ticker, { at: b.at, sideBook });
+    if (!prior) continue;
+    const age = Date.parse(b.at) - Date.parse(prior.at);
+    if (age < 1000 || age > 30000) continue;
+    const bought = held.get(b.ticker) ?? 0;
+    // Source files store asks already normalized to the side implied by the result.
+    const r = persistentOffer(
+      prior.sideBook,
+      sideBook,
+      'YES',
+      cash,
+      bought + competitorUnits
+    );
+    if (!r) continue;
+    const debit = r.quantity * r.price + r.fees;
+    cash -= debit;
+    held.set(b.ticker, bought + r.quantity);
+    const outcome = outcomes.get(b.ticker);
+    entries.push({
+      ticker: b.ticker,
+      artwork: b.artwork,
+      firstAt: prior.at,
+      at: b.at,
+      quantity: r.quantity,
+      debit,
+      levels: r.levels,
+      net:
+        typeof outcome === 'boolean' ? (outcome ? r.quantity : 0) - debit : null
+    });
+  }
+  return {
+    competitorUnits,
+    entries,
+    sampled: new Set(lots.flatMap((l) => l.sampled ?? [])).size,
+    tickers: held.size,
+    quantity: entries.reduce((n, e) => n + e.quantity, 0),
+    cost: 1000 - cash,
+    net: entries.some((e) => e.net === null)
+      ? null
+      : entries.reduce((n, e) => n + e.net, 0)
   };
 }
 
@@ -159,7 +310,7 @@ async function readTape(lot, m, c) {
         r.taker_outcome_side !== side ||
         r.taker_book_side !== (side === 'yes' ? 'bid' : 'ask') ||
         price <= 0 ||
-        price > 0.95 ||
+        price > 1 ||
         size <= 0
       )
         continue;
@@ -232,7 +383,7 @@ async function main() {
   const s = (await get('/series/KXART')).series;
   if (s.fee_type !== 'quadratic' || s.fee_multiplier !== 1)
     throw Error('Review fee assumptions');
-  const trades = [],
+  const fullTape = [],
     checked = [],
     pending = [];
   for (const lot of lots) {
@@ -279,9 +430,10 @@ async function main() {
           aligned: (lot.price > c.threshold ? 'yes' : 'no') === m.result
         });
       }
-      trades.push(...(await readTape(lot, m, c)));
+      fullTape.push(...(await readTape(lot, m, c)));
     }
   }
+  const trades = fullTape.filter((t) => t.price <= 0.95);
   trades.sort(
     (a, b) =>
       microseconds(a.at) - microseconds(b.at) || a.id.localeCompare(b.id)
@@ -302,7 +454,12 @@ async function main() {
     pending,
     trades,
     models,
-    repeated: repeatStudy(trades)
+    repeated: repeatStudy(trades),
+    additionalTrades: fullTape.filter((t) => t.price > 0.95),
+    priceSensitivity: priceSensitivity(fullTape),
+    confirmedDepth: desktop
+      ? null
+      : [0, 1].map((units) => confirmedDepthReplay(lots, checked, units))
   };
   const dir = new URL('./runtime/', import.meta.url);
   await fs.mkdir(dir, { recursive: true });

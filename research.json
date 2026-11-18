@@ -36,6 +36,11 @@
   ],
   "studies": [
     {
+      "market": "November 16 auction sales",
+      "test": "Price limits, competing buyers and repeated order books",
+      "finding": "Across 105 settled thresholds, allocating $1,000 to observed buyer executions after 30 seconds modeled +$104.36 at a 95¢ limit and +$88.07 at 99¢. At 95¢, $80.16 of the modeled gain came from Rothko. The archive sampled books for 78 thresholds. Two successive books 1–30 seconds apart supported just two shares on one artwork, for +$0.159 after modeled fees. Reserving the cheapest share for another buyer left +$0.0748. Archive coverage was incomplete."
+    },
+    {
       "market": "NBA game winners",
       "test": "Five-point leads with 35–50 seconds left in regulation",
       "finding": "2025–26 replay of Kalshi buyer executions. Of 1,220 quality-screened games, 226 had missing or reversed late-game timestamps. The remaining games produced 43 signals. In 21 games a buyer paid up to 99¢ five to fifteen seconds later, before the next recorded play. Twenty leaders won. One share per matched game modeled a 22¢ loss after standard fees. Golden State led Chicago 115–110 with 47.5 seconds left, traded at 92¢ and lost. Live paper testing requires two displayed offers and a fresh score."

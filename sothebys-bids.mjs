@@ -170,7 +170,13 @@ export function confirmedBid(first, second, highPriceStudy = false) {
   );
 }
 
-export async function observeSothebysBids({ db, config, stop, status }) {
+export async function observeSothebysBids({
+  db,
+  config,
+  stop,
+  status,
+  limits
+}) {
   db.exec(
     'CREATE TABLE IF NOT EXISTS sothebys_bid_scans(at INTEGER PRIMARY KEY, fresh INTEGER, detail TEXT);CREATE TABLE IF NOT EXISTS sothebys_bid_quotes(ticker TEXT,at INTEGER,detail TEXT,PRIMARY KEY(ticker,at))'
   );
@@ -289,6 +295,12 @@ export async function observeSothebysBids({ db, config, stop, status }) {
           tail,
           deadline
         });
+        if (limits && sold.next.size)
+          limits.record(
+            [...sold.next.values()],
+            previousSold,
+            tail ? 95000 : 30000
+          );
         previousSold = sold.next;
         status.sold = { ...sold.status, at: new Date().toISOString() };
       } catch (e) {

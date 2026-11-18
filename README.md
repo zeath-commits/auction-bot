@@ -59,6 +59,10 @@ During paper scans, `runtime/paper/observations.jsonl` records a `paper_depth` o
 
 The worker revisits eligible contracts while offers remain available. Each order uses a fresh depth check and an immediate-or-cancel limit. Defaults are one contract per order, at most 95¢, two attempts per artwork at least 60 seconds apart, five attempts in total, and a $5 lifetime reserve across the shared live journal. Partial and zero fills still consume an attempt and its reservation. Live positions must match recorded fills for the artwork. A change of signal never causes the worker to buy the opposite side of a ticker it already attempted. Run one instance per account with persistent `runtime/` storage.
 
+The replay also compares 95¢, 98¢ and 99¢ limits after 30 seconds and five minutes. Each scenario has a single $1,000 budget for the sale date. The competition scenario skips the first eligible purchase at every threshold. The concentration check reruns the same budget with the largest contributing artwork excluded. The archive records the extra higher-priced executions so each result can be reproduced. The separate two-book replay uses only whole units visible at the same price on consecutive snapshots one to thirty seconds apart. It reserves units already counted and uses the fee precision of the live paper monitor.
+
+On the paper dashboard, select **Sotheby’s · published sale price and available quantity** to compare 95¢ and 99¢ limits prospectively. Each comparison ledger starts with $1,000, records the same verified books and keeps spent cash reserved. Settled net uses the exchange payout and includes modeled fees. Comparison entries stay outside the combined paper and real-trade totals.
+
 ### Connect your Kalshi account
 
 1. Copy `config.example.json` to the ignored local `config.json` and review its limits. Store your private signing key **outside the repository**. Set `KALSHI_API_KEY_ID` to the key ID and `KALSHI_PRIVATE_KEY_PATH` to the key file path in the worker’s environment.

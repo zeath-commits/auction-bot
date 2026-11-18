@@ -83,3 +83,72 @@ test('sale-window book sampling starts on time and hands off at the end of the t
     'late_auction'
   );
 });
+import {
+  priceSensitivity,
+  confirmedDepthReplay
+} from '../auction-tape-replay.mjs';
+test('auction competition skips an entire qualifying timestamp per threshold and compares the same cash budget', () => {
+  const base = Date.parse('2026-11-16T22:00Z');
+  const row = (seconds, price, size) => ({
+    at: new Date(base + seconds * 1000).toISOString(),
+    elapsedMs: seconds * 1000,
+    price,
+    size,
+    won: true,
+    ticker: 'A',
+    artwork: 'lot A'
+  });
+  const d = priceSensitivity([
+    row(31, 0.8, 1000),
+    row(31, 0.99, 100),
+    row(100, 0.95, 10),
+    row(170, 0.9, 2)
+  ]);
+  const m = d.models.find(
+    (m) => m.delay === 30 && m.cap === 0.95 && m.missFirst
+  );
+  assert.equal(m.quantity, 2);
+  assert.equal(m.top.artwork, 'lot A');
+  assert.equal(m.withoutTop.cost, 0);
+  const pending = priceSensitivity([
+    { ...row(31, 0.98, 100), won: null }
+  ]).models.find((m) => m.cap === 0.99 && !m.missFirst && m.delay === 30);
+  assert.equal(pending.net, null);
+  assert.ok(pending.pendingCost > 0);
+});
+test('two observed books cap paper size across repeated and interrupted snapshots', () => {
+  const seenAt = '2026-11-16T22:00:00Z',
+    book = (s, levels) => ({
+      at: new Date(Date.parse(seenAt) + s * 1000).toISOString(),
+      levels,
+      ticker: 'T'
+    });
+  const l = {
+    sale: 'S',
+    lot: 'L',
+    sampled: ['T'],
+    seenAt,
+    books: [
+      book(1, [
+        [0.91, 1],
+        [0.92, 1]
+      ]),
+      book(20, [
+        [0.91, 1],
+        [0.92, 1]
+      ]),
+      book(25, [
+        [0.91, 1],
+        [0.92, 1]
+      ]),
+      book(28, []),
+      book(32, [[0.7, 10]]),
+      book(75, [[0.7, 10]])
+    ]
+  };
+  const outcomes = [{ ticker: 'T', aligned: true }];
+  const baseline = confirmedDepthReplay([l], outcomes, 0);
+  assert.equal(baseline.quantity, 2);
+  assert.equal(confirmedDepthReplay([l], outcomes, 1).quantity, 1);
+  assert.equal(confirmedDepthReplay([l], [], 0).net, null);
+});

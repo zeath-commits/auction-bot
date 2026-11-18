@@ -205,6 +205,30 @@ function paper(d) {
         view.append(p);
       }
   }
+  if (selected === 'sothebys_sold' && d.soldLimits) {
+    table(
+      'Paper price-limit comparison',
+      [
+        'Maximum entry',
+        'Contracts',
+        'Committed incl. fees',
+        'Settled contracts',
+        'Settled net'
+      ],
+      d.soldLimits.map((x) => [
+        x.cap + '¢',
+        x.quantity,
+        money(x.cost),
+        x.settled,
+        x.settled ? money(x.net) : '—'
+      ])
+    );
+    note(
+      'Each price limit starts with $1,000 and uses the same confirmed books. Proceeds stay reserved throughout the experiment.'
+    );
+    if (d.sothebysStatus?.settlementError)
+      note('Settlement check · ' + d.sothebysStatus.settlementError);
+  }
   if (d.lateAuctionStatus?.at) {
     const late = d.lateAuctionStatus;
     if (late.saleDepth?.active) {

@@ -162,3 +162,53 @@ test('closed USD result exactly on threshold uses NO and ignores unsold and stal
     rmSync(directory, { recursive: true, force: true });
   }
 });
+import { openSoldLimits } from '../sold-limits.mjs';
+test('two auction price caps persist separate budgets and settle their own shares', async () => {
+  const dir = mkdtempSync(path.join(os.tmpdir(), 'two-caps-'));
+  let limits = openSoldLimits(dir);
+  try {
+    const base = Date.now(),
+      q = {
+        ticker: 'T',
+        side: 'NO',
+        amount: 5000,
+        at: base,
+        generation: base - 200,
+        closeAt: base + 10000,
+        url: 'catalog',
+        book: {
+          orderbook_fp: {
+            yes_dollars: [
+              ['0.01', '2000'],
+              ['0.1', '2']
+            ]
+          }
+        }
+      };
+    const previous = new Map([
+      ['T', { ...q, at: base - 2500, generation: base - 3000 }]
+    ]);
+    limits.record([q], previous, 30000);
+    const [low, high] = limits.summary();
+    assert.equal(low.quantity, 2);
+    assert.ok(high.quantity > 1000);
+    assert.ok(high.cost <= 1000);
+    assert.equal(low.settled, 0);
+    assert.equal(low.net, null);
+    limits.close();
+    limits = openSoldLimits(dir);
+    assert.deepEqual(limits.summary(), [low, high]);
+    await limits.reconcile({
+      get: async () => ({
+        body: { market: { ticker: 'T', result: 'no', status: 'finalized' } }
+      })
+    });
+    for (const cohort of limits.summary()) {
+      assert.equal(cohort.quantity, cohort.settled);
+      assert.ok(Math.abs(cohort.quantity - cohort.cost - cohort.net) < 1e-7);
+    }
+  } finally {
+    limits.close();
+    rmSync(dir, { recursive: true, force: true });
+  }
+});

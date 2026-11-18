@@ -15,18 +15,23 @@ export function initSoldStudy(db) {
 }
 
 // Use the result shown with buyer's premium on two distinct catalog generations.
-export function recordSoldBooks(db, quotes, previous, maxGapMs) {
+export function recordSoldBooks(
+  db,
+  quotes,
+  previous,
+  maxGapMs,
+  comparisonCap = null
+) {
   let entries = 0,
     contracts = 0;
   const levels = [];
   db.exec('BEGIN IMMEDIATE');
   try {
     for (const q of quotes) {
-      db.prepare('INSERT OR IGNORE INTO sothebys_sold_books VALUES(?,?,?)').run(
-        q.ticker,
-        q.at,
-        JSON.stringify(q)
-      );
+      if (comparisonCap === null)
+        db.prepare(
+          'INSERT OR IGNORE INTO sothebys_sold_books VALUES(?,?,?)'
+        ).run(q.ticker, q.at, JSON.stringify(q));
       const p = previous.get(q.ticker);
       if (
         !p ||
@@ -54,13 +59,28 @@ export function recordSoldBooks(db, quotes, previous, maxGapMs) {
       )
         continue;
       const held = prior.reduce((sum, r) => sum + r.quantity, 0);
-      const available = persistentOffer(p.book, q.book, q.side, Infinity, held);
+      const available = persistentOffer(
+        p.book,
+        q.book,
+        q.side,
+        Infinity,
+        held,
+        comparisonCap ?? 99
+      );
       if (available)
         for (const l of available.levels)
           levels.push({ p, q, l, held, depth: available.displayed });
     }
     // Allocate cash across simultaneously observed thresholds, cheapest units first.
-    let cash = auctionDepthCash(db);
+    let cash =
+      comparisonCap === null
+        ? auctionDepthCash(db)
+        : 1000 -
+          db
+            .prepare(
+              'SELECT COALESCE(SUM(price*quantity+fees),0) AS total FROM paper'
+            )
+            .get().total;
     for (const { p, q, l, held, depth } of levels.sort(
       (a, b) => a.l.price - b.l.price || a.q.ticker.localeCompare(b.q.ticker)
     )) {
