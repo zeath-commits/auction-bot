@@ -201,6 +201,14 @@ function paper(d) {
       d.auctionStatus.offers +
       '.'
   );
+  if (selected === 'weather_three') {
+    const scans = d.weatherStatus?.threeTotals;
+    if (scans) metrics([['Station-days checked', scans.stationDays],['Completed scans',scans.scans],['Scans with offers',scans.scansWithOffers]]);
+    note('The test freezes station readings at 3 p.m. local standard time. It subtracts 1°F from the supported high and checks offers through 99¢ twice before the afternoon climate product appears.');
+    table('Station readings and offers', ['City','Status','Supported high (°F)','Crossed thresholds','Offers','Checked'],
+      Object.entries(d.weatherStatus?.three ?? {}).map(([city,r]) =>
+        [city,r.error ?? r.state,r.maximum,r.thresholds,r.offers,time(r.at)]), 'Waiting for station checks.');
+  }
   if (selected === 'weather_high' && d.weatherStatus?.cities) {
     for (const x of d.weatherStatus.historical ?? [])
       note(

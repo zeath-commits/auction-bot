@@ -9,6 +9,7 @@ import {
   eventMarkets,
   crossed,
   officialPayout,
+  weatherBuys,
   publicJson
 } from './weather-high.mjs';
 
@@ -75,46 +76,7 @@ for (const station of stations) {
         };
         rows.push(result);
         if (to <= from) continue;
-        let cursor = '',
-          seen = new Set(),
-          hits = [];
-        do {
-          const u = new URLSearchParams({
-            ticker: m.ticker,
-            min_ts: Math.floor(from / 1000),
-            max_ts: Math.ceil(to / 1000),
-            limit: 1000,
-            is_block_trade: 'false'
-          });
-          if (cursor) u.set('cursor', cursor);
-          const page = await publicJson(API + '/markets/trades?' + u);
-          for (const t of page.trades) {
-            const p = Number(t[side + '_price_dollars']),
-              at = Date.parse(t.created_time);
-            if (
-              t.ticker === m.ticker &&
-              t.is_block_trade === false &&
-              t.taker_outcome_side === side &&
-              t.taker_book_side === (side === 'yes' ? 'bid' : 'ask') &&
-              at >= from &&
-              at < to &&
-              p > 0 &&
-              p <= 0.99 &&
-              Number(t.count_fp) >= 1
-            )
-              hits.push({
-                id: t.trade_id,
-                at: t.created_time,
-                price: p,
-                size: Number(t.count_fp)
-              });
-          }
-          cursor = page.cursor;
-          if (cursor && seen.has(cursor)) throw Error('Repeated trades cursor');
-          seen.add(cursor);
-          await sleep(350);
-        } while (cursor);
-        hits.sort((a, b) => a.at.localeCompare(b.at) || b.price - a.price);
+        const hits = await weatherBuys(m.ticker, side, from, to);
         result.qualifyingExecutions = hits.length;
         result.qualifyingQuantity = Number(
           hits.reduce((n, t) => n + t.size, 0).toFixed(2)

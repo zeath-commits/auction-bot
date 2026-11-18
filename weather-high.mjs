@@ -83,6 +83,15 @@ export function localParts(station, t) {
   }).formatToParts(new Date(t));
   return Object.fromEntries(parts.map((p) => [p.type, p.value]));
 }
+export function stationDay(station, at) {
+  // These four climate stations use a local standard-time observing day, including in summer.
+  const offsetHours = station.cli === 'MDW' ? 6 : 5;
+  const date = new Date(at - offsetHours * 3600000);
+  const dayStart = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), offsetHours);
+  const month = date.toLocaleString('en-US', {timeZone: 'UTC', month: 'short'});
+  const suffix = String(date.getUTCFullYear()).slice(-2) + month.toUpperCase() + String(date.getUTCDate()).padStart(2, '0');
+  return {dayStart, date: month + ' ' + date.getUTCDate() + ', ' + date.getUTCFullYear(), event: station.series + '-' + suffix};
+}
 export function parseReport(station, p) {
   const t = Date.parse(p.issuanceTime),
     s = p.productText?.replaceAll('\r', '') ?? '';
@@ -208,4 +217,48 @@ export function officialPayout(m, side) {
   if (Number(m.settlement_value_dollars) !== Number(m.result === 'yes'))
     return null;
   return Number(m.result === side);
+}
+
+export async function weatherBuys(ticker, side, from, to) {
+  let cursor = '',
+    seen = new Set(),
+    hits = [];
+  do {
+    const u = new URLSearchParams({
+      ticker,
+      min_ts: Math.floor(from / 1000),
+      max_ts: Math.ceil(to / 1000),
+      limit: 1000,
+      is_block_trade: 'false'
+    });
+    if (cursor) u.set('cursor', cursor);
+    const page = await publicJson(API + '/markets/trades?' + u);
+    for (const t of page.trades) {
+      const p = Number(t[side + '_price_dollars']),
+        at = Date.parse(t.created_time);
+      if (
+        t.ticker === ticker &&
+        t.is_block_trade === false &&
+        t.taker_outcome_side === side &&
+        t.taker_book_side === (side === 'yes' ? 'bid' : 'ask') &&
+        at >= from &&
+        at < to &&
+        p > 0 &&
+        p <= 0.99 &&
+        Number(t.count_fp) >= 1
+      )
+        hits.push({
+          id: t.trade_id,
+          at: t.created_time,
+          price: p,
+          size: Number(t.count_fp)
+        });
+    }
+    cursor = page.cursor;
+    if (cursor && seen.has(cursor)) throw Error('Repeated trades cursor');
+    seen.add(cursor);
+    await sleep(350);
+  } while (cursor);
+  hits.sort((a, b) => a.at.localeCompare(b.at) || b.price - a.price);
+  return hits;
 }

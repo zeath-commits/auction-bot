@@ -36,6 +36,11 @@
   ],
   "studies": [
     {
+      "market": "Daily high temperature",
+      "test": "3 p.m. station readings before the afternoon climate product, November 11–17",
+      "finding": "Across 28 station-days, 34 thresholds crossed on 20 station-days and all agreed with settlement. From 3:01 p.m. local standard time to the earlier of the afternoon product or 4 p.m., no whole-contract same-side taker buy at 99¢ or less appeared. An earlier check started one minute after the first supported crossing and ran up to one hour, ending by 3 p.m. All 33 earlier thresholds agreed with settlement and none had a qualifying buy. Both checks used the same four stations and dates."
+    },
+    {
       "market": "Kalshi Bitcoin 15-minute",
       "test": "First 1¢ or 2¢ taker buy in the final minute, November 4–17",
       "finding": "Across 1,328 resolved markets, 469 had a qualifying non-block buy of at least one contract. Seven won. At one contract per entry the modeled net after fees was −$1.5172. November 4–10 lost $2.3870 and November 11–17 gained $0.8698. The 1¢ and 2¢ entry groups both lost money across the full period."

@@ -8,6 +8,7 @@ import { setTimeout as sleep } from 'node:timers/promises';
 import { Transport } from './transport.mjs';
 import { askLevels, checkMarketActive } from './core.mjs';
 import { addPaper } from './strategy-monitor.mjs';
+import { threeOClock, threeSignals } from './weather-three.mjs';
 import {
   stations,
   listings,
@@ -50,6 +51,21 @@ async function snapshot(io, eligible) {
     throw Error('Missing weather book');
   return { books, at: read.receivedAt };
 }
+async function weatherExchange(io, station) {
+  const [series, exchange] = await Promise.all([
+    io.get('/series/' + station.series), io.get('/exchange/status')
+  ]);
+  const s = series.body.series;
+  if (s.ticker !== station.series || !['quadratic','quadratic_with_maker_fees'].includes(s.fee_type) || s.fee_multiplier !== 1)
+    throw Error('Weather fee schedule changed');
+  return exchange.body.trading_active && exchange.body.exchange_active;
+}
+function recordWeatherEntry(db, strategy, market, side, offer, at) {
+  addPaper(db, {id:strategy + '/' + market.ticker, strategy, ticker:market.ticker, side,
+    at:new Date(at).toISOString(), quantity:1, price:offer.price, depth:offer.depth,
+    fees:Math.ceil(0.07 * offer.price * (1 - offer.price) * 10000 - 1e-9) / 10000,
+    closeAt:Date.parse(market.close_time)});
+}
 export async function observeWeather({ db, config, status, stop }) {
   const io = new Transport({
     ...config,
@@ -63,6 +79,59 @@ export async function observeWeather({ db, config, status, stop }) {
     'CREATE TABLE IF NOT EXISTS weather_station_checks(id TEXT PRIMARY KEY, at INTEGER, detail TEXT); CREATE TABLE IF NOT EXISTS weather_station_entries(id TEXT PRIMARY KEY, report TEXT, label TEXT)'
   );
   const cached = new Map();
+  db.exec('CREATE TABLE IF NOT EXISTS weather_three_checks(event TEXT,at INTEGER,detail TEXT, PRIMARY KEY(event,at))');
+  status.three = {};
+  async function checkThree(station, list, now) {
+    const window = threeOClock(station, now);
+    if (now < window.start + 60000 || now >= window.end) return {state:'Outside 3–4 p.m. standard time'};
+    const published = products => products.some(p => {
+      const issued = Date.parse(p.issuanceTime);
+      return issued >= window.dayStart + 12 * 3600000 && issued <= Date.now();
+    });
+    if (published(list)) return {state:'Afternoon climate product published'};
+    const [raw, markets] = await Promise.all([stationMessages(station, now), eventMarkets(station, window)]);
+    const checked = threeSignals(station, window, raw.rows, markets, Date.now());
+    const eligible = checked.signals.filter(({m}) => checkMarketActive(m, Date.now()));
+    const info = {state:checked.state, at:new Date().toISOString(), event:window.event,
+      maximum:checked.evidence?.maximum ?? null, thresholds:eligible.length, offers:0};
+    const details = {source:raw.url, cutoff:window.start, evidence:checked.evidence, books:[]};
+    if (eligible.length) {
+      if (!await weatherExchange(io, station)) return {...info,state:'Exchange unavailable'};
+      const a = await snapshot(io,eligible);
+      await sleep(1000);
+      const [b, fresh, revisions] = await Promise.all([snapshot(io,eligible),listings(station),stationMessages(station,Date.now())]);
+      const end = Date.now();
+      const verified = threeSignals(station,window,revisions.rows,markets,end);
+      if (stop() || published(fresh) || end - a.at > 5000 || end >= window.end ||
+          verified.evidence?.maximum !== info.maximum)
+        return {...info,state:'Source or quote changed'};
+      for (const {m,side} of eligible) {
+        if (!checkMarketActive(m,end)) continue;
+        const first = a.books.get(m.ticker), second = b.books.get(m.ticker);
+        const offer = repeatedWeatherAsk(first,second,side);
+        details.books.push({ticker:m.ticker,side,firstAt:a.at,secondAt:b.at,first,second,offer});
+        if (offer) info.offers++;
+      }
+      if (info.offers) {
+        details.stationRows = raw.rows;
+        details.confirmingRows = revisions.rows;
+      }
+    }
+    const at = Date.now();
+    db.exec('BEGIN IMMEDIATE');
+    try {
+      db.prepare('INSERT INTO weather_three_checks VALUES(?,?,?)').run(window.event,at,JSON.stringify({...details,...info}));
+      for (const b of details.books.filter(b => b.offer)) {
+        const market = eligible.find(({m}) => m.ticker===b.ticker).m;
+        recordWeatherEntry(db,'weather_three',market,b.side,b.offer,b.secondAt);
+      }
+      db.exec('COMMIT');
+    } catch (e) {
+      db.exec('ROLLBACK');
+      throw e;
+    }
+    return info;
+  }
   function startStationCheck(station, r) {
     const cache = cached.get(station.cli);
     if (cache.loading || cache.proof || stop()) return;
@@ -101,6 +170,11 @@ export async function observeWeather({ db, config, status, stop }) {
       return { state: 'Outside afternoon report window' };
     const list = await listings(station),
       newest = latest(list);
+    try {
+      status.three[station.city] = await checkThree(station,list,now);
+    } catch (e) {
+      status.three[station.city] = {state:'Data error', error:e.message};
+    }
     if (!newest) throw Error('NWS list empty');
     const age = now - Date.parse(newest.issuanceTime);
     if (age < 0 || age >= 3600000)
@@ -160,18 +234,7 @@ export async function observeWeather({ db, config, status, stop }) {
       .filter(({ m, side }) => side && checkMarketActive(m, Date.now()));
     if (!eligible.length)
       return { ...info, state: 'No open crossed thresholds', thresholds: 0 };
-    const [series, exchange] = await Promise.all([
-      io.get('/series/' + station.series),
-      io.get('/exchange/status')
-    ]);
-    const s = series.body.series;
-    if (
-      s.ticker !== station.series ||
-      !['quadratic', 'quadratic_with_maker_fees'].includes(s.fee_type) ||
-      s.fee_multiplier !== 1
-    )
-      throw Error('Weather fee schedule changed');
-    if (!exchange.body.trading_active || !exchange.body.exchange_active)
+    if (!await weatherExchange(io, station))
       return { ...info, state: 'Exchange unavailable' };
     // Freeze what this worker actually had in hand before the first book request.
     const proof = cached.get(station.cli).proof;
@@ -214,20 +277,7 @@ export async function observeWeather({ db, config, status, stop }) {
         );
         if (!offer) continue;
         offers++;
-        addPaper(db, {
-          id: 'weather_high/' + m.ticker,
-          strategy: 'weather_high',
-          ticker: m.ticker,
-          side,
-          at: new Date(b.at).toISOString(),
-          quantity: 1,
-          price: offer.price,
-          depth: offer.depth,
-          fees:
-            Math.ceil(0.07 * offer.price * (1 - offer.price) * 10000 - 1e-9) /
-            10000,
-          closeAt: Date.parse(m.close_time)
-        });
+        recordWeatherEntry(db,'weather_high',m,side,offer,b.at);
         const label = !proof
           ? 'Unavailable'
           : proof.contradicted
@@ -314,6 +364,9 @@ export async function observeWeather({ db, config, status, stop }) {
           : { state: 'Data error', error: x.reason.message }
       ])
     );
+    status.threeTotals = db.prepare(`SELECT COUNT(*) AS scans, COUNT(DISTINCT event) AS stationDays,
+      COUNT(CASE WHEN json_extract(detail,'$.offers')>0 THEN 1 END) AS scansWithOffers
+      FROM weather_three_checks`).get();
     status.at = new Date().toISOString();
     await sleep(60000);
   }
