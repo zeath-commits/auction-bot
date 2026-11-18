@@ -36,6 +36,11 @@
   ],
   "studies": [
     {
+      "market": "Sotheby’s irrevocable bids",
+      "test": "Matched the lot-page symbols retrieved on November 18 to 14 archived November 16 sold prices. Checked the five contract-linked November 18 lots before the sale.",
+      "finding": "Eleven of the 14 earlier lots display an irrevocable-bid symbol. For six of those eleven the standard premium calculation exceeded the published price. All three unmarked lots matched. Sotheby’s says a fee for a successful irrevocable bidder can reduce the reported price. Bidder identity and individual fee amounts were unavailable. All five upcoming lots displayed the symbol before the sale. The dashboard records the disclosure available at each forecast and the size of the deduction that would erase the forecast’s margin."
+    },
+    {
       "market": "Sotheby’s live bids and buyer’s premium",
       "test": "Applied Sotheby’s published New York fine-art premium tiers to archived November 16 bids. Compared projections with published sale totals, Kalshi settlements and public trades.",
       "finding": "The standard formula matched 8 of 14 published totals and overstated 6 by $100,000–$1.3 million. On the final displayed bids alone it predicted 23 additional YES thresholds, of which 2 settled NO. The Rothko estimate was $18.505 million and its published result was $17.705 million. In the archive of live bidding, two successive readings produced 17 premium-only threshold signals across eight artworks. All 17 settled YES. Six had a public YES buy through 95¢ during the sampled windows, worth $0.48 total if one share had filled at each first eligible trade after estimated fees. Historical trades cannot confirm our place in the book."

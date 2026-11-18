@@ -84,6 +84,9 @@ export function extractSothebys(html, c, detailTarget = null) {
     return {
       event: t.event,
       lot: t.lot,
+      irrevocableBid: detailTarget && Array.isArray(card.symbolsV2) &&
+        card.symbolsV2.every(s => typeof s?.lotSymbolId === 'string')
+        ? card.symbolsV2.some(s => s.lotSymbolId === 'IrrevocableBids') : null,
       phase,
       closed: state.isClosed,
       withdrawn: withdrawal,
@@ -245,6 +248,7 @@ export async function observeSothebysBids({
   status.timing = timing.summary();
   let previous = new Map(),
     previousSold = new Map();
+  let nextDisclosureCheck = 0;
   const deadline = Date.parse(calendar.settlementWatchEnd);
   while (!stop()) {
     const now = Date.now(),
@@ -256,7 +260,16 @@ export async function observeSothebysBids({
       return;
     }
     if (toStart > 0) {
-      await sleep(Math.min(60000, toStart));
+      if (now >= nextDisclosureCheck && toStart > 10000) {
+        const checks = await Promise.allSettled(calendar.targets.map(async t => {
+          const read = await readSalePage(t);
+          timing.recordDisclosure(read);
+        }));
+        const failed = checks.filter(r => r.status === 'rejected').length;
+        status.disclosureErrors = failed;
+        nextDisclosureCheck = Date.now() + (failed ? 60000 : 900000);
+      }
+      await sleep(Math.max(0, Math.min(60000, Date.parse(calendar.start) - Date.now())));
       continue;
     }
     let delay = tail ? 60000 : 10000;

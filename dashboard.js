@@ -393,8 +393,15 @@ function paper(d) {
     if (selected === 'sothebys_bid_premium') {
       note('One paper YES contract through 95¢ when the bid has yet to exceed the threshold and the standard New York buyer’s premium would put it above. The test requires two live source updates and two order-book checks. Published sale prices can differ from the estimate.');
       if (s.premiumCrossings != null) note('Thresholds crossed by the estimate alone on the latest scan · ' + s.premiumCrossings);
-      table('Premium forecasts against settlement', ['Market','Displayed bid','Projected sale','Threshold','Settlement'],
-        (d.premiumSignals ?? []).map(r=>[r.ticker,money(r.bid),money(r.estimated),money(r.strike),r.result?.toUpperCase() ?? 'Pending']),
+      const disclosure = flag => flag === 1 ? 'Disclosed' : flag === 0 ? 'Symbol absent' : 'Unknown';
+      table('Irrevocable bids in the lot catalog', ['Artwork','Irrevocable bid','Page checked'],
+        s.targets.map(t => {
+          const row = (d.saleDisclosures ?? []).find(r=>r.event===t.event);
+          return [t.title,disclosure(row?.irrevocable),row ? time(row.at) : 'Pending'];
+        }));
+      note('If a compensated irrevocable bidder wins, Sotheby’s reports the sale price after deducting the fee. A deduction equal to the margin shown below puts the estimate exactly at the threshold.');
+      table('Premium forecasts against settlement', ['Market','Displayed bid','Projected sale','Threshold','Margin above threshold','Irrevocable bid at forecast','Settlement'],
+        (d.premiumSignals ?? []).map(r=>[r.ticker,money(r.bid),money(r.estimated),money(r.strike),money(r.estimated-r.strike),disclosure(r.irrevocable),r.result?.toUpperCase() ?? 'Pending']),
         'Waiting for a live bid to confirm a forecast twice.');
     }
     if (s.sold)

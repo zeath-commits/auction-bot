@@ -213,6 +213,13 @@ test('lot page requires the matched auction currency and a closed sale', () => {
       target
     )[0];
   assert.equal(read().salePrice, 1000);
+  assert.equal(read().irrevocableBid, null);
+  lot.symbolsV2 = [{lotSymbolId:'GuaranteedProperty'}];
+  assert.equal(read().irrevocableBid, false);
+  lot.symbolsV2.push({lotSymbolId:'IrrevocableBids'});
+  assert.equal(read().irrevocableBid, true);
+  lot.symbolsV2 = [{}];
+  assert.equal(read().irrevocableBid, null);
   auction.currencyV2 = 'EUR';
   assert.equal(read().salePrice, null);
   auction.currencyV2 = 'USD';

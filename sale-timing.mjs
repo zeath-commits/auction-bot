@@ -4,6 +4,7 @@ import { askLevels, checkMarketActive } from './core.mjs';
 // Quotes are the first post-receipt snapshot, before evidence of repeat depth.
 export function saleTiming(db, targets) {
   db.exec(`CREATE TABLE IF NOT EXISTS sale_page_reads(event TEXT,source TEXT,at INTEGER,requested INTEGER,age REAL,phase TEXT,price INTEGER,fresh INTEGER,PRIMARY KEY(event,source,at));
+  CREATE TABLE IF NOT EXISTS sale_disclosures(event TEXT,at INTEGER,generation INTEGER,irrevocable INTEGER,PRIMARY KEY(event,at));
   CREATE TABLE IF NOT EXISTS sale_first_prices(event TEXT,source TEXT,at INTEGER,price INTEGER,books TEXT,PRIMARY KEY(event,source))`);
   const first = db.prepare(
     'SELECT * FROM sale_first_prices WHERE event=? AND source=?'
@@ -22,7 +23,16 @@ export function saleTiming(db, targets) {
       last.get(t.event, 'lot')?.price === b.price
     );
   }
+  function recordDisclosure(read) {
+    if (!Number.isFinite(read.generation) || read.generation > read.at + 1000) return;
+    for (const lot of read.lots) {
+      if (typeof lot.irrevocableBid !== 'boolean' || !targets.some(t=>t.event===lot.event)) continue;
+      db.prepare('INSERT OR IGNORE INTO sale_disclosures VALUES(?,?,?,?)')
+        .run(lot.event,read.at,read.generation,Number(lot.irrevocableBid));
+    }
+  }
   async function record(kind, read, { io, marketList, stop }) {
+    if (kind === 'lot') recordDisclosure(read);
     await Promise.all(
       read.lots.map(async (lot) => {
         const t = targets.find((x) => x.event === lot.event);
@@ -132,6 +142,7 @@ export function saleTiming(db, targets) {
     });
   }
   return {
+    recordDisclosure,
     record,
     summary,
     remaining: () => targets.filter((t) => !paired(t))
