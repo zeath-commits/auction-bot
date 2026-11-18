@@ -13,6 +13,7 @@ import { observeWeather } from './weather-paper.mjs';
 import {
   auctionPortfolio,
   auctionHoldings,
+  auctionStudyHoldings,
   observeAuctionExits
 } from './auction-portfolio.mjs';
 import { observeNBA } from './nba-paper.mjs';
@@ -523,6 +524,9 @@ const server = http.createServer((req, res) => {
           soldLimits: soldLimits.summary(),
           nbaStatus,
           recordPairStatus,
+          recordPairDelays: db.prepare(`SELECT seconds,COUNT(*) AS batches,COUNT(available) AS checked,
+            SUM(CASE WHEN available IS NOT NULL THEN requested END) AS requested,SUM(available) AS available
+            FROM art_record_delays GROUP BY seconds ORDER BY seconds`).all(),
           rangeBidStatus,
           rangeBidCoverage: db.prepare('SELECT event,COUNT(*) AS scans,MAX(at) AS lastAt FROM art_range_book_history GROUP BY event').all(),
           rangeBidEvidence: db.prepare('SELECT detail FROM art_range_signals').all().map(r=>JSON.parse(r.detail)),
@@ -530,6 +534,7 @@ const server = http.createServer((req, res) => {
           auctionPortfolio: auctionPortfolio(db),
           catalogComparison: { observedAt: catalogObservedAt, source: catalogSource, cases: catalogCases },
           auctionHoldings: auctionHoldings(db),
+          auctionStudyHoldings: auctionStudyHoldings(db),
           auctionExits,
           weatherStatus,
           sothebysCoverage: db

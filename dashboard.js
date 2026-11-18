@@ -110,6 +110,9 @@ function paper(d) {
     note('If this lot sells above its threshold, it also exceeds the annual record threshold of $117.18 million. The model buys equal quantities on two reads and reserves whole-cent fees. Settlement timing and price revisions can differ across the two contracts.');
     if (d.recordPairStatus?.at) note((d.recordPairStatus.error ?? d.recordPairStatus.strikes+' eligible lot thresholds')+
       ' · checked '+time(d.recordPairStatus.at));
+    table('Depth after new paired entries',['Delay','Batches observed / scheduled','Pairs still offered / checked'],
+      (d.recordPairDelays??[]).map(r=>[r.seconds+'s',r.checked+' / '+r.batches,
+        r.checked ? r.available+' / '+r.requested : '—']),'Waiting for a new paired entry.');
   }
   if (selected === 'art_range_bids') {
     note('Five simulated Kalshi YES shares per artwork when bids on mutually exclusive Polymarket ranges entirely above the threshold exceed the Kalshi cost by at least 2¢ per share on two checks. The reference measures what other traders bid. It does not establish the chance of winning.');
@@ -128,6 +131,25 @@ function paper(d) {
     table('Completed Bitcoin windows', ['Discovered', 'Chart requested', 'Ready with 10s left', 'Ready before close', 'Margin reached', 'Correct direction / settled'],
       [[c.closed, c.attempted, c.atTen, c.beforeClose, c.wide, c.correct + ' / ' + c.settled]]);
   }
+  if (['all','art_record_pair','art_range_bids'].includes(selected)) {
+    const holdings = (d.auctionStudyHoldings ?? []).filter(h => selected === 'all' || h.strategy === selected);
+    if (holdings.length) {
+      const marks = holdings.map(h => d.auctionExits.rows?.find(r =>
+        r.strategy === h.strategy && r.ticker === h.ticker && r.side === h.side &&
+        r.quantity === h.quantity && r.cost === h.cost && Date.now()-r.at<90000));
+      table('Early exit for auction paper positions',
+        ['Contract','Side','Shares held','Shares with bids','Entry cost','Proceeds on priced shares','Net if fully sold','Checked'],
+        holdings.map((h,i) => {
+          const r=marks[i];
+          return [h.ticker,h.side.toUpperCase(),h.quantity,r?.exit.quantity,money(h.cost),
+            money(r?.exit.proceeds),money(r?.exit.netIfFullySold),time(r?.at)];
+        }));
+      if (selected === 'art_record_pair' && holdings.every((h,i) => marks[i]?.exit.netIfFullySold != null) &&
+          new Set(marks.map(r=>r.at)).size === 1)
+        note('Net from selling all open Van Gogh legs at those bids · '+money(marks.reduce((s,r)=>s+r.exit.netIfFullySold,0)));
+      if (d.auctionExits.error && selected !== 'all') note('Exit check · '+d.auctionExits.error);
+    }
+  }
   if (
     ['all', 'sale_depth', 'late_auction', 'sothebys_sold'].includes(selected)
   ) {
@@ -136,7 +158,7 @@ function paper(d) {
     const exits = d.auctionHoldings.map((h) =>
       marks.rows?.find(
         (r) =>
-          r.ticker === h.ticker &&
+          !r.strategy && r.ticker === h.ticker &&
           r.side === h.side &&
           r.quantity === h.quantity &&
           r.cost === h.cost &&

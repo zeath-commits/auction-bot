@@ -4,6 +4,7 @@ import { DatabaseSync } from 'node:sqlite';
 import {
   auctionPortfolio,
   auctionHoldings,
+  auctionStudyHoldings,
   exitQuote
 } from '../auction-portfolio.mjs';
 test('auction cash reserves open cost, releases final payout and excludes parallel single-share tests', () => {
@@ -20,6 +21,9 @@ test('auction cash reserves open cost, releases final payout and excludes parall
     assert.ok(Math.abs(p.cash - 901.86) < 1e-7);
     assert.equal(h.length, 1);
     assert.equal(h[0].quantity, 101);
+    db.exec("INSERT INTO paper VALUES ('T','no','art_record_pair',2,.04,.01,NULL),('T','no','art_range_bids',7,.5,.05,NULL)");
+    assert.deepEqual(auctionStudyHoldings(db).map(p=>[p.strategy,p.quantity]),[['art_range_bids',7],['art_record_pair',2]]);
+    assert.equal(auctionHoldings(db)[0].quantity,101);
   } finally {
     db.close();
   }
@@ -52,4 +56,5 @@ test('selling NO uses repeated NO bids in best-price order and reports unpriced 
   const full = exitQuote({ ...p, quantity: 2, cost: 1.9 }, a, second);
   assert.ok(Math.abs(full.proceeds - 1.7874) < 1e-7);
   assert.ok(Math.abs(full.netIfFullySold + 0.1126) < 1e-7);
+  assert.equal(exitQuote({...p, strategy:'art_record_pair',quantity:2},a,second).fees,0.02);
 });

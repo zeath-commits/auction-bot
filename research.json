@@ -36,6 +36,11 @@
   ],
   "studies": [
     {
+      "market": "Van Gogh annual record and individual lot",
+      "test": "Cost if one leg of the first 16 paper pairs filled alone",
+      "finding": "The pair cost $15.85 including entry fees. If only the 16 annual YES shares had filled, the repeated bids in the entry books would have returned $14.29 after modeled sale fees, an 87¢ loss. If only the painting NO shares had filled, there were no bids to exit and 69¢ of entry cost was exposed. The modeled gain if one leg per pair ultimately pays is 15¢. These were paper entries."
+    },
+    {
       "market": "Fine art",
       "test": "Five settled November lots with mutually exclusive Polymarket price ranges",
       "finding": "The winning range fixed the direction of 36 of 43 Kalshi thresholds. All 36 agreed with official settlement. The other seven fell within the winning range or on its lower boundary. Two hours before each sale, historical chart prices across ranges summed to 105.1%–148%. The public trade history yielded zero direct taker sales of five or more YES shares in the windows around those comparisons. These records establish outcome agreement but cannot reproduce the live strategy’s bid depth or five-share fills."

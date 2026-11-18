@@ -26,6 +26,11 @@ export function auctionHoldings(db) {
     )
     .all(...strategies);
 }
+export function auctionStudyHoldings(db) {
+  return db.prepare(`SELECT strategy,ticker,side,SUM(quantity) AS quantity,SUM(price*quantity+fees) AS cost
+    FROM paper WHERE payout IS NULL AND strategy IN ('art_record_pair','art_range_bids')
+    GROUP BY strategy,ticker,side ORDER BY strategy,ticker,side`).all();
+}
 function bids(book, side) {
   const list = book?.orderbook_fp?.[side + '_dollars'];
   if (!Array.isArray(list)) throw Error('Missing bids for held side');
@@ -53,8 +58,8 @@ export function exitQuote(position, first, second) {
     );
     if (n <= 0) continue;
     const price = p / MICRO;
-    const fee =
-      Math.ceil(0.07 * n * price * (1 - price) * 10000 - 1e-9) / 10000;
+    const precision = position.strategy === 'art_record_pair' || position.strategy === 'art_range_bids' ? 100 : 10000;
+    const fee = Math.ceil(0.07 * n * price * (1 - price) * precision - 1e-9) / precision;
     if (n * price <= fee) continue;
     levels.push({ price, quantity: n, fee });
     quantity += n;
@@ -76,13 +81,15 @@ export async function observeAuctionExits({ db, config, status, stop }) {
   db.exec(
     'CREATE TABLE IF NOT EXISTS auction_exit_marks(ticker TEXT,side TEXT,at INTEGER,quantity INTEGER,cost REAL,detail TEXT,PRIMARY KEY(ticker,side,at))'
   );
+  db.exec('CREATE TABLE IF NOT EXISTS auction_study_exits(strategy TEXT,ticker TEXT,side TEXT,at INTEGER,detail TEXT NOT NULL,PRIMARY KEY(strategy,ticker,side,at))');
+  const holdings = () => [...auctionHoldings(db), ...auctionStudyHoldings(db)];
   const io = new Transport({
     ...config,
     maxHttpAgeSeconds: 2,
     requestTimeoutMs: 4000
   });
   while (!stop()) {
-    const positions = auctionHoldings(db),
+    const positions = holdings(),
       rows = [];
     try {
       if (positions.length) {
@@ -91,6 +98,11 @@ export async function observeAuctionExits({ db, config, status, stop }) {
           io.get('/exchange/status')
         ]);
         checkFees(fee.body);
+        if (positions.some(p => p.ticker.startsWith('KXAUCTIONRECORD-'))) {
+          const {series} = (await io.get('/series/KXAUCTIONRECORD')).body;
+          if (series?.ticker !== 'KXAUCTIONRECORD' || series.fee_type !== 'quadratic' || series.fee_multiplier !== 1)
+            throw Error('Artist-record exit fee needs review');
+        }
         if (!exchange.body.trading_active || !exchange.body.exchange_active)
           throw Error('Exchange unavailable');
         const instruments = [...new Set(positions.map((p) => p.ticker))];
@@ -136,11 +148,11 @@ export async function observeAuctionExits({ db, config, status, stop }) {
           }
         }
       }
-      const current = auctionHoldings(db);
+      const current = holdings();
       const valid = rows.filter((r) =>
         current.some(
           (p) =>
-            p.ticker === r.ticker &&
+            p.strategy === r.strategy && p.ticker === r.ticker &&
             p.side === r.side &&
             p.quantity === r.quantity &&
             p.cost === r.cost
@@ -148,10 +160,13 @@ export async function observeAuctionExits({ db, config, status, stop }) {
       );
       db.exec('BEGIN IMMEDIATE');
       try {
-        for (const r of valid)
-          db.prepare(
+        for (const r of valid) {
+          if (r.strategy) db.prepare('INSERT OR IGNORE INTO auction_study_exits VALUES(?,?,?,?,?)')
+            .run(r.strategy,r.ticker,r.side,r.at,JSON.stringify(r));
+          else db.prepare(
             'INSERT OR IGNORE INTO auction_exit_marks VALUES(?,?,?,?,?,?)'
           ).run(r.ticker, r.side, r.at, r.quantity, r.cost, JSON.stringify(r));
+        }
         db.exec('COMMIT');
       } catch (e) {
         db.exec('ROLLBACK');

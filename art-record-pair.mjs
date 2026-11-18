@@ -71,12 +71,38 @@ export function pairedLevels(markets, first, second, prior, cash) {
   return pairs;
 }
 
+// At the original price levels, test the original allocation only. Reuse of a
+// level across multiple lot strikes or older paper entries consumes its depth.
+export function remainingPairs(pairs, books, used) {
+  const available=new Map();
+  for (const book of books) {
+    const side=pairs.some(p=>p.annual===book.ticker) ? 'YES' : 'NO';
+    for (const level of askLevels(book,side,99)) {
+      const key=book.ticker+'/'+level.price;
+      available.set(key,Math.max(0,Math.floor(level.quantity/1e6)-(used.get(key)??0)));
+    }
+  }
+  let count=0;
+  for (const p of pairs) {
+    const a=p.annual+'/'+Math.round(p.yes.price*1e6), b=p.lot+'/'+Math.round(p.no.price*1e6);
+    const qty=Math.min(p.n,available.get(a)??0,available.get(b)??0);
+    if (qty) {
+      available.set(a,available.get(a)-qty);
+      available.set(b,available.get(b)-qty);
+      count+=qty;
+    }
+  }
+  return count;
+}
+
 export async function observeRecordPair({db,config,stop,status}) {
   const io = new Transport({...config,maxHttpAgeSeconds:1,requestTimeoutMs:2500});
   db.exec('CREATE TABLE IF NOT EXISTS art_record_pair_books(at INTEGER PRIMARY KEY, firstBook TEXT NOT NULL, secondBook TEXT NOT NULL)');
+  db.exec('CREATE TABLE IF NOT EXISTS art_record_delays(entryAt INTEGER,seconds INTEGER,requested INTEGER,checked INTEGER,available INTEGER,detail TEXT,PRIMARY KEY(entryAt,seconds))');
   const inventory = db.prepare('SELECT ticker,price,SUM(quantity) AS qty,SUM(quantity*price+fees) AS cost FROM paper WHERE strategy=? GROUP BY ticker,price');
   // The reviewed lot closes no later than the end of the settlement watch.
   while (!stop() && Date.now()<Date.parse(calendar.settlementWatchEnd)) {
+    const began=Date.now();
     try {
       const [event,lots,annualFees,lotFees,exchange]=await Promise.all([
         io.get('/events/'+annualEvent+'?with_nested_markets=true'),marketList(io,target),
@@ -95,7 +121,7 @@ export async function observeRecordPair({db,config,stop,status}) {
           const r=await io.get('/markets/orderbooks?'+q);
           const date=Date.parse(r.httpDate);
           if (r.receivedAt-r.requestedAt>1800 || !(date>=r.receivedAt-3000 && date<=r.receivedAt+1500) ||
-              r.body.orderbooks.length!==markets.length || new Set(r.body.orderbooks.map(b=>b.ticker)).size!==markets.length)
+              r.body.orderbooks.length!==markets.length || markets.some(m=>!r.body.orderbooks.some(b=>b.ticker===m.ticker)))
             throw Error('Stale or incomplete paired order books');
           return r;
         };
@@ -105,15 +131,19 @@ export async function observeRecordPair({db,config,stop,status}) {
         if (!stop() && markets.every(m=>checkMarketActive(m,b.receivedAt)) &&
             Date.parse(b.httpDate)-Number(b.cacheAge??0)*1000>Date.parse(a.httpDate)-Number(a.cacheAge??0)*1000) {
           db.exec('BEGIN IMMEDIATE');
+          let pairs,used;
           try {
             const existing=inventory.all(strategy);
-            const used=new Map(existing.map(r=>[r.ticker+'/'+Math.round(r.price*1e6),r.qty]));
+            used=new Map(existing.map(r=>[r.ticker+'/'+Math.round(r.price*1e6),r.qty]));
             const cash=budget-existing.reduce((s,r)=>s+r.cost,0);
-            const pairs=pairedLevels(markets,a.body.orderbooks,b.body.orderbooks,used,cash);
+            pairs=pairedLevels(markets,a.body.orderbooks,b.body.orderbooks,used,cash);
             if (pairs.length) {
               const evidence = read => JSON.stringify({requested:read.requestedAt,received:read.receivedAt,
                 date:read.httpDate,age:read.cacheAge,books:read.body.orderbooks});
               db.prepare('INSERT INTO art_record_pair_books VALUES(?,?,?)').run(b.receivedAt,evidence(a),evidence(b));
+              const planned=pairs.reduce((sum,p)=>sum+p.n,0);
+              for (const seconds of [5,30]) db.prepare('INSERT INTO art_record_delays(entryAt,seconds,requested) VALUES(?,?,?)')
+                .run(b.receivedAt,seconds,planned);
             }
             for (const [index,p] of pairs.entries()) {
               const id=strategy+'/'+b.receivedAt+'/'+index+'/';
@@ -126,11 +156,29 @@ export async function observeRecordPair({db,config,stop,status}) {
             db.exec('COMMIT');
             status.added=pairs.reduce((s,p)=>s+p.n,0);
           } catch(e) {db.exec('ROLLBACK');throw e;}
+          if (pairs.length) for (const seconds of [5,30]) {
+            const due=b.receivedAt+seconds*1000;
+            await sleep(Math.max(0,due-Date.now()));
+            if(stop()) return;
+            let available=null,detail;
+            try {
+              const delayed=await read();
+              const generation=Date.parse(delayed.httpDate)-Number(delayed.cacheAge??0)*1000;
+              if(delayed.receivedAt>due+2500 || generation<due-1000 ||
+                 !markets.every(m=>checkMarketActive(m,delayed.receivedAt)))
+                throw Error('Outside delayed quote window');
+              available=remainingPairs(pairs,delayed.body.orderbooks,used);
+              detail=JSON.stringify({requestedAt:delayed.requestedAt,receivedAt:delayed.receivedAt,
+                books:delayed.body.orderbooks});
+            } catch(e) {detail=e.message;}
+            db.prepare('UPDATE art_record_delays SET checked=?,available=?,detail=? WHERE entryAt=? AND seconds=?')
+              .run(Date.now(),available,detail,b.receivedAt,seconds);
+          }
         }
       }
       status.error=null;
     } catch(e) {status.error=e.message;}
     status.at=new Date().toISOString();
-    await sleep(30000);
+    await sleep(Math.max(1000,30000-(Date.now()-began)));
   }
 }
