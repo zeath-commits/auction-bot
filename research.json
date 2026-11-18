@@ -36,6 +36,11 @@
   ],
   "studies": [
     {
+      "market": "Monet and van Gogh after the November 18 sale price appeared",
+      "test": "Compared the first public Sotheby’s result with the first complete Kalshi order book timestamped after its receipt and captured within three seconds. At the cheapest outcome supported by the result through 95¢, counted public buyers at exactly that price from 0.25 to 2 seconds after receipt of the quote. This timing rule was chosen after reviewing Monet. Renoir, Cézanne and Pissarro were designated for forward validation at 6:27 p.m. Eastern, before their first monitored results.",
+      "finding": "Sotheby’s catalog first showed $20.23M for Monet. At +1.574 seconds, 21 YES contracts above $20M were offered at 64¢. At +2.110 seconds, 22 YES contracts traded at 64¢. The bot recorded no fill on that offer. Buying 21 at the displayed price would cost $13.78 including an estimated 34¢ fee and net $7.22 if Kalshi settles YES. For van Gogh, Sotheby’s published $190.43M. The first eligible book contained zero offers through 95¢ on the indicated sides."
+    },
+    {
       "market": "Bitcoin distance from the threshold at 98–99¢",
       "test": "Screened 3,396 finalized Kalshi quarter-hour markets from October 14 through 5:45 p.m. Eastern November 18. Replayed all 21,170 public non-block purchases of at least one contract at 98–99¢ in the final ten seconds. Used completed one-second candles from the Polymarket US chart available by timestamp 1.4 seconds before each trade. Assumed the last reading persisted for the unfinished portion of the settlement minute. Historical candles are a proxy, and their live arrival times are unknown.",
       "finding": "102 markets contained a qualifying purchase. None cleared a 0.15% cushion on both the latest reading and projected average, including all 504 purchases of at least 1,000 contracts. The largest cushion across all purchases was 0.03032%. Without the cushion, the first large purchase won in 80 of 81 markets. Starting with $1,000 and modeling 1,000 contracts per entry, the October 16 loss left too little cash for later purchases. Eight entries were affordable and the ending balance was $118.22 after modeled fees and before operating costs. The guarded replay had zero entries and zero trading profit. The live paper study continues with the original cushion."
