@@ -43,6 +43,7 @@ export function quoteTiming(db) {
   const insert = db.prepare('INSERT OR IGNORE INTO auction_quote_batches(at,begin,detail,asOf) VALUES(?,?,?,?)');
   const before = db.prepare('SELECT * FROM auction_quote_batches WHERE at<? AND at>=? ORDER BY at DESC LIMIT 1');
   const after = db.prepare('SELECT * FROM auction_quote_batches WHERE begin>=? AND asOf>=? AND at<=? ORDER BY begin LIMIT 1');
+  const windowBooks = db.prepare('SELECT at,asOf,detail FROM auction_quote_batches WHERE begin BETWEEN ? AND ? AND asOf>=? AND at<=? ORDER BY at');
   db.exec('CREATE TABLE IF NOT EXISTS auction_presale_depth(event TEXT PRIMARY KEY,at INTEGER NOT NULL,detail TEXT NOT NULL)');
   const baseline = db.prepare('SELECT at,detail FROM auction_presale_depth WHERE event=? AND at<?');
   const saveBaseline = db.prepare('INSERT OR IGNORE INTO auction_presale_depth VALUES(?,?,?)');
@@ -71,6 +72,47 @@ export function quoteTiming(db) {
       best:offers.length ? Math.min(...offers.map(o => o.price)) : null};
   }
   return {
+    laterOffers(event, confirmedAt, price) {
+      const end = confirmedAt + 900000;
+      const samples = windowBooks.iterate(confirmedAt,end,confirmedAt,end);
+      let firstAt = null, previous = null, pairs = 0;
+      const initiallyEmpty = new Map(), found = new Map();
+      for (const sample of samples) {
+        const rows = JSON.parse(sample.detail).filter(r => r.event === event && r.depth);
+        if (!rows.length) { previous = null; continue; }
+        if (firstAt === null) {
+          if (sample.at - confirmedAt > 12000) break;
+          firstAt = sample.at;
+          for (const r of rows) {
+            const side = price > r.strike ? 'yes' : 'no';
+            if (!r.depth[side].some(([p,n])=>p<=950000 && n>=1)) initiallyEmpty.set(r.ticker,{side,strike:r.strike});
+          }
+          continue;
+        }
+        if (sample.asOf < confirmedAt + 30000) continue;
+        const current = new Map();
+        for (const r of rows) {
+          const initial = initiallyEmpty.get(r.ticker);
+          if (initial && initial.strike === r.strike)
+            current.set(r.ticker,new Map(r.depth[initial.side].filter(([p,n])=>p<=950000 && n>=1)));
+        }
+        if (previous && sample.asOf > previous.at && sample.at - previous.at <= 12000) {
+          pairs++;
+          for (const [ticker,levels] of current) {
+            if (found.has(ticker)) continue;
+            const prior = previous.levels.get(ticker);
+            for (const [p,n] of levels) {
+              const size = Math.min(n,prior?.get(p) ?? 0);
+              if (size < 1) continue;
+              found.set(ticker,{ticker,...initiallyEmpty.get(ticker),at:sample.at,price:p/1000000,size});
+              break;
+            }
+          }
+        }
+        previous = {at:sample.at,levels:current};
+      }
+      return {confirmedAt,firstAt,initiallyEmpty:initiallyEmpty.size,pairs,found:[...found.values()]};
+    },
     recordBaseline(event,at,rows) {
       if (rows.length && rows.every(r=>r.event===event && r.depth)) saveBaseline.run(event,at,JSON.stringify(rows));
     },
@@ -89,15 +131,25 @@ export function quoteTiming(db) {
 
 export async function observeAuctionQuotes({db,io,calendar,marketList,stop,status,timing}) {
   const store = quoteTiming(db);
-  const start = Date.parse(calendar.start), end = Date.parse(calendar.end) + 312000;
+  const start = Date.parse(calendar.start), end = Date.parse(calendar.end) + 912000;
   let markets = [], refresh = 0, preflight = false;
+  const later = new Map();
   function summarize() {
     status.comparison = timing.summary().flatMap(r => {
       const first = [r.lot,r.catalog].filter(Boolean).sort((a,b)=>a.at-b.at)[0];
       if (!first) return [];
       if (r.lot && r.catalog && (!r.matched || r.lot.price !== r.catalog.price))
         return [{title:r.title,conflict:true}];
-      return [{title:r.title, ...store.compare(r.event,first.at,first.price)}];
+      let followup = null;
+      if (r.matched) {
+        const confirmedAt = Math.max(r.catalog.at,r.lot.at);
+        const cached = later.get(r.event), now = Date.now();
+        if (!cached || (cached.at < confirmedAt+900000 && now-cached.at >= 15000)) {
+          later.set(r.event,{at:now,value:store.laterOffers(r.event,confirmedAt,first.price)});
+        }
+        followup = later.get(r.event).value;
+      }
+      return [{title:r.title, followup, ...store.compare(r.event,first.at,first.price)}];
     });
   }
   summarize();

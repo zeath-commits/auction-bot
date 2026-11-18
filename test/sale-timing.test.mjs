@@ -3,6 +3,29 @@ import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
 import { saleTiming } from '../sale-timing.mjs';
 import { quoteTiming } from '../auction-quote-timing.mjs';
+test('late offers require a timely empty starting book and independent later reads at one price', () => {
+  const db=new DatabaseSync(':memory:');
+  try {
+    const store=quoteTiming(db), confirmed=1000000;
+    const row=(ticker,strike,yes,no)=>({event:'E',ticker,strike,depth:{yes,no}});
+    const books=(p,n)=>[row('A',90,[[920000,3]],[]),row('B',100,[[800000,15]],[[p,n]])];
+    function save(at,asOf,rows) {
+      store.record({begin:confirmed+at-100,at:confirmed+at,asOf:confirmed+asOf,rows});
+    }
+    save(900,100,books(990000,10));
+    save(31000,30000,books(920000,4));
+    save(36000,32500,books(910000,8));
+    save(41000,35000,books(910000,7)); // overlaps the preceding read
+    save(56000,54000,books(910000,6)); // gap is too long
+    save(61000,60000,books(910000,5));
+    save(910000,905000,books(890000,50));
+    const result=store.laterOffers('E',confirmed,100);
+    assert.equal(result.initiallyEmpty,1);
+    assert.equal(result.pairs,2);
+    assert.deepEqual(result.found,[{ticker:'B',side:'no',strike:100,at:confirmed+61000,price:0.91,size:5}]);
+    assert.equal(store.laterOffers('E',confirmed-20000,100).firstAt,null);
+  } finally {db.close();}
+});
 test('pre-sale depth overlaps only at the same strike, outcome and price through 95 cents', () => {
   const db=new DatabaseSync(':memory:');
   try {

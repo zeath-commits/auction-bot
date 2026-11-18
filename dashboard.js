@@ -513,6 +513,14 @@ function paper(d) {
             depth(r.after),depth(r.after30),depth(r.after300)]),'Waiting for quote comparisons.');
         note('Matching shares use the smaller displayed quantity at the same threshold and price in both snapshots. Orders can change between reads.');
       }
+      const followups = (quotes.comparison ?? []).filter(r=>r.followup);
+      if (followups.length) {
+        table('New offers in the 15 minutes after both sale pages agree',
+          ['Artwork','Thresholds initially without an offer through 95¢','Later pairs of snapshots','First new offers seen twice'],
+          followups.map(({title,followup:f})=>[title,f.firstAt ? f.initiallyEmpty : 'Awaiting or missing first snapshot',
+            f.pairs,f.found.map(o=>o.side.toUpperCase()+' above '+money(o.strike)+' · '+o.size+' at '+money(o.price)+' · '+time(o.at)).join(' / ') || 'None observed']),
+          'Waiting for both published prices.');
+      }
     }
   }
   if (selected === 'sothebys_sold' && d.soldLimits) {
