@@ -54,6 +54,18 @@ async function espn(path) {
   if (!r.ok) throw Error('ESPN HTTP ' + r.status);
   return r.json();
 }
+export function nbaPlayContext(summary, play) {
+  const id=play.id==null?null:String(play.id);
+  const rows=id && Array.isArray(summary.winprobability)
+    ? summary.winprobability.filter(r=>String(r.playId)===id) : [];
+  const home=rows[0]?.homeWinPercentage;
+  const homeLeads=play.homeScore>play.awayScore;
+  const leader=summary.header?.competitions?.[0]?.competitors?.find(t=>t.homeAway===(homeLeads?'home':'away'));
+  const sameTeam=leader?.team?.id!=null&&play.team?.id!=null ? String(leader.team.id)===String(play.team.id) : null;
+  return {playId:id,type:play.type?.text??null,byLeader:sameTeam,
+    leaderProbability:rows.length===1&&Number.isFinite(home)&&home>=0&&home<=1&&rows[0].tiePercentage===0
+      ? (homeLeads?home:1-home) : null};
+}
 // Require the current scoreboard and last recorded play to agree when the signal arrives.
 export function liveSignal(summary, game, now) {
   const c = summary.header?.competitions?.[0],
@@ -108,6 +120,7 @@ export function liveSignal(summary, game, now) {
     ticker: eventTicker(game) + '-' + leader,
     opponent: eventTicker(game) + '-' + t[scores.home > scores.away ? 'away' : 'home'],
     stamp: p.wallclock,
+    context: nbaPlayContext(summary,p),
     seconds,
     home: scores.home,
     away: scores.away
@@ -203,9 +216,9 @@ export async function observeNBA({ db, config, stop, status }) {
       const [m, a] = await Promise.all([io.get('/events/'+event+'?with_nested_markets=true'), io.get(book)]);
       const routes = nbaRoutes(m.body,first,event);
       if (!routes.length) return finish('Market unavailable or rules mismatch');
-      const store = (n,r) => db.prepare('INSERT OR IGNORE INTO nba_route_books VALUES(?,?,?,?)')
-        .run(game.id,n,r.receivedAt,JSON.stringify({requestedAt:r.requestedAt,books:r.body.orderbooks}));
-      store(1,a);
+      const store = (n,r,context) => db.prepare('INSERT OR IGNORE INTO nba_route_books VALUES(?,?,?,?)')
+        .run(game.id,n,r.receivedAt,JSON.stringify({requestedAt:r.requestedAt,books:r.body.orderbooks,context}));
+      store(1,a,first.context);
       if (!routes.some(r => nbaOffer(a.body.orderbooks.find(b=>b.ticker===r.market.ticker),r.side)))
         return finish('No qualifying ask on either route');
       await sleep(1000);
@@ -215,9 +228,9 @@ export async function observeNBA({ db, config, stop, status }) {
         espn('scoreboard?dates=' + dates(game.date).board)
       ]);
       const updated = scoreboard.events?.find((g) => g.id === game.id);
-      store(2,b);
       const completed = Date.now(),
         latest = updated && liveSignal(summary, updated, completed);
+      store(2,b,latest?.context??null);
       if (
         stop() ||
         !latest ||

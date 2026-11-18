@@ -1,6 +1,17 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { liveSignal, nbaOffer, nbaRoutes, repeatedNbaOffers } from '../nba-paper.mjs';
+import { liveSignal, nbaOffer, nbaRoutes, repeatedNbaOffers, nbaPlayContext } from '../nba-paper.mjs';
+
+test('NBA model evidence belongs to the exact play and the leading team',()=>{
+  const summary={header:{competitions:[{competitors:[{homeAway:'away',team:{id:'3'}}]}]},
+    winprobability:[{playId:'p1',homeWinPercentage:.12,tiePercentage:0},{playId:'p2',homeWinPercentage:.2,tiePercentage:0}]};
+  const play={id:'p1',type:{text:'Shooting Foul'},team:{id:'3'},awayScore:115,homeScore:110};
+  const evidence=nbaPlayContext(summary,play);
+  assert.equal(evidence.leaderProbability,.88);assert.equal(evidence.byLeader,true);
+  assert.equal(nbaPlayContext(summary,{...play,id:'p0'}).leaderProbability,null);
+  summary.winprobability.push(summary.winprobability[0]);
+  assert.equal(nbaPlayContext(summary,play).leaderProbability,null);
+});
 
 test('NBA offer comparison validates game equivalence and confirms each route independently', () => {
   const event = 'KXNBAGAME-TEST';
