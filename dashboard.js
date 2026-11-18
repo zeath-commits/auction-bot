@@ -739,6 +739,22 @@ function history(d) {
     'No earlier-date replay loaded.'
   );
   table(
+    'Phillips catalog and Kalshi settlements',
+    ['Event', 'Artnet catalog at observation', 'Settled YES', 'Settled NO', 'Other final', 'Pending', 'Last verified'],
+    (d.catalogComparison?.cases ?? []).map(r => [
+      r.event, r.label, r.counts?.yes, r.counts?.no, r.counts?.other, r.counts?.pending,
+      time(r.checkedAt) + (r.error ? ' · Update failed' : '')
+    ]),
+    'Awaiting catalog observations.'
+  );
+  if (d.catalogComparison) {
+    const source = el('a', 'Artnet sale catalog');
+    source.href = d.catalogComparison.source;
+    const caption = el('p', 'Catalog observed ' + time(d.catalogComparison.observedAt) + '. ', 'note');
+    caption.append(source);
+    view.append(caption);
+  }
+  table(
     'Other strategy research',
     ['Market', 'Experiment', 'Finding'],
     d.research.map((r) => [r.market, r.test, r.finding]),

@@ -6,6 +6,7 @@ import { spawn } from 'node:child_process';
 import { ROOT } from './bot.mjs';
 import { observePairs, pairSeries } from './auction-pairs.mjs';
 import { observeLateAuctions } from './late-auction.mjs';
+import { catalogObservations, catalogObservedAt, catalogSource, summarizeSettlement } from './catalog-results.mjs';
 import { openSoldLimits } from './sold-limits.mjs';
 import { Transport } from './transport.mjs';
 import { observeWeather } from './weather-paper.mjs';
@@ -238,6 +239,23 @@ const calendars = ['watchlist.json', 'paper-calendar.json'].map((file) => ({
   extra: file === 'paper-calendar.json',
   auctions: json(path.join(ROOT, file)).auctions
 }));
+const catalogCases = catalogObservations.map(observation => ({
+  ...observation, checkedAt: null, counts: null, error: null
+}));
+async function checkCatalogCases(io) {
+  for (const item of catalogCases) {
+    if (stopping || exists(path.join(ROOT, 'STOP'))) return;
+    try {
+      const target = calendars[0].auctions.flatMap(a => a.targets).find(t => t.event === item.event);
+      const read = await io.get('/events/' + item.event + '?with_nested_markets=true');
+      item.counts = summarizeSettlement(target, read.body);
+      item.checkedAt = new Date(read.receivedAt).toISOString();
+      item.error = null;
+    } catch (e) {
+      item.error = e.message;
+    }
+  }
+}
 const children = new Set();
 function launchWorker(args) {
   const child = spawn(process.execPath, ['bot.mjs', ...args], {
@@ -497,6 +515,7 @@ const server = http.createServer((req, res) => {
           soldLimits: soldLimits.summary(),
           nbaStatus,
           auctionPortfolio: auctionPortfolio(db),
+          catalogComparison: { observedAt: catalogObservedAt, source: catalogSource, cases: catalogCases },
           auctionHoldings: auctionHoldings(db),
           auctionExits,
           weatherStatus,
@@ -631,6 +650,8 @@ server.listen(port, host, () => {
   setInterval(importSafe, 15000).unref();
   setInterval(runAuctions, 60000).unref();
   const soldIO = new Transport(config);
+  checkCatalogCases(soldIO);
+  setInterval(() => checkCatalogCases(soldIO), 300000).unref();
   const reconcileLimits = () => {
     if (!stopping && !exists(path.join(ROOT, 'STOP')))
       soldLimits

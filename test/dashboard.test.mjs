@@ -24,6 +24,7 @@ test(
         'auction-pairs.mjs',
         'auction-portfolio.mjs',
         'late-auction.mjs',
+        'catalog-results.mjs',
         'us-bitcoin-paper.mjs',
         'bitcoin-reference.mjs',
         'sothebys-bids.mjs',
