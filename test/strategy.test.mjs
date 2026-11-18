@@ -179,6 +179,38 @@ test('BTC strategies require repeatable size and settle each paper variant only 
   }
 });
 
+test('1,000-contract closing test matches depth by price, charges fees and reserves cash until settlement', async () => {
+  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'btc-band-depth-')), db=openLedger(dir);
+  try {
+    const close=Math.floor(Date.now()/1000)*1000-1000;
+    const market={ticker:'KXBTC15M-LARGE',status:'active',close_time:new Date(close).toISOString()};
+    const book=(t,n,m)=>({requestedAt:t,receivedAt:t+20,httpDate:new Date(t).toUTCString(),cacheAge:'0',
+      body:{orderbook_fp:{yes_dollars:[['0.9710','1500']],no_dollars:[['0.0120',m],['0.0180',n]]}}});
+    const first=book(close-8000,'500.75','650');
+    const second=book(close-6000,'460','600');
+    const rows=()=>paperRows(db).filter(r=>r.strategy==='btc_band1000');
+    recordBtc(db,market,first,{...second,httpDate:first.httpDate},1);
+    recordBtc(db,market,first,book(close-5000,'349.99','652.78'),1);
+    assert.equal(rows().length,0);
+    recordBtc(db,market,first,second,1);
+    recordBtc(db,market,first,second,1);
+    assert.equal(rows().length,1);
+    assert.equal(rows()[0].depth,1060);
+    assert.equal(rows()[0].quantity,1000);
+    assert.ok(Math.abs(rows()[0].price-(460*.982+540*.988)/1000)<1e-9);
+    assert.equal(rows()[0].fees,1.02);
+    const next={...market,ticker:'KXBTC15M-NEXT'};
+    recordBtc(db,next,first,second,1);
+    assert.equal(rows().length,1);
+    await settle(db,{get:async path=>({body:{market:{ticker:path.split('/').at(-1),status:'finalized',result:'yes'}}})});
+    recordBtc(db,next,book(close-4700,'500','600'),book(close-3200,'500','600'),1);
+    assert.equal(rows().length,2);
+  } finally {
+    db.close();
+    fs.rmSync(dir,{recursive:true,force:true});
+  }
+});
+
 test('99.9-cent closing test requires fresh repeated depth and available paper cash', async () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'btc-large-favorite-'));
   const db = openLedger(dir);

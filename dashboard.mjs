@@ -587,6 +587,11 @@ const server = http.createServer((req, res) => {
             FROM btc_chart_windows WHERE closeAt<=?`).get(Date.now()),
           tenSecondValidation:
             json(path.join(ROOT, 'research.json')).tenSecondValidation ?? [],
+          btcBandDepth: db.prepare(`SELECT COUNT(DISTINCT ticker) AS windows,
+            COUNT(DISTINCT CASE WHEN fresh=1 THEN ticker END) AS fresh,
+            COUNT(DISTINCT CASE WHEN side IS NOT NULL THEN ticker END) AS inBand,
+            COUNT(DISTINCT CASE WHEN depth>=1000 THEN ticker END) AS full,
+            COALESCE(MAX(depth),0) AS maxDepth FROM btc_band_depth`).get(),
           btc999Coverage: db.prepare(`SELECT count(DISTINCT ticker) AS windows,
             count(DISTINCT CASE WHEN fresh=1 THEN ticker END) AS freshWindows,
             count(DISTINCT CASE WHEN fresh=1 AND json_extract(firstQuote,'$.size')>=100 THEN ticker END) AS offered,

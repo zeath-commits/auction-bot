@@ -1,7 +1,7 @@
 import { setTimeout as sleep } from 'node:timers/promises';
 import { Transport } from './transport.mjs';
 import {
-  askLevels,
+  askLevels, overlappingAskLevels,
   checkEvent,
   checkFees,
   checkMarketActive
@@ -123,25 +123,13 @@ export function persistentOffer(
 ) {
   if (!Number.isSafeInteger(previouslyBought) || previouslyBought < 0)
     throw Error('Invalid previous paper quantity');
-  const firstLevels = askLevels(first, side, maxCents);
-  const original = new Map(firstLevels.map((l) => [l.price, l.quantity]));
-  if (original.size !== firstLevels.length)
-    throw Error('Repeated price in returned order book');
   let quantity = 0,
     principal = 0,
     fees = 0,
     displayed = 0;
-  const levels = [],
-    seen = new Set();
+  const levels = [];
   let reserved = previouslyBought;
-  for (const level of askLevels(second, side, maxCents)) {
-    if (seen.has(level.price))
-      throw Error('Repeated price in returned order book');
-    seen.add(level.price);
-    const price = level.price / scale;
-    const depth = Math.floor(
-      Math.min(original.get(level.price) ?? 0, level.quantity) / scale
-    );
+  for (const {price,quantity:depth} of overlappingAskLevels(first, second, side, maxCents)) {
     displayed += depth;
     // The book has no order identities. Reserve the earlier paper units at the
     // cheapest visible prices, even if quotes were cancelled or repriced.

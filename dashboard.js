@@ -104,6 +104,13 @@ function paper(d) {
     note('One paper contract in the final minute. The best offer must be from 98¢ through 99¢, including fractional cents, with at least one full contract on both checks. This test can overlap the exact-cent strategy.');
   if (selected === 'btc_band10')
     note('One paper contract per market. Both order-book requests must start in the last ten seconds, with distinct, fresh timestamps and a best offer from 98¢ through 99¢ on the same side that holds or improves.');
+  if (selected === 'btc_band1000' && d.btcBandDepth) {
+    const c=d.btcBandDepth;
+    table('1,000-contract offers in the final ten seconds',
+      ['Closes checked','Fresh book pairs','Same side at 98–99¢','1,000 offered twice','Largest repeated depth'],
+      [[c.windows,c.fresh,c.inBand,c.full,c.maxDepth]]);
+    note('Each close counts once. The model buys the cheapest 1,000 whole contracts visible at matching prices on two fresh reads. Its $1,000 paper balance covers purchase cost and fees, rounded up to a cent per price level.');
+  }
   if (selected === 'btc999' && d.btc999Coverage) {
     const c = d.btc999Coverage;
     table('99.9¢ offers in the final ten seconds', ['Closes checked','Fresh book pairs','100 offered on first read','100 offered on both reads'],

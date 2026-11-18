@@ -112,6 +112,19 @@ export function askLevels(body, side, maxPriceCents) {
   }).filter(l => l.price <= maxPriceCents * 10000 && l.quantity > 0).sort((a, b) => a.price - b.price);
 }
 
+// Whole contracts visible at the same price in both reads, cheapest first.
+export function overlappingAskLevels(first, second, side, maxCents) {
+  const before = askLevels(first, side, maxCents);
+  const after = askLevels(second, side, maxCents);
+  const original = new Map(before.map(l => [l.price, l.quantity]));
+  if (original.size !== before.length || new Set(after.map(l => l.price)).size !== after.length)
+    throw Error('Repeated price in returned order book');
+  return after.map(l => ({
+    price: l.price / MICRO,
+    quantity: Math.floor(Math.min(original.get(l.price) ?? 0, l.quantity) / MICRO)
+  }));
+}
+
 export function quoteBook(body, side, quantity, maxPriceCents) {
   const levels = askLevels(body, side, maxPriceCents);
   let remaining = quantity * MICRO;

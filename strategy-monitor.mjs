@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { Transport } from './transport.mjs';
+import { overlappingAskLevels } from './core.mjs';
 import { chartProjection, referencePrices } from './bitcoin-reference.mjs';
 import { observeMakerQueue, reviewMakerQueue } from './btc-maker-study.mjs';
 
@@ -30,6 +31,7 @@ export const strategies = {
   btc60: 'Bitcoin · final minute',
   btc_band60: 'Bitcoin · final minute, all prices from 98¢ to 99¢',
   btc_band10: 'Bitcoin · final 10 seconds, all prices from 98¢ to 99¢',
+  btc_band1000: 'Bitcoin · 1,000 contracts at 98–99¢ in the final 10 seconds',
   btc_underdog: 'Bitcoin · 1–2¢ offer in the final minute',
   btc10: 'Bitcoin · final 10 seconds',
   btc_chart10: 'Bitcoin · final 10 seconds with chart confirmation',
@@ -58,6 +60,8 @@ export function openLedger(directory) {
       secondQuote TEXT, fresh INTEGER, PRIMARY KEY(ticker,at));
     CREATE TABLE IF NOT EXISTS btc_999_queue(ticker TEXT PRIMARY KEY,side TEXT,arrival INTEGER,
       closeAt INTEGER,ahead REAL,checked INTEGER,volume REAL,result TEXT);
+    CREATE TABLE IF NOT EXISTS btc_band_depth(ticker TEXT,at INTEGER,fresh INTEGER,side TEXT,
+      depth INTEGER,detail TEXT NOT NULL,PRIMARY KEY(ticker,at));
     CREATE TABLE IF NOT EXISTS auction_premium_signals(ticker TEXT PRIMARY KEY,event TEXT,at INTEGER,
       bid INTEGER,estimated REAL,strike REAL,result TEXT);
     CREATE TABLE IF NOT EXISTS auction_exit_trials(id TEXT PRIMARY KEY,strategy TEXT,registered INTEGER,
@@ -68,7 +72,7 @@ export function openLedger(directory) {
   return db;
 }
 
-function bestMatchingQuote(book, matchesPrice) {
+function bestMatchingQuote(book, matchesPrice, minimumSize = 1) {
   const fp = book?.orderbook_fp;
   if (!Array.isArray(fp?.yes_dollars) || !Array.isArray(fp?.no_dollars))
     return null;
@@ -85,7 +89,7 @@ function bestMatchingQuote(book, matchesPrice) {
     const size = valid
       .filter(([p]) => p === bid)
       .reduce((sum, [, n]) => sum + n, 0);
-    if (matchesPrice(price) && size >= 1)
+    if (matchesPrice(price) && size >= minimumSize)
       choices.push({ side, price, size });
   }
   return choices.length === 1 ? choices[0] : null;
@@ -100,6 +104,42 @@ function independentBtcBooks(first,second) {
   return [first, second].every(read =>
     asOf(read) >= read.receivedAt - 2500 && asOf(read) <= read.receivedAt + 500
   ) && asOf(second) > asOf(first);
+}
+
+function recordBandDepth(db,market,close,first,second,multiplier,inBand) {
+  const at=second.receivedAt, ticker=market.ticker, strategy='btc_band1000';
+  const asOf=read=>Date.parse(read.httpDate)-1000*Number(read.cacheAge??0);
+  const fresh=independentBtcBooks(first,second) && asOf(first)>=close-10000 && asOf(second)<close;
+  const a=bestMatchingQuote(first.body,inBand,0), b=bestMatchingQuote(second.body,inBand,0);
+  const side=fresh && a && b && a.side===b.side && b.price<=a.price ? b.side : null;
+  const levels=side ? overlappingAskLevels(first.body,second.body,side.toUpperCase(),99)
+    .filter(l=>inBand(l.price)&&l.quantity>0) : [];
+  const depth=levels.reduce((sum,l)=>sum+l.quantity,0);
+  const proof={firstAt:first.receivedAt,secondAt:at,firstAsOf:asOf(first),secondAsOf:asOf(second),a,b,levels};
+  db.exec('BEGIN IMMEDIATE');
+  try {
+    db.prepare('INSERT OR IGNORE INTO btc_band_depth VALUES(?,?,?,?,?,?)')
+      .run(ticker,at,Number(fresh),side,depth,JSON.stringify(proof));
+    if(depth>=1000) {
+      let remaining=1000, principal=0, feeCents=0;
+      for(const {price,quantity} of levels) {
+        const size=Math.min(remaining,quantity);
+        principal+=size*price;
+        feeCents+=Math.ceil(7*multiplier*size*price*(1-price)-1e-9);
+        remaining-=size;
+        if(!remaining)break;
+      }
+      const cash=db.prepare('SELECT 1000+COALESCE(SUM(COALESCE(payout,0)-quantity*price-fees),0) AS balance FROM paper WHERE strategy=?').get(strategy).balance;
+      const fees=feeCents/100, cost=principal+fees;
+      if(cost<=cash+1e-9 && cost<1000)
+        addPaper(db,{id:strategy+'/'+ticker,strategy,ticker,side,at:new Date(at).toISOString(),
+          quantity:1000,price:principal/1000,fees,depth,closeAt:close});
+    }
+    db.exec('COMMIT');
+  } catch(e) {
+    db.exec('ROLLBACK');
+    throw e;
+  }
 }
 
 function recordLargeFavorite(db, market, close, first, second, multiplier) {
@@ -187,6 +227,7 @@ export function recordBtc(db, market, first, second, multiplier) {
   const favoriteB = bestFavorite(second.body);
   recordOffer('btc60', 60, 1, favoriteA, favoriteB);
   const inBand = p => p >= 0.98 && p <= 0.99;
+  if (first.requestedAt >= close-10000) recordBandDepth(db,market,close,first,second,multiplier,inBand);
   const bandA = bestMatchingQuote(first.body, inBand), bandB = bestMatchingQuote(second.body, inBand);
   recordOffer('btc_band60', 60, 1, bandA, bandB);
   if (first.requestedAt >= close-10000 && independentBtcBooks(first,second))
@@ -240,7 +281,7 @@ export async function settle(db, io) {
     .prepare(
       `SELECT pending.ticker FROM (
     SELECT ticker FROM paper WHERE payout IS NULL AND ticker NOT LIKE 'cpc-btc-updown-5m-%'
-    AND (strategy NOT IN ('btc60','btc_band60','btc_band10','btc10','btc_chart10','btc999','btcDepth','btc_underdog','cross_us_btc','cross_us_middle') OR closeAt<=?)
+    AND (strategy NOT IN ('btc60','btc_band60','btc_band10','btc_band1000','btc10','btc_chart10','btc999','btcDepth','btc_underdog','cross_us_btc','cross_us_middle') OR closeAt<=?)
     UNION SELECT ticker FROM btc_chart_windows WHERE side IS NOT NULL AND result IS NULL AND closeAt<=?
     UNION SELECT ticker FROM auction_premium_signals WHERE result IS NULL
     UNION SELECT ticker FROM weather_forecasts WHERE result IS NULL AND closeAt<=?
