@@ -1,3 +1,4 @@
+import { setTimeout as sleep } from 'node:timers/promises';
 import { API } from './transport.mjs';
 
 export const stations = [
@@ -35,16 +36,28 @@ export const stations = [
   }
 ];
 export async function publicJson(url) {
-  const r = await fetch(url, {
-    headers: {
-      Accept: 'application/json',
-      'User-Agent': 'WeatherPaperResearch/1.0',
-      'Cache-Control': 'no-cache'
-    },
-    signal: AbortSignal.timeout(7000)
-  });
-  if (!r.ok) throw Error(new URL(url).hostname + ' HTTP ' + r.status);
-  return r.json();
+  for (let attempt = 0; ; attempt++) {
+    const r = await fetch(url, {
+      headers: {
+        Accept: 'application/json',
+        'User-Agent': 'WeatherPaperResearch/1.0',
+        'Cache-Control': 'no-cache'
+      },
+      signal: AbortSignal.timeout(7000)
+    });
+    if ([429, 502, 503, 504].includes(r.status) && attempt < 4) {
+      const hint = r.headers.get('retry-after');
+      const ms =
+        hint && /^\d+$/.test(hint)
+          ? Number(hint) * 1000
+          : Date.parse(hint) - Date.now();
+      await r.body?.cancel();
+      await sleep(Math.max(2000 * 2 ** attempt, Number.isFinite(ms) ? ms : 0));
+      continue;
+    }
+    if (!r.ok) throw Error(new URL(url).hostname + ' HTTP ' + r.status);
+    return r.json();
+  }
 }
 export async function listings(station) {
   const d = await publicJson(

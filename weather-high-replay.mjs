@@ -112,7 +112,7 @@ for (const station of stations) {
           cursor = page.cursor;
           if (cursor && seen.has(cursor)) throw Error('Repeated trades cursor');
           seen.add(cursor);
-          await sleep(125);
+          await sleep(350);
         } while (cursor);
         hits.sort((a, b) => a.at.localeCompare(b.at) || b.price - a.price);
         result.qualifyingExecutions = hits.length;
@@ -204,7 +204,16 @@ const runtime = new URL('./runtime/', import.meta.url);
 await fs.mkdir(runtime, { recursive: true });
 const tmp = new URL('weather-high-replay.' + process.pid + '.tmp', runtime);
 await fs.writeFile(tmp, JSON.stringify(report, null, 2));
-await fs.rename(tmp, new URL('weather-high-replay.json', runtime));
+await fs.rename(
+  tmp,
+  new URL(
+    report.errors.length
+      ? 'weather-high-replay.partial.json'
+      : 'weather-high-replay.json',
+    runtime
+  )
+);
+if (report.errors.length) process.exitCode = 1;
 console.log(
   JSON.stringify({
     stations: report.stations,
