@@ -36,6 +36,11 @@
   ],
   "studies": [
     {
+      "market": "Published auction prices and Artnet-based settlement",
+      "test": "Compared auction-house results saved on November 16–17 to Kalshi’s final numeric settlement values on contracts naming Artnet. Counted each artwork once across four sales.",
+      "finding": "All 29 distinct sold lots matched to the dollar, including 14 at Sotheby’s, seven at Phillips and eight at Christie’s. All 224 thresholds settled in the indicated direction. The Rothko matched at $17,705,000. This measures price agreement on the observed sold lots. Trade availability and the timing of Artnet’s own update were outside this comparison."
+    },
+    {
       "market": "Phillips bought-in lot",
       "test": "Matched settled Kiefer paper entries to Kalshi trades and checked all ten thresholds from the first recorded paper NO until market close.",
       "finding": "The two late paper entries modeled 1,009 shares and $9.40 net on one artwork. The 884-share NO on Above $550K accounted for $8.23. That threshold reported zero lifetime trading volume. Across all ten thresholds, the only non-block NO taker executions of at least one whole share after the first paper signal were two one-share fills at 83¢ on Above $500K at 9:38 a.m. ET on November 18. Both settled NO. The visible quotes and these small executions provide different evidence about attainable size."
