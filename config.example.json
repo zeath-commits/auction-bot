@@ -11,6 +11,9 @@
   "maxOrderCostCents": 100,
   "maxTotalReservedCents": 500,
   "maxOrders": 5,
+  "maxOfferAttemptsPerArtwork": 2,
+  "offerCooldownSeconds": 60,
+  "offerTailHours": 12,
   "subaccount": 0,
   "privateKeyPath": "",
   "apiKeyIdEnvironmentVariable": "KALSHI_API_KEY_ID"

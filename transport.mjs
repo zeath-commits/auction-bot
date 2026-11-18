@@ -20,11 +20,13 @@ export class Transport {
     this.config = config; this.live = live; this.fetchImpl = fetchImpl; this.checkStop = checkStop;
     this.key = null; this.id = null;
   }
-  async loadCredentials() {
-    requireThat(this.live && this.config.liveEnabled, 'Live mode is disabled');
+  async loadCredentials(readOnlyCheck=false) {
+    requireThat(readOnlyCheck || (this.live && this.config.liveEnabled), 'Live mode is disabled');
+    this.readOnlyCheck = readOnlyCheck;
     this.id = process.env[this.config.apiKeyIdEnvironmentVariable];
-    requireThat(this.id && this.config.privateKeyPath, 'Supply API key ID and local private-key file');
-    this.key = createPrivateKey(await fs.readFile(this.config.privateKeyPath, 'utf8'));
+    const keyPath = process.env.KALSHI_PRIVATE_KEY_PATH || this.config.privateKeyPath;
+    requireThat(this.id && keyPath, 'Supply API key ID and local private-key file');
+    this.key = createPrivateKey(await fs.readFile(keyPath, 'utf8'));
   }
   async request(url, { method = 'GET', body, authenticated = false } = {}) {
     await this.checkStop();
@@ -38,7 +40,8 @@ export class Transport {
         u.pathname === '/trade-api/v2/portfolio/events/orders', 'Order submission disabled');
     }
     if (authenticated) {
-      requireThat(apiRequest && this.live && this.key && this.id, 'Authenticated access unavailable');
+      const balanceCheck=this.readOnlyCheck && method==='GET' && u.pathname==='/trade-api/v2/portfolio/balance';
+      requireThat(apiRequest && (this.live || balanceCheck) && this.key && this.id, 'Authenticated access unavailable');
       Object.assign(headers, authHeaders(this.key, this.id, method, url));
     }
     if (body) headers['Content-Type'] = 'application/json';

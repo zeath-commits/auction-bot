@@ -19,6 +19,7 @@ export const sha = value => createHash('sha256').update(JSON.stringify(value)).d
 export const artworkKey = (auction, target) => `${auction.house}:${auction.sale}:${target.id}`;
 
 export function validateConfig(c) {
+  c = {maxOfferAttemptsPerArtwork: 2, offerCooldownSeconds: 60, offerTailHours: 12, ...c};
   requireThat(typeof c.liveEnabled === 'boolean', 'liveEnabled must be boolean');
   const bounds = {
     pollIntervalMs: [5000, 60000], requestTimeoutMs: [1000, 30000],
@@ -26,7 +27,8 @@ export function validateConfig(c) {
     maxHttpAgeSeconds: [0, 60], contractsPerOrder: [1, 100],
     maxPriceCents: [1, 99], minConditionalProfitCents: [1, 10000],
     maxOrderCostCents: [1, 100000], maxTotalReservedCents: [1, 1000000],
-    maxOrders: [1, 100], subaccount: [0, 63]
+    maxOrders: [1, 100], subaccount: [0, 63], maxOfferAttemptsPerArtwork:[1,100],
+    offerCooldownSeconds:[5,86400], offerTailHours:[0,168]
   };
   for (const [key, [min, max]] of Object.entries(bounds)) {
     requireThat(Number.isInteger(c[key]) && c[key] >= min && c[key] <= max, `Invalid ${key}`);

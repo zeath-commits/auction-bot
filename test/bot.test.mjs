@@ -10,6 +10,7 @@ import { Transport, authHeaders } from '../transport.mjs';
 import { Journal } from '../journal.mjs';
 import { submitCandidate, processTarget } from '../bot.mjs';
 import { christies, phillips } from '../parsers.mjs';
+import { scanOffers, offerSide } from '../watch-offers.mjs';
 
 const config = JSON.parse(await fs.readFile(new URL('../config.example.json', import.meta.url)));
 const watch = JSON.parse(await fs.readFile(new URL('../watchlist.json', import.meta.url)));
@@ -31,6 +32,47 @@ async function withJournal(fn, mode = 'paper') {
   // Test data is intentionally tiny; no recursive deletion of computed Windows paths.
 }
 const noop = async () => {};
+
+test('a crossed bid can buy YES, but equality or a lower bid cannot imply NO', () => {
+  assert.equal(offerSide({kind:'current_bid',amount:501},500),'YES');
+  for(const amount of [500,499,null]) assert.equal(offerSide({kind:'current_bid',amount},500),null);
+  assert.equal(offerSide({kind:'published_sale',amount:500},500),'NO');
+  assert.equal(offerSide({kind:'unsold'},500),'NO');
+});
+
+test('offer worker reconfirms each bid, reconciles fractional fills, and enforces repeat caps',async()=>withJournal(async j=>{
+  const a={house:'christies',sale:'1',sourceUrl:'https://www.christies.com/list',targets:[{...target,url:'https://www.christies.com/lot'}]};
+  let position=0,reads=0,posts=0,confirmBid=600;
+  const wrap=body=>({body,requestedAt:Date.now(),receivedAt:Date.now()});
+  const io={live:true,request:async url=>{
+    let text;
+    if(url===a.sourceUrl){
+      const bid=++reads%2?600:confirmBid;
+      text=catalogue(0,{price_realised_txt:'',is_auction_over:false,is_in_progress:true,current_bid:bid,current_bid_txt:'USD '+bid});
+    }else{
+      const l={object_id:'123',lot_id_txt:'1 A',title_primary_txt:'Artist',title_secondary_txt:'Work',analytics_id:'1.1.A',is_unsold:false,price_realised:0,price_realised_txt:''};
+      text='window.chrComponents.lotHeader_1 = '+JSON.stringify({data:{sale:{sale_number:'1'},lots:[l]},labels:{currency_txt:'USD'}})+';';
+    }
+    return {...wrap(null),text};
+  },get:async route=>{
+    if(route.startsWith('/events/')) return wrap(eventBody());
+    if(route.startsWith('/series/')) return wrap({series:{ticker:'KXART',fee_type:'quadratic',fee_multiplier:1}});
+    if(route==='/exchange/status') return wrap({exchange_active:true,trading_active:true});
+    if(route.startsWith('/portfolio/positions'))return wrap({market_positions:[{ticker:frozen.ticker,position_fp:position.toFixed(2)}]});
+    if(route.startsWith('/portfolio/orders'))return wrap({orders:[]});
+    return wrap({orderbook_fp:{no_dollars:[['0.1800','1.00']]}});
+  },createOrder:async payload=>{
+    posts++;position+=0.5;assert.equal(payload.side,'bid');assert.equal(payload.price,'0.8200');
+    return wrap({order_id:'fake-'+posts,client_order_id:payload.client_order_id,fill_count:'0.50',remaining_count:'0.00',average_fill_price:'0.8200',average_fee_paid:'0.0100'});
+  }};
+  const run=()=>scanOffers({auction:a,io,log:noop,stop:noop,live:true,journal:j,deadline:Date.now()+60000,
+    config:{...config,liveEnabled:true,maxOfferAttemptsPerArtwork:2,offerCooldownSeconds:0}});
+  confirmBid=500;await run();assert.equal(posts,0);
+  confirmBid=600;await run();assert.equal(posts,1);
+  position+=1;await run();assert.equal(posts,1);
+  position-=1;await run();await run();assert.equal(posts,2);
+  assert.equal(j.unresolved().length,0);
+},'live'));
 function catalogue(amount = 400, changes = {}) {
   return `<script>window.chrComponents.lots = ${JSON.stringify({ labels: { currency_txt: 'USD' }, data: {
     total_hits_filtered: 1, lots: [{ lot_id_txt: '1 A', object_id: '123', analytics_id: '1.123', title_primary_txt: 'Artist',

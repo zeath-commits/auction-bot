@@ -39,7 +39,11 @@ export class Journal {
   blocked(key) { return this.intents().some(x => x.artworkKey === key); }
   checkBudget(candidate, config) {
     requireThat(this.unresolved().length === 0, 'Unresolved order intent; inspect exchange and journal before restarting');
-    requireThat(!this.blocked(candidate.artworkKey), 'Artwork already attempted');
+    if (candidate.strategy === 'watch_offers') {
+      const prior = this.intents().filter(x => x.artworkKey === candidate.artworkKey);
+      requireThat(prior.length < config.maxOfferAttemptsPerArtwork, 'Artwork attempt cap reached');
+      requireThat(prior.every(x=>Date.now()-Date.parse(x.recordedAt)>=config.offerCooldownSeconds*1000), 'Artwork cooldown active');
+    } else requireThat(!this.blocked(candidate.artworkKey), 'Artwork already attempted');
     requireThat(this.intents().length < config.maxOrders, 'Order count budget exhausted');
     requireThat(candidate.quote.reserveCents <= config.maxOrderCostCents, 'Order cost cap exceeded');
     const total = this.intents().reduce((n, x) => n + x.quote.reserveCents, 0);

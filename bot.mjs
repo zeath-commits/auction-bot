@@ -32,16 +32,21 @@ async function paged(io, route, field) {
   return rows;
 }
 
-export async function assertNoExistingExposure(io, auction, target, config) {
+export async function assertNoExistingExposure(io, auction, target, config, expected = new Map()) {
   // Includes both Klimt event listings: these are the same artwork.
   const events = auction.targets.filter(t => t.id === target.id).map(t => t.event);
   const positions = await paged(io, `/portfolio/positions?limit=1000&subaccount=${config.subaccount}`, 'market_positions');
+  const remaining = new Map(expected);
   for (const p of positions.filter(p => events.some(e => p.ticker?.startsWith(e + '-')))) {
     requireThat(typeof p.position_fp === 'string' && /^-?\d+(\.\d{1,2})?$/.test(p.position_fp), 'Invalid account position');
-    requireThat(Number(p.position_fp) === 0, 'Existing position on this artwork; skipped to avoid changing manual exposure');
+    requireThat(Math.round(Number(p.position_fp)*100) === (remaining.get(p.ticker) ?? 0), 'Existing position on this artwork; skipped to avoid changing manual exposure');
+    remaining.delete(p.ticker);
   }
-  const orders = await paged(io, `/portfolio/orders?status=resting&event_ticker=${events.join(',')}&limit=1000&subaccount=${config.subaccount}`, 'orders');
-  requireThat(orders.length === 0, 'Resting order exists on this artwork');
+  requireThat([...remaining.values()].every(n=>n===0), 'Existing position differs from journal');
+  for (const event of events) {
+    const orders = await paged(io, `/portfolio/orders?status=resting&event_ticker=${event}&limit=1000&subaccount=${config.subaccount}`, 'orders');
+    requireThat(orders.length === 0, 'Resting order exists on this artwork');
+  }
 }
 
 function usableQuote(body, side, config) {
@@ -155,10 +160,13 @@ export async function main(args = process.argv.slice(2)) {
     requireThat(args.every(a => ['--paper-bids','--once'].includes(a)), 'Bid-threshold mode only supports paper trading');
     return (await import('./paper-bids.mjs')).runBidPaper(args.includes('--once'));
   }
-  const known = new Set(['--paper', '--live', '--acknowledge-live-trading', '--preflight', '--once', '--help']);
+  const offers = args.includes('--watch-offers');
+  const accountCheck = args.includes('--check-account');
+  requireThat(!accountCheck || args.length===1,'Run account check separately');
+  const known = new Set(['--paper', '--live', '--acknowledge-live-trading', '--preflight', '--watch-offers', '--once', '--help','--check-account']);
   requireThat(args.every(a => known.has(a)) && new Set(args).size === args.length, 'Unknown or duplicate argument');
   if (args.includes('--help')) {
-    console.log('node bot.mjs --preflight | --paper [--once] | --live --acknowledge-live-trading\nDefault: paper. See README.txt for configuration, limits and STOP file.');
+    console.log('node bot.mjs --preflight | --paper [--watch-offers] [--once] | --live [--watch-offers] --acknowledge-live-trading\nDefault: paper. See README.md for setup and limits.');
     return;
   }
   const live = args.includes('--live');
@@ -172,6 +180,13 @@ export async function main(args = process.argv.slice(2)) {
     configText = await fs.readFile(path.join(ROOT, 'config.example.json'), 'utf8');
   }
   const config = validateConfig(JSON.parse(configText));
+  if(accountCheck) {
+    const reader = new Transport(config,{live:false});
+    await reader.loadCredentials(true);
+    await reader.get('/portfolio/balance?subaccount='+config.subaccount,true);
+    console.log('Authenticated balance read succeeded for subaccount '+config.subaccount+'.');
+    return;
+  }
   requireThat(!live || config.liveEnabled, 'config.json liveEnabled is false');
   const watchlist = validateWatchlist(JSON.parse(await fs.readFile(path.join(ROOT, 'watchlist.json'), 'utf8')));
   let stopped = false;
@@ -200,7 +215,8 @@ export async function main(args = process.argv.slice(2)) {
       await fs.writeFile(path.join(ROOT, 'runtime', 'preflight.json'), JSON.stringify(result, null, 2));
       console.log(JSON.stringify(result, null, 2)); return;
     }
-    const lastDeadline = Math.max(...watchlist.auctions.map(a => Date.parse(a.deadline)));
+    const tailMs = offers ? config.offerTailHours * 3600000 : 0;
+    const lastDeadline = Math.max(...watchlist.auctions.map(a => Date.parse(a.deadline))) + tailMs;
     requireThat(Date.now() < lastDeadline, 'Watchlist expired; review new auctions before another run');
     journal = new Journal(runtime, mode); await journal.open();
     requireThat(journal.unresolved().length === 0, 'Unresolved order intent; manual account reconciliation required');
@@ -210,7 +226,13 @@ export async function main(args = process.argv.slice(2)) {
       await stop();
       const cycleStarted = Date.now();
       for (const auction of watchlist.auctions) {
-        if (Date.now() < Date.parse(auction.startAt) || Date.now() >= Date.parse(auction.deadline)) continue;
+        const deadline = Date.parse(auction.deadline) + tailMs;
+        if (Date.now() < Date.parse(auction.startAt) || Date.now() >= deadline) continue;
+        if (offers) {
+          const {scanOffers} = await import('./watch-offers.mjs');
+          await scanOffers({io,auction,config,journal,live,stop,log,deadline});
+          continue;
+        }
         const source = await readAuction(io, auction);
         // Validate every mapped lot, including already attempted lots, before acting.
         for (const target of auction.targets) checkLot(source.rows, target);

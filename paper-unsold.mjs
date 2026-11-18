@@ -6,7 +6,7 @@ const termsUrl = 'https://assets.kalshi.com/contract_terms/ITEMPRICESART.pdf';
 // Reviewed page 2: if there is no eligible prior price, all strikes settle NO.
 const termsHash = 'dd458f0d8b451463ca8ef72e2608b940ed11e667b4cdddc14bb3d43a38fa2fae';
 
-export function christiesUnsold(html, sale, target) {
+export function christiesLotHeader(html, sale, target) {
   const header = html.match(/^\s*window\.chrComponents\.lotHeader_\d+\s*=\s*(\{[^\n]*\});/m);
   if (!header) return false;
   const {data, labels} = JSON.parse(header[1]);
@@ -15,11 +15,16 @@ export function christiesUnsold(html, sale, target) {
   if (lots.length !== 1) return false;
   const l = lots[0];
   return l.title_primary_txt === target.artist && l.title_secondary_txt === target.title &&
-    l.analytics_id?.startsWith(sale + '.') && l.is_unsold === true && l.lot_withdrawn !== true &&
+    l.analytics_id?.startsWith(sale + '.') ? l : null;
+}
+
+export function christiesUnsold(html, sale, target) {
+  const l = christiesLotHeader(html, sale, target);
+  return !!l && l.is_unsold === true && l.lot_withdrawn !== true &&
     (l.price_realised == null || l.price_realised === 0) && !l.price_realised_txt?.trim();
 }
 
-async function verifyTerms(io) {
+export async function verifyTerms(io) {
   const series = (await io.get('/series/KXART')).body;
   checkFees(series);
   requireThat(series.series.contract_terms_url === termsUrl, 'Unsold settlement terms URL changed');
