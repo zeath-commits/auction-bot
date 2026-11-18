@@ -36,6 +36,11 @@
   ],
   "studies": [
     {
+      "market": "Auction results in foreign currencies",
+      "test": "Compared four works in Christie’s October 14 London results with the same works in Artnet’s October top ten. Checked the premium-inclusive sale-currency amount and each publisher’s US-dollar equivalent.",
+      "finding": "All four GBP prices matched exactly. The US-dollar equivalents differed by $86,446 to $280,969. For Kandinsky’s Das bunte Leben both sources reported £31,560,000. Christie’s converted that to $41,785,440 and Artnet to $41,504,471. These are publisher comparisons. Rothko was sold directly in USD and its Kalshi settlement matched the Sotheby’s result."
+    },
+    {
       "market": "Resting auction bids after publication",
       "test": "Across 224 settled thresholds on 29 sold artworks, counted opposing non-block taker executions of at least one share from 30 seconds after a recorded result until close.",
       "finding": "Resting participants bought the winning side below 95¢ in 42 executions across ten thresholds on seven artworks, totaling 1,071.44 contracts. Four artworks still had such purchases after one hour. None of the qualifying executions was exactly 95¢. The prospective monitor checks whether a 95¢ bid could have rested, records the visible queue and measures subsequent seller volume for one hour. Public executions alone do not establish where a new bid would have filled."
