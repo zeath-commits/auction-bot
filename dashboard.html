@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Market journal</title>
+    <link rel="stylesheet" href="/dashboard.css" />
+    <script type="module" src="/dashboard.js"></script>
+  </head>
+  <body>
+    <header>
+      <strong>Market journal</strong
+      ><span id="health" role="status">Connecting…</span>
+    </header>
+    <main>
+      <h1>Strategy dashboard</h1>
+      <nav aria-label="Dashboard views">
+        <button aria-pressed="true" data-page="paper">Paper trading</button
+        ><button aria-pressed="false" data-page="history">
+          Historical tests</button
+        ><button aria-pressed="false" data-page="account">Real trades</button>
+      </nav>
+      <p class="error" id="error" role="status"></p>
+      <section id="view" aria-live="off"></section>
+    </main>
+  </body>
+</html>

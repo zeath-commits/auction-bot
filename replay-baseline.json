@@ -1,0 +1,121 @@
+[
+  {
+    "day": "2026-11-17",
+    "windows": 96,
+    "listed": 96,
+    "possible": 96,
+    "prints": 23,
+    "wins": 23,
+    "finalTen": null,
+    "net": 0.36269999999999974,
+    "gross": 0.39000000000000035,
+    "losses": []
+  },
+  {
+    "day": "2026-11-16",
+    "windows": 96,
+    "listed": 96,
+    "possible": 96,
+    "prints": 36,
+    "wins": 36,
+    "finalTen": null,
+    "net": 0.5672999999999998,
+    "gross": 0.6100000000000005,
+    "losses": []
+  },
+  {
+    "day": "2026-11-15",
+    "windows": 96,
+    "listed": 96,
+    "possible": 96,
+    "prints": 45,
+    "wins": 44,
+    "finalTen": null,
+    "net": -0.24670000000000067,
+    "gross": -0.18999999999999928,
+    "losses": [
+      {
+        "ticker": "KXBTC15M-26NOV150745-45",
+        "at": "2026-11-15T12:44:00.042668Z",
+        "side": "no",
+        "price": 0.98,
+        "result": "yes"
+      }
+    ]
+  },
+  {
+    "day": "2026-11-14",
+    "windows": 96,
+    "listed": 96,
+    "possible": 96,
+    "prints": 27,
+    "wins": 25,
+    "finalTen": null,
+    "net": -1.535,
+    "gross": -1.4999999999999996,
+    "losses": [
+      {
+        "ticker": "KXBTC15M-26NOV141200-00",
+        "at": "2026-11-14T16:59:00.136309Z",
+        "side": "yes",
+        "price": 0.98,
+        "result": "no"
+      },
+      {
+        "ticker": "KXBTC15M-26NOV140530-30",
+        "at": "2026-11-14T10:29:42.640283Z",
+        "side": "yes",
+        "price": 0.98,
+        "result": "no"
+      }
+    ]
+  },
+  {
+    "day": "2026-11-12",
+    "windows": 88,
+    "listed": 88,
+    "possible": 96,
+    "prints": 26,
+    "wins": 25,
+    "finalTen": {
+      "count": 1,
+      "wins": 1,
+      "net": 0.01860000000000002
+    },
+    "net": -0.5815,
+    "gross": -0.5499999999999996,
+    "losses": [
+      {
+        "ticker": "KXBTC15M-26NOV120215-15",
+        "at": "2026-11-12T07:14:05.920087Z",
+        "side": "no",
+        "price": 0.98,
+        "result": "yes"
+      }
+    ]
+  },
+  {
+    "day": "2026-11-11",
+    "windows": 96,
+    "listed": 96,
+    "possible": 96,
+    "prints": 37,
+    "wins": 36,
+    "finalTen": {
+      "count": 1,
+      "wins": 1,
+      "net": 0.01860000000000002
+    },
+    "net": -0.3955000000000006,
+    "gross": -0.3499999999999994,
+    "losses": [
+      {
+        "ticker": "KXBTC15M-26NOV110415-15",
+        "at": "2026-11-11T09:14:19.328892Z",
+        "side": "yes",
+        "price": 0.99,
+        "result": "no"
+      }
+    ]
+  }
+]

@@ -1,0 +1,84 @@
+{
+  "paper": [
+    {
+      "id": "earthquake-nov17-no68-paper-v1",
+      "strategy": "quake",
+      "ticker": "KXBIGGESTQUAKE-17NOV26-6.8",
+      "side": "no",
+      "at": "2026-11-16T22:58:33.567Z",
+      "quantity": 5,
+      "price": 0.88,
+      "fees": 0.04,
+      "depth": 12
+    },
+    {
+      "id": "ncaa/KXNCAAMBGAME-26NOV16USTLIU-LIU",
+      "strategy": "college",
+      "ticker": "KXNCAAMBGAME-26NOV16USTLIU-LIU",
+      "side": "no",
+      "at": "2026-11-16T23:50:00.475Z",
+      "quantity": 5,
+      "price": 0.51,
+      "fees": 0.09,
+      "depth": 7727.13
+    },
+    {
+      "id": "ncaa/KXNCAAMBGAME-26NOV16ACMOSU-AC",
+      "strategy": "college",
+      "ticker": "KXNCAAMBGAME-26NOV16ACMOSU-AC",
+      "side": "no",
+      "at": "2026-11-17T00:50:00.361Z",
+      "quantity": 5,
+      "price": 0.69,
+      "fees": 0.08,
+      "depth": 13019.03
+    }
+  ],
+  "studies": [
+    {
+      "market": "Fine art",
+      "test": "Public result versus settlement source",
+      "finding": "105 thresholds on 14 earlier lots matched. Several thresholds shared the same auction result."
+    },
+    {
+      "market": "TSA passenger count",
+      "test": "Official publication before trading closes",
+      "finding": "337 checks found no Nov 17 count before the last poll, 26 seconds before close."
+    },
+    {
+      "market": "NBA late leaders",
+      "test": "Next-season replication",
+      "finding": "14 winning selections. The sample is too small to establish a 97.6% win rate."
+    },
+    {
+      "market": "NHL late leaders",
+      "test": "Held-out final-minute game states",
+      "finding": "The historical screen narrowly passed. Executable depth and timing remain unverified."
+    },
+    {
+      "market": "College basketball",
+      "test": "Opening bookmaker odds versus Kalshi",
+      "finding": "The March replication failed. Earlier simulated gains did not hold up."
+    },
+    {
+      "market": "Hourly weather",
+      "test": "Prospective forecast and order book",
+      "finding": "The registered forward test ended without a qualifying entry."
+    },
+    {
+      "market": "Bitcoin",
+      "test": "Coinbase-based probability model",
+      "finding": "Historical prices used a proxy for the CF Benchmarks index. Historical depth was unavailable."
+    },
+    {
+      "market": "Gas prices and MEAC",
+      "test": "Buy complementary outcomes",
+      "finding": "Basket entries were counterfactual. Filling every leg at the indicated price was unverified."
+    },
+    {
+      "market": "Earthquakes",
+      "test": "Magnitude forecast versus quoted price",
+      "finding": "One forward paper position. Sequence-specific probability calibration remains uncertain."
+    }
+  ]
+}

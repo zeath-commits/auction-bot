@@ -40,8 +40,9 @@ export class Transport {
         u.pathname === '/trade-api/v2/portfolio/events/orders', 'Order submission disabled');
     }
     if (authenticated) {
-      const balanceCheck=this.readOnlyCheck && method==='GET' && u.pathname==='/trade-api/v2/portfolio/balance';
-      requireThat(apiRequest && (this.live || balanceCheck) && this.key && this.id, 'Authenticated access unavailable');
+      const portfolioRead=this.readOnlyCheck && method==='GET' &&
+        ['/balance','/fills','/settlements'].some(suffix=>u.pathname==='/trade-api/v2/portfolio'+suffix);
+      requireThat(apiRequest && (this.live || portfolioRead) && this.key && this.id, 'Authenticated access unavailable');
       Object.assign(headers, authHeaders(this.key, this.id, method, url));
     }
     if (body) headers['Content-Type'] = 'application/json';

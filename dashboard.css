@@ -1,0 +1,147 @@
+:root {
+  color-scheme: dark;
+  font-family: 'IBM Plex Sans', Inter, system-ui, sans-serif;
+  color: #e8edeb;
+  background: #111716;
+  font-variant-numeric: tabular-nums;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+}
+header {
+  border-bottom: 1px solid #35433e;
+  padding: 15px max(5vw, 20px);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  background: #17201d;
+}
+header strong {
+  letter-spacing: 0.02em;
+}
+header span,
+small,
+.note {
+  color: #aebdb5;
+  font-size: 0.86rem;
+}
+main {
+  width: min(1160px, 91vw);
+  margin: 42px auto 80px;
+}
+h1 {
+  font-size: clamp(2.1rem, 5vw, 3.3rem);
+  letter-spacing: -0.055em;
+  margin: 0 0 20px;
+  font-weight: 580;
+}
+h2 {
+  font-size: 1.2rem;
+  margin: 30px 0 12px;
+}
+nav {
+  display: flex;
+  gap: 5px;
+  border-bottom: 1px solid #38423f;
+  padding-bottom: 12px;
+  flex-wrap: wrap;
+}
+button,
+select {
+  font: inherit;
+  color: inherit;
+  background: #1a2420;
+  border: 1px solid #44544b;
+  border-radius: 5px;
+  padding: 8px 13px;
+  cursor: pointer;
+}
+button[aria-pressed='true'] {
+  background: #c9eb98;
+  color: #172115;
+  border-color: #c9eb98;
+}
+button:focus-visible,
+select:focus-visible {
+  outline: 2px solid white;
+  outline-offset: 2px;
+}
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin: 24px 0;
+}
+.metric {
+  border: 1px solid #35453d;
+  background: #19221f;
+  border-radius: 8px;
+  padding: 16px;
+}
+.metric strong {
+  display: block;
+  font-weight: 500;
+  font-size: 1.75rem;
+  margin-top: 6px;
+}
+.table {
+  overflow-x: auto;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  white-space: nowrap;
+  font-size: 0.9rem;
+}
+td,
+th {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid #2c3933;
+}
+th {
+  font-weight: 500;
+  color: #b6c6bb;
+  background: #1b2621;
+}
+.note {
+  line-height: 1.55;
+}
+.error {
+  color: #feb49d;
+}
+.negative {
+  color: #ffad97;
+}
+.positive {
+  color: #c9eb98;
+}
+label {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+a {
+  color: #c9eb98;
+}
+@media (max-width: 600px) {
+  main {
+    margin-top: 25px;
+  }
+  .metrics {
+    grid-template-columns: 1fr 1fr;
+  }
+  .metric {
+    padding: 11px;
+  }
+  header {
+    align-items: flex-start;
+  }
+  header span {
+    text-align: right;
+  }
+}
