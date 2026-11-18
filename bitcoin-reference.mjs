@@ -18,7 +18,19 @@ export async function usPublic(route) {
     redirect: 'error',
     headers: { 'Cache-Control': 'no-cache' }
   });
-  if (!r.ok) throw Error('Polymarket US public read returned ' + r.status);
+  if (!r.ok) {
+    const error = Error('Polymarket US public read returned ' + r.status);
+    error.status = r.status;
+    if (r.status === 429) {
+      const retry = r.headers.get('retry-after');
+      const ms =
+        retry && /^\d+$/.test(retry)
+          ? Number(retry) * 1000
+          : Date.parse(retry) - Date.now();
+      error.retryAfterMs = Number.isFinite(ms) ? Math.max(0, ms) : 0;
+    }
+    throw error;
+  }
   if (route.endsWith('/book') && Number(r.headers.get('age') ?? 0) > 1)
     throw Error('Cached US book exceeded one second');
   return r.json();

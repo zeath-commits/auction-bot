@@ -7,6 +7,7 @@ import { Transport } from './transport.mjs';
 export const strategies = {
   us_btc10: 'Polymarket US · BTC final 10 seconds',
   cross_us_btc: 'Bitcoin · Kalshi and Polymarket US pair',
+  cross_us_middle: 'Bitcoin · wide opening-price gap',
   late_auction: 'Auction · offers after the sale',
   auction_pair: 'Auction · paired thresholds',
   crypto_pair: 'Crypto · paired thresholds',
@@ -124,9 +125,9 @@ export function paperRows(db) {
   return db
     .prepare(
       `SELECT p.*, CASE
-    WHEN p.strategy IN ('auction_pair','crypto_pair','cross_us_btc') AND peer.payout IS NULL THEN NULL
+    WHEN p.strategy IN ('auction_pair','crypto_pair','cross_us_btc','cross_us_middle') AND peer.payout IS NULL THEN NULL
     ELSE p.payout-p.price*p.quantity-p.fees END AS net
-    FROM paper p LEFT JOIN paper peer ON p.strategy IN ('auction_pair','crypto_pair','cross_us_btc')
+    FROM paper p LEFT JOIN paper peer ON p.strategy IN ('auction_pair','crypto_pair','cross_us_btc','cross_us_middle')
     AND peer.id=substr(p.id,1,length(p.id)-length(p.side)) ||
       (CASE p.side WHEN 'yes' THEN 'no' ELSE 'yes' END)
     ORDER BY p.at DESC`
@@ -138,7 +139,7 @@ export async function settle(db, io) {
   const pending = db
     .prepare(
       `SELECT DISTINCT p.ticker FROM paper p LEFT JOIN results r USING(ticker)
-    WHERE payout IS NULL AND p.ticker NOT LIKE 'cpc-btc-updown-5m-%' AND (p.strategy NOT IN ('btc60','btc10','btcDepth','cross_us_btc') OR closeAt<=?) AND COALESCE(r.checked,0)<?
+    WHERE payout IS NULL AND p.ticker NOT LIKE 'cpc-btc-updown-5m-%' AND (p.strategy NOT IN ('btc60','btc10','btcDepth','cross_us_btc','cross_us_middle') OR closeAt<=?) AND COALESCE(r.checked,0)<?
     ORDER BY COALESCE(r.checked,0) LIMIT 10`
     )
     .all(Date.now(), Date.now() - 60000);

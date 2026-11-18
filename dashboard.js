@@ -171,6 +171,33 @@ function paper(d) {
         ' · ' +
         time(d.usBitcoinStatus.at)
     );
+  if (d.closingCoverage && (selected === 'all' || selected === 'us_btc10'))
+    note(
+      'Polymarket US closing coverage · ' +
+        d.closingCoverage.closed +
+        ' monitored windows ended · ' +
+        d.closingCoverage.attempted +
+        ' sampled in the final ten seconds · ' +
+        d.closingCoverage.usable +
+        ' returned a fresh book before close.'
+    );
+  if (
+    d.middleCoverage &&
+    (selected === 'all' || selected === 'cross_us_middle')
+  ) {
+    const m = d.middleCoverage;
+    note(
+      'Wide opening-price gap · ' +
+        m.aligned +
+        ' openings monitored · ' +
+        m.wide +
+        ' with a gap of at least 0.20% · ' +
+        m.priced +
+        ' with fresh quotes for ten pairs' +
+        (m.best == null ? '' : ' · lowest cost ' + money(m.best)) +
+        '. Paper entry requires two checks in the first 30 seconds and a total cost of $10–$13.'
+    );
+  }
   if (selected === 'all' || selected === 'late_auction') {
     const positions = rows.filter(
       (r) => r.strategy === 'late_auction' && r.payout == null

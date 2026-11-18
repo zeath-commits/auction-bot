@@ -37,6 +37,16 @@
   "studies": [
     {
       "market": "Polymarket international BTC 5m",
+      "test": "Earlier week, same 98¢ or 99¢ closing-buy rule, Nov 4–10 ET",
+      "finding": "85 of 86 qualifying buys won across 2,016 windows. Modeled net was $0.24 after fees at one share each. On Nov 8, a 47.48-share Down buy at 98¢ had a block timestamp nine seconds before noon ET. Up won. Across both weeks, 164 of 165 buys won and modeled net was $1.38. None of the first qualifying buys reached 1,000 shares."
+    },
+    {
+      "market": "Polymarket US and Kalshi BTC",
+      "test": "Both legs winning when opening prices differ by at least 0.20%",
+      "finding": "The exchanges confirmed both legs paid in 48/104 and 109/209 wide-gap windows in the two weeks used to choose the rule. In a separate earlier week, 43/92 paid both legs. Historical entry prices are unknown. The forward paper test allows up to $13 total for ten pairs after fees, and requires two fresh quotes within 30 seconds of opening. At that price, normal matching settlement pays $10 or $20."
+    },
+    {
+      "market": "Polymarket international BTC 5m",
       "test": "First 98¢ or 99¢ taker buy in the last ten seconds, Nov 11–17 ET",
       "finding": "79 qualifying buys across 2,016 resolved windows. All 79 won, for $1.15 modeled net after fees at one share each. Nov 17 contributed 8 wins and $0.13. The preceding six days contributed 71 wins and $1.02. None of the first qualifying buys reached 1,000 shares. Block timestamps can lag matching, and a past buyer’s price does not establish available depth."
     },

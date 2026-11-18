@@ -6,6 +6,7 @@ import { addPaper } from './strategy-monitor.mjs';
 
 const single = 'us_btc10',
   paired = 'cross_us_btc',
+  middle = 'cross_us_middle',
   units = 10;
 function nearestCent(x) {
   const cents = x * 100,
@@ -101,6 +102,19 @@ function eligibleSingle(book, rate, slug) {
     ? usLeg(sides[0], book[sides[0]], 1, rate, slug)
     : null;
 }
+export function pairStrategy(snapshot, start, gapBps) {
+  const cost = snapshot?.pair?.cost;
+  if (!(cost > 0)) return null;
+  if (cost < units) return paired;
+  if (
+    gapBps >= 20 &&
+    snapshot.begin >= start * 1000 &&
+    snapshot.finish < start * 1000 + 30000 &&
+    cost <= 1.3 * units
+  )
+    return middle;
+  return null;
+}
 async function settleUS(db) {
   const pending = db
     .prepare(
@@ -164,12 +178,28 @@ export async function observeUS({ db, config, stop, status }) {
   db.exec(
     'CREATE TABLE IF NOT EXISTS us_samples(slug TEXT PRIMARY KEY, closeAt INTEGER, checks INTEGER DEFAULT 0, last10 INTEGER DEFAULT 0, pairChecks INTEGER DEFAULT 0, minCost REAL)'
   );
+  db.exec(
+    'CREATE TABLE IF NOT EXISTS us_middle_windows(slug TEXT PRIMARY KEY, gapBps REAL NOT NULL, priced INTEGER DEFAULT 0, bestCost REAL)'
+  );
+  db.exec(
+    'CREATE TABLE IF NOT EXISTS us_closing_windows(slug TEXT PRIMARY KEY, closeAt INTEGER NOT NULL, attempts INTEGER DEFAULT 0, usable INTEGER DEFAULT 0)'
+  );
+  const watchClose = db.prepare(
+      'INSERT OR IGNORE INTO us_closing_windows(slug,closeAt) VALUES(?,?)'
+    ),
+    tryClose = db.prepare(
+      'UPDATE us_closing_windows SET attempts=attempts+1 WHERE slug=?'
+    ),
+    sawClose = db.prepare(
+      'UPDATE us_closing_windows SET usable=usable+1 WHERE slug=?'
+    );
   const log =
     db.prepare(`INSERT INTO us_samples VALUES(?,?,1,?,?,?) ON CONFLICT(slug) DO UPDATE SET
     checks=checks+1,last10=last10+excluded.last10,pairChecks=pairChecks+excluded.pairChecks,
     minCost=CASE WHEN excluded.minCost IS NULL THEN minCost WHEN minCost IS NULL THEN excluded.minCost ELSE min(minCost,excluded.minCost) END`);
   const io = new Transport({ ...config, maxHttpAgeSeconds: 2 });
   let cached = null,
+    limitBackoff = 0,
     lastSettlement = 0;
   while (!stop()) {
     let delay = 2000;
@@ -180,6 +210,7 @@ export async function observeUS({ db, config, stop, status }) {
         slug = usSlug(start);
       const aligned = end % 900 === 0;
       if (!cached || cached.start !== start) {
+        watchClose.run(slug, end * 1000);
         const m = (await usPublic('/v1/market/slug/' + slug)).market,
           terms = openingTerms(m, start);
         if (
@@ -188,15 +219,41 @@ export async function observeUS({ db, config, stop, status }) {
           m.feeCoefficient !== 0.095
         )
           throw Error('US listing, rules or fee awaiting verification');
-        const k = aligned ? await pairMarket(io, end) : null;
-        if (aligned && !k) throw Error('Awaiting matching Kalshi market');
         cached = {
           start,
           slug,
           rate: m.feeCoefficient,
           strike: Number(terms.priceToBeat.value),
-          k
+          k: null,
+          nextKalshi: 0
         };
+        status.kalshiError = null;
+      }
+      if (
+        aligned &&
+        !cached.k &&
+        now >= cached.nextKalshi &&
+        end * 1000 - now > 14000
+      ) {
+        cached.nextKalshi = now + 10000;
+        const k = await pairMarket(io, end).catch((e) => {
+          status.kalshiError = e.message;
+          return null;
+        });
+        if (k) {
+          cached.k = k;
+          status.kalshiError = null;
+          cached.gapBps =
+            (10000 * Math.abs(cached.strike - k.floor_strike)) / k.floor_strike;
+          if (
+            Number.isFinite(cached.gapBps) &&
+            k.floor_strike > 0 &&
+            Date.now() < start * 1000 + 30000
+          )
+            db.prepare(
+              'INSERT OR IGNORE INTO us_middle_windows(slug,gapBps) VALUES(?,?)'
+            ).run(slug, cached.gapBps);
+        }
       }
       const left = end * 1000 - Date.now(),
         { k, rate, strike } = cached;
@@ -216,9 +273,23 @@ export async function observeUS({ db, config, stop, status }) {
       } else {
         const snapshot = async () => {
           const begin = Date.now();
+          const inClosingWindow =
+            begin >= end * 1000 - 10000 && begin < end * 1000;
+          if (inClosingWindow) tryClose.run(slug);
           const [pb, kb] = await Promise.all([
             usPublic('/v1/markets/' + slug + '/book'),
-            k ? io.get('/markets/' + k.ticker + '/orderbook?depth=100') : null
+            k
+              ? io.get('/markets/' + k.ticker + '/orderbook?depth=100').then(
+                  (r) => {
+                    status.kalshiError = null;
+                    return r;
+                  },
+                  (e) => {
+                    status.kalshiError = e.message;
+                    return null;
+                  }
+                )
+              : null
           ]);
           const finish = Date.now();
           const bookTime = Date.parse(pb.marketData?.transactTime);
@@ -234,6 +305,7 @@ export async function observeUS({ db, config, stop, status }) {
           }
           const us = usAsks(pb.marketData, slug);
           if (!us) return null;
+          if (inClosingWindow) sawClose.run(slug);
           return {
             begin,
             finish,
@@ -242,7 +314,7 @@ export async function observeUS({ db, config, stop, status }) {
               begin >= end * 1000 - 10000
                 ? eligibleSingle(us, rate, slug)
                 : null,
-            pair: k
+            pair: kb
               ? boundedPair(
                   us,
                   kAsks(kb.body),
@@ -256,6 +328,7 @@ export async function observeUS({ db, config, stop, status }) {
           };
         };
         const a = await snapshot();
+        limitBackoff = 0;
         if (a) {
           const inside = a.begin >= end * 1000 - 10000;
           log.run(
@@ -265,7 +338,12 @@ export async function observeUS({ db, config, stop, status }) {
             Number(Boolean(a.pair)),
             a.pair?.cost ?? null
           );
-          if (a.one || a.pair?.cost < units) {
+          if (a.pair && cached.gapBps >= 20 && a.finish < start * 1000 + 30000)
+            db.prepare(
+              'UPDATE us_middle_windows SET priced=priced+1, bestCost=min(COALESCE(bestCost,?),?) WHERE slug=?'
+            ).run(a.pair.cost, a.pair.cost, slug);
+          const firstStrategy = pairStrategy(a, start, cached.gapBps);
+          if (a.one || firstStrategy) {
             await sleep(1000);
             const b = await snapshot();
             if (b && b.bookTime > a.bookTime && !stop()) {
@@ -285,8 +363,8 @@ export async function observeUS({ db, config, stop, status }) {
                   depth: Math.min(a.one.depth, b.one.depth)
                 });
               if (
-                a.pair?.cost < units &&
-                b.pair?.cost < units &&
+                firstStrategy &&
+                firstStrategy === pairStrategy(b, start, cached.gapBps) &&
                 b.pair.legs.every(
                   (l, i) =>
                     l.side === a.pair.legs[i].side &&
@@ -297,8 +375,14 @@ export async function observeUS({ db, config, stop, status }) {
                 try {
                   b.pair.legs.forEach((leg, i) =>
                     addPaper(db, {
-                      id: 'cross-us/' + slug + '/' + leg.side,
-                      strategy: paired,
+                      id:
+                        (firstStrategy === paired
+                          ? 'cross-us/'
+                          : 'cross-middle/') +
+                        slug +
+                        '/' +
+                        leg.side,
+                      strategy: firstStrategy,
                       at,
                       closeAt,
                       ...leg,
@@ -330,6 +414,11 @@ export async function observeUS({ db, config, stop, status }) {
       status.state = 'Retrying public data';
       status.error = e.message;
       delay = 2000;
+      if (e.status === 429) {
+        limitBackoff = Math.min(120000, Math.max(10000, limitBackoff * 2));
+        delay = Math.max(limitBackoff, e.retryAfterMs || 0);
+        status.error += ' · retry after ' + Math.ceil(delay / 1000) + 's';
+      }
     }
     status.at = new Date().toISOString();
     await sleep(delay);

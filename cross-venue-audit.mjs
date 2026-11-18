@@ -64,14 +64,34 @@ for (let t = start; t < end; t += 86400) {
             kFinal = Number(k.expiration_value);
           if (![pmFinal, kFinal].every((x) => Number.isFinite(x) && x > 0))
             throw Error('Invalid settlement value');
+          const pmStrike = Number(terms.priceToBeat.value),
+            kStrike = k.floor_strike;
+          const prices = JSON.parse(m.outcomePrices).map(Number),
+            outcomes = JSON.parse(m.outcomes);
+          if (
+            k.strike_type !== 'greater_or_equal' ||
+            !(kStrike > 0) ||
+            !prices.includes(0) ||
+            !prices.includes(1) ||
+            prices.length !== 2 ||
+            outcomes[prices.indexOf(1)]?.toLowerCase() !==
+              (pmFinal >= pmStrike ? 'yes' : 'no') ||
+            k.result !== (kFinal >= kStrike ? 'yes' : 'no')
+          )
+            return {
+              close,
+              excluded: 'Binary payout does not match published terms'
+            };
           return {
             close,
             slug,
             ticker: k.ticker,
             pmFinal,
             kFinal,
-            pmStrike: Number(terms.priceToBeat.value),
-            kStrike: k.floor_strike
+            pmStrike,
+            kStrike,
+            pmWonUp: pmFinal >= pmStrike,
+            kWonUp: k.result === 'yes'
           };
         })
       ))
@@ -85,6 +105,8 @@ const out = new URL(
 );
 await fs.writeFile(out, JSON.stringify(rows));
 const valid = rows.filter((r) => !r.excluded);
+if (new Set(rows.map((r) => r.close)).size !== rows.length)
+  throw Error('Duplicate closing window');
 console.log(
   rows.length,
   valid.length,
@@ -94,6 +116,26 @@ console.log(
   valid.filter((r) => r.pmStrike !== r.kStrike).length,
   'different strikes'
 );
+for (let from = start; from < end; from += 7 * 86400) {
+  const wide = valid.filter(
+    (r) =>
+      r.close > from &&
+      r.close <= from + 7 * 86400 &&
+      (10000 * Math.abs(r.pmStrike - r.kStrike)) / r.kStrike >= 20
+  );
+  const payouts = wide.map((r) =>
+    r.pmStrike < r.kStrike
+      ? Number(r.pmWonUp) + Number(!r.kWonUp)
+      : Number(!r.pmWonUp) + Number(r.kWonUp)
+  );
+  console.log(
+    new Date(from * 1000).toISOString(),
+    '20+ basis point windows',
+    wide.length,
+    'zero, one and two winning legs',
+    [0, 1, 2].map((n) => payouts.filter((p) => p === n).length)
+  );
+}
 if (process.argv.includes('--chart-check')) {
   let tested = 0,
     matched = 0;

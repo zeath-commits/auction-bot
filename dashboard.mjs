@@ -398,9 +398,19 @@ const server = http.createServer((req, res) => {
           pairStatus,
           lateAuctionStatus,
           usBitcoinStatus,
+          closingCoverage: db
+            .prepare(
+              'SELECT COUNT(*) AS closed, COUNT(CASE WHEN attempts>0 THEN 1 END) AS attempted, COUNT(CASE WHEN usable>0 THEN 1 END) AS usable FROM us_closing_windows WHERE closeAt<=?'
+            )
+            .get(Date.now()),
           usCoverage: db
             .prepare(
               'SELECT COUNT(*) AS windows,COALESCE(SUM(last10),0) AS last10,COALESCE(SUM(pairChecks),0) AS paired,MIN(minCost) AS minCost FROM us_samples'
+            )
+            .get(),
+          middleCoverage: db
+            .prepare(
+              'SELECT COUNT(*) AS aligned, COUNT(CASE WHEN gapBps>=20 THEN 1 END) AS wide, COUNT(CASE WHEN priced>0 THEN 1 END) AS priced, MIN(bestCost) AS best FROM us_middle_windows'
             )
             .get(),
           strategies,

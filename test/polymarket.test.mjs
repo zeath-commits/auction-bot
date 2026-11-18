@@ -1,7 +1,27 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { scoreWindow } from '../polymarket-replay.mjs';
-import { usAsks, boundedPair } from '../us-bitcoin-paper.mjs';
+import { usAsks, boundedPair, pairStrategy } from '../us-bitcoin-paper.mjs';
+
+test('wide-gap paper entry accepts only the predeclared opening time, gap and premium', () => {
+  const t = 1794978000,
+    at = t * 1000;
+  const snap = (cost, begin = at, finish = at + 1000) => ({
+    pair: { cost },
+    begin,
+    finish
+  });
+  assert.equal(pairStrategy(snap(13), t, 20), 'cross_us_middle');
+  assert.equal(pairStrategy(snap(10), t, 20), 'cross_us_middle');
+  assert.equal(pairStrategy(snap(13.0001), t, 30), null);
+  assert.equal(pairStrategy(snap(12), t, 19.999), null);
+  assert.equal(pairStrategy(snap(12, at - 1), t, 30), null);
+  assert.equal(pairStrategy(snap(12, at + 29800, at + 30000), t, 30), null);
+  assert.equal(
+    pairStrategy(snap(9.99, at + 31000, at + 33000), t, 0.5),
+    'cross_us_btc'
+  );
+});
 
 test('international replay counts the first in-window buyer and excludes post-close prints', () => {
   const t = 1800000000,

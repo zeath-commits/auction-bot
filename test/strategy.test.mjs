@@ -11,32 +11,33 @@ import {
   settle
 } from '../strategy-monitor.mjs';
 
-test('auction pair return waits for both settlements', () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'paper-pair-'));
-  const db = openLedger(dir);
-  try {
-    for (const side of ['yes', 'no'])
-      addPaper(db, {
-        id: 'auction-pair/TEST/' + side,
-        strategy: 'auction_pair',
-        ticker: side,
-        side,
-        at: '2026-01-01',
-        quantity: 1,
-        price: 0.44,
-        fees: 0.0173
-      });
-    db.prepare("UPDATE paper SET payout=1 WHERE side='yes'").run();
-    assert.ok(paperRows(db).every((r) => r.net === null));
-    db.prepare("UPDATE paper SET payout=0 WHERE side='no'").run();
-    assert.ok(
-      Math.abs(paperRows(db).reduce((n, r) => n + r.net, 0) - 0.0854) < 1e-8
-    );
-  } finally {
-    db.close();
-    fs.rmSync(dir, { recursive: true, force: true });
-  }
-});
+for (const strategy of ['auction_pair', 'cross_us_btc', 'cross_us_middle'])
+  test(strategy + ' return waits for both settlements', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'paper-pair-'));
+    const db = openLedger(dir);
+    try {
+      for (const side of ['yes', 'no'])
+        addPaper(db, {
+          id: strategy + '/TEST/' + side,
+          strategy,
+          ticker: side,
+          side,
+          at: '2026-01-01',
+          quantity: 1,
+          price: 0.44,
+          fees: 0.0173
+        });
+      db.prepare("UPDATE paper SET payout=1 WHERE side='yes'").run();
+      assert.ok(paperRows(db).every((r) => r.net === null));
+      db.prepare("UPDATE paper SET payout=0 WHERE side='no'").run();
+      assert.ok(
+        Math.abs(paperRows(db).reduce((n, r) => n + r.net, 0) - 0.0854) < 1e-8
+      );
+    } finally {
+      db.close();
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
 
 test('BTC strategies require repeatable size and settle each paper variant only once', async () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'btc-paper-')),
