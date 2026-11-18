@@ -4,7 +4,7 @@ import path from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { Transport } from './transport.mjs';
 import { overlappingAskLevels } from './core.mjs';
-import { chartProjection, referencePrices } from './bitcoin-reference.mjs';
+import { chartProjection, referencePrices, readClosingMargin, marginAllows } from './bitcoin-reference.mjs';
 import { observeMakerQueue, reviewMakerQueue } from './btc-maker-study.mjs';
 
 export const strategies = {
@@ -106,7 +106,7 @@ function independentBtcBooks(first,second) {
   ) && asOf(second) > asOf(first);
 }
 
-function recordBandDepth(db,market,close,first,second,multiplier,inBand) {
+function recordBandDepth(db,market,close,first,second,multiplier,inBand,margin) {
   const at=second.receivedAt, ticker=market.ticker, strategy='btc_band1000';
   const asOf=read=>Date.parse(read.httpDate)-1000*Number(read.cacheAge??0);
   const fresh=independentBtcBooks(first,second) && asOf(first)>=close-10000 && asOf(second)<close;
@@ -115,12 +115,13 @@ function recordBandDepth(db,market,close,first,second,multiplier,inBand) {
   const levels=side ? overlappingAskLevels(first.body,second.body,side.toUpperCase(),99)
     .filter(l=>inBand(l.price)&&l.quantity>0) : [];
   const depth=levels.reduce((sum,l)=>sum+l.quantity,0);
-  const proof={firstAt:first.receivedAt,secondAt:at,firstAsOf:asOf(first),secondAsOf:asOf(second),a,b,levels};
+  const permitted=marginAllows(margin,side,close,market.floor_strike,second.requestedAt,at);
+  const proof={firstAt:first.receivedAt,secondAt:at,firstAsOf:asOf(first),secondAsOf:asOf(second),a,b,levels,margin,permitted};
   db.exec('BEGIN IMMEDIATE');
   try {
     db.prepare('INSERT OR IGNORE INTO btc_band_depth VALUES(?,?,?,?,?,?)')
       .run(ticker,at,Number(fresh),side,depth,JSON.stringify(proof));
-    if(depth>=1000) {
+    if(depth>=1000 && permitted) {
       let remaining=1000, principal=0, feeCents=0;
       for(const {price,quantity} of levels) {
         const size=Math.min(remaining,quantity);
@@ -142,7 +143,7 @@ function recordBandDepth(db,market,close,first,second,multiplier,inBand) {
   }
 }
 
-function recordLargeFavorite(db, market, close, first, second, multiplier) {
+function recordLargeFavorite(db, market, close, first, second, multiplier, margin) {
   if (first.requestedAt < close - 10000) return;
   const at = second.receivedAt;
   const offer = read => bestMatchingQuote(read.body, price => price === 0.999);
@@ -153,6 +154,7 @@ function recordLargeFavorite(db, market, close, first, second, multiplier) {
   if (fresh) observeMakerQueue(db,market,first,second,close);
   const quantity = 100;
   if (!fresh || !a || !b || a.side !== b.side || Math.min(a.size,b.size) < quantity) return;
+  if (!marginAllows(margin,b.side,close,market.floor_strike,second.requestedAt,at)) return;
   const fees = Math.ceil(100 * 0.07 * multiplier * quantity * b.price * (1-b.price) - 1e-9) / 100;
   const cost = quantity * b.price + fees;
   const cash = db.prepare("SELECT 1000 + COALESCE(SUM(COALESCE(payout,0)-quantity*price-fees),0) AS balance FROM paper WHERE strategy='btc999'").get().balance;
@@ -184,7 +186,7 @@ export async function captureChart(db, market, read = referencePrices, now = Dat
   }
 }
 
-export function recordBtc(db, market, first, second, multiplier) {
+export function recordBtc(db, market, first, second, multiplier, margin = null) {
   const close = Date.parse(market.close_time);
   const observed = second.receivedAt;
   if (
@@ -202,9 +204,10 @@ export function recordBtc(db, market, first, second, multiplier) {
     `INSERT INTO windows VALUES(?,?,1,?,?) ON CONFLICT(ticker) DO UPDATE SET
     checks=checks+1,lastCheck=excluded.lastCheck`
   ).run(market.ticker, close, observed, observed);
-  recordLargeFavorite(db, market, close, first, second, multiplier);
+  recordLargeFavorite(db, market, close, first, second, multiplier, margin);
   function recordOffer(strategy, seconds, minimumSize, a, b) {
     if (!a || !b || b.side !== a.side || b.price > a.price) return;
+    if (!marginAllows(margin,b.side,close,market.floor_strike,second.requestedAt,observed)) return;
     const depth = Math.min(a.size, b.size);
     if (first.requestedAt < close - seconds * 1000 || depth < minimumSize) return;
     const fee =
@@ -227,7 +230,7 @@ export function recordBtc(db, market, first, second, multiplier) {
   const favoriteB = bestFavorite(second.body);
   recordOffer('btc60', 60, 1, favoriteA, favoriteB);
   const inBand = p => p >= 0.98 && p <= 0.99;
-  if (first.requestedAt >= close-10000) recordBandDepth(db,market,close,first,second,multiplier,inBand);
+  if (first.requestedAt >= close-10000) recordBandDepth(db,market,close,first,second,multiplier,inBand,margin);
   const bandA = bestMatchingQuote(first.body, inBand), bandB = bestMatchingQuote(second.body, inBand);
   recordOffer('btc_band60', 60, 1, bandA, bandB);
   if (first.requestedAt >= close-10000 && independentBtcBooks(first,second))
@@ -375,9 +378,14 @@ export async function observe({ db, config, stop, status }) {
         if (left <= 14000) captureChart(db, market).catch(e => { status.chartError = e.message; });
         const route = '/markets/' + market.ticker + '/orderbook?depth=100';
         const first = await io.get(route);
-        await sleep(1000);
+        const closing=Date.parse(market.close_time);
+        const read=market.strike_type==='greater_or_equal' && market.rules_primary?.includes('BRTI')
+          ? readClosingMargin(closing,market.floor_strike).catch(e=>{status.marginError=e.message;return null;}) : null;
+        const [margin]=await Promise.all([read,sleep(1000)]);
+        status.margin=margin;
+        if(margin) delete status.marginError;
         const second = await io.get(route);
-        recordBtc(db, market, first, second, fee);
+        recordBtc(db, market, first, second, fee, margin);
         status.state = 'Sampling final minute';
         delay = 250;
       } else {

@@ -36,6 +36,11 @@
   ],
   "studies": [
     {
+      "market": "Losing Bitcoin purchases in the final ten seconds",
+      "test": "Rechecked every 98–99¢ buyer execution in the last ten seconds of two markets previously known to contain a losing purchase. Used the first single execution of at least 1,000 contracts on either side to determine the historical rule’s entry.",
+      "finding": "On October 16 at 5:15 a.m. Eastern, the first qualifying purchase was 1,001 YES at 98.2¢ with 5.98 seconds left. The final average was $82,163.26 against $82,163.44 required. A 1,000-contract entry cost $983.24 including modeled fees and paid zero. On October 31 at 10:15 a.m. Eastern, the first qualifying purchase was 3,027 NO at 98¢ and won. In that same market 5,775.13 YES contracts traded at 98–99¢ and lost, including 2,039.22 contracts at a single timestamp, although the largest individual losing print was only 647.03. A backtest requiring a single large print can select a different side from one that combines depth across price levels."
+    },
+    {
       "market": "A second large Bitcoin purchase before close",
       "test": "Rechecked every one of the 35 markets with a 1,000-contract buyer at 98–99¢ in the last ten seconds, November 4 through 5:45 p.m. Eastern November 18. Looked for a second non-block buyer of at least 1,000 on the same side at the same or a cheaper price, at least 1.2 seconds later and still before close.",
       "finding": "Four of 35 markets had a second qualifying print. The observed gaps were 2.28–4.02 seconds. Buying only at those four second prints modeled $57.71 net after fees and before operating costs. The remaining 31 had no comparable second purchase in the window. Public trades cannot establish how long unfilled offers persisted. The separate live paper test requires 1,000 contracts at matching prices across two fresh order books and enough available paper cash to purchase them."

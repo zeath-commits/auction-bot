@@ -1,5 +1,5 @@
 import { setTimeout as sleep } from 'node:timers/promises';
-import { usSlug, usPublic, openingTerms } from './bitcoin-reference.mjs';
+import { usSlug, usPublic, openingTerms, readClosingMargin, marginAllows } from './bitcoin-reference.mjs';
 import { Transport } from './transport.mjs';
 import { askLevels } from './core.mjs';
 import { addPaper } from './strategy-monitor.mjs';
@@ -344,7 +344,7 @@ export async function observeUS({ db, config, stop, status }) {
             ).run(a.pair.cost, a.pair.cost, slug);
           const firstStrategy = pairStrategy(a, start, cached.gapBps);
           if (a.one || firstStrategy) {
-            await sleep(1000);
+            const [margin]=await Promise.all([a.one ? readClosingMargin(end*1000,strike).catch(()=>null) : null,sleep(1000)]);
             const b = await snapshot();
             if (b && b.bookTime > a.bookTime && !stop()) {
               const at = new Date(b.finish).toISOString(),
@@ -352,7 +352,8 @@ export async function observeUS({ db, config, stop, status }) {
               if (
                 a.one &&
                 b.one?.side === a.one.side &&
-                b.one.price <= a.one.price
+                b.one.price <= a.one.price &&
+                marginAllows(margin,b.one.side,closeAt,strike,b.begin,b.finish)
               )
                 addPaper(db, {
                   id: single + '/' + slug,

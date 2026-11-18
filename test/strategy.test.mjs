@@ -11,8 +11,33 @@ import {
   recordBtc,
   settle
 } from '../strategy-monitor.mjs';
-import { chartProjection } from '../bitcoin-reference.mjs';
+import { chartProjection, closingMargin, marginAllows } from '../bitcoin-reference.mjs';
 import { makerQueue, observeMakerQueue, reviewMakerQueue } from '../btc-maker-study.mjs';
+
+function recordWithMargin(db,market,first,second,rate,side='yes') {
+  const strike=market.floor_strike??100, price=strike*(side==='yes'?1.01:0.99);
+  const proof={strike,closeMs:Date.parse(market.close_time),projected:price,spot:price,
+    lastAt:second.requestedAt-1200,requestedAt:second.requestedAt-100,receivedAt:second.requestedAt-80};
+  recordBtc(db,{...market,floor_strike:strike},first,second,rate,proof);
+}
+
+test('closing BTC margin requires a fresh spot and projected settlement on the chosen side',()=>{
+  const end=1000, strike=55500, at=(end-8)*1000+100;
+  const ticks=price=>new Map(Array.from({length:52},(_,i)=>[end-60+i,price]));
+  const margin=price=>({...closingMargin(ticks(price),end*1000,strike,at),receivedAt:at+150});
+  const passes=(m,side='yes',decision=at+1000)=>marginAllows(m,side,end*1000,strike,at+200,decision);
+  assert.equal(passes(margin(55555)),false);
+  assert.equal(passes(margin(55583.25)),true);
+  assert.equal(passes({...margin(55600),spot:55530}),false);
+  assert.equal(passes({...margin(55600),projected:55530}),false);
+  assert.equal(passes(margin(55400),'no'),true);
+  assert.equal(passes(margin(55400),'yes'),false);
+  assert.equal(passes(null),false);
+  assert.equal(passes(margin(55600),'yes',at+5000),false);
+  assert.equal(passes({...margin(55600),receivedAt:at+300}),false);
+  const partial=ticks(55600);partial.delete(end-22);
+  assert.equal(closingMargin(partial,end*1000,strike,at),null);
+});
 
 test('chart-confirmed BTC entries use candles and receipts available before the quote', async () => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'bitcoin-chart-'));
@@ -38,9 +63,9 @@ test('chart-confirmed BTC entries use candles and receipts available before the 
     const snap = ms => ({requestedAt:ms,receivedAt:ms+30,
       body:{orderbook_fp:{yes_dollars:[],no_dollars:[['0.0200','1.00']]}}});
     const entered = () => paperRows(db).filter(r=>r.strategy==='btc_chart10');
-    recordBtc(db,market,snap(close-9000),snap(close-7800),1);
+    recordWithMargin(db,market,snap(close-9000),snap(close-7800),1);
     assert.equal(entered().length,0);
-    recordBtc(db,market,snap(close-7000),snap(close-5800),1);
+    recordWithMargin(db,market,snap(close-7000),snap(close-5800),1);
     assert.equal(entered().length,1);
     await captureChart(db,market,async () => { reads++; },() => close-5000);
     assert.equal(reads,1);
@@ -101,7 +126,7 @@ test('BTC strategies require repeatable size and settle each paper variant only 
         }
       }
     });
-    const enter = (a, b) => recordBtc(db, market, a, b, 1);
+    const enter = (a, b) => recordWithMargin(db, market, a, b, 1);
     const rows = () =>
       db.prepare('SELECT * FROM paper ORDER BY strategy').all();
     enter(book(close - 12000), book(close - 10900, '0.0100')); // offer worsened
@@ -148,7 +173,7 @@ test('BTC strategies require repeatable size and settle each paper variant only 
       return snapshot;
     };
     const candidate = { ...market, ticker: 'KXBTC15M-UNDERDOG' };
-    const recordCheap = (a,b) => recordBtc(db, candidate, a, b, 1);
+    const recordCheap = (a,b) => recordWithMargin(db, candidate, a, b, 1, 'no');
     recordCheap(cheap(close-6000,'0.9900'), cheap(close-4500,'0.9800'));
     recordCheap(cheap(close-6000,'0.9800'), cheap(close-4500,'0.9800','0.99'));
     assert.equal(rows().length, 4);
@@ -162,16 +187,16 @@ test('BTC strategies require repeatable size and settle each paper variant only 
     }) });
     assert.equal(cheapRows()[0].payout, 1);
     const subcent = {...market, ticker:'KXBTC15M-SUBCENT'};
-    recordBtc(db, subcent, book(close-12000,'0.0140'), book(close-10900,'0.0150'), 1);
+    recordWithMargin(db, subcent, book(close-12000,'0.0140'), book(close-10900,'0.0150'), 1);
     assert.deepEqual(rows().filter(r => r.ticker === subcent.ticker).map(r => [r.strategy,r.price,r.fees]),
       [['btc_band60',0.985,0.0011]]);
     const earlier=book(close-7000,'0.0140'), later=book(close-5000,'0.0150');
     earlier.httpDate=new Date(earlier.requestedAt).toUTCString();
     later.httpDate=earlier.httpDate;
-    recordBtc(db, subcent, earlier, later, 1);
+    recordWithMargin(db, subcent, earlier, later, 1);
     assert.equal(rows().filter(r=>r.strategy==='btc_band10').length,0);
     later.httpDate=new Date(later.requestedAt).toUTCString();
-    recordBtc(db, subcent, earlier, later, 1);
+    recordWithMargin(db, subcent, earlier, later, 1);
     assert.deepEqual(rows().filter(r=>r.strategy==='btc_band10').map(r=>[r.ticker,r.price]),[[subcent.ticker,0.985]]);
   } finally {
     db.close();
@@ -189,21 +214,23 @@ test('1,000-contract closing test matches depth by price, charges fees and reser
     const first=book(close-8000,'500.75','650');
     const second=book(close-6000,'460','600');
     const rows=()=>paperRows(db).filter(r=>r.strategy==='btc_band1000');
-    recordBtc(db,market,first,{...second,httpDate:first.httpDate},1);
-    recordBtc(db,market,first,book(close-5000,'349.99','652.78'),1);
+    recordBtc(db,{...market,floor_strike:55500},first,second,1);
     assert.equal(rows().length,0);
-    recordBtc(db,market,first,second,1);
-    recordBtc(db,market,first,second,1);
+    recordWithMargin(db,market,first,{...second,httpDate:first.httpDate},1);
+    recordWithMargin(db,market,first,book(close-5000,'349.99','652.78'),1);
+    assert.equal(rows().length,0);
+    recordWithMargin(db,market,first,second,1);
+    recordWithMargin(db,market,first,second,1);
     assert.equal(rows().length,1);
     assert.equal(rows()[0].depth,1060);
     assert.equal(rows()[0].quantity,1000);
     assert.ok(Math.abs(rows()[0].price-(460*.982+540*.988)/1000)<1e-9);
     assert.equal(rows()[0].fees,1.02);
     const next={...market,ticker:'KXBTC15M-NEXT'};
-    recordBtc(db,next,first,second,1);
+    recordWithMargin(db,next,first,second,1);
     assert.equal(rows().length,1);
     await settle(db,{get:async path=>({body:{market:{ticker:path.split('/').at(-1),status:'finalized',result:'yes'}}})});
-    recordBtc(db,next,book(close-4700,'500','600'),book(close-3200,'500','600'),1);
+    recordWithMargin(db,next,book(close-4700,'500','600'),book(close-3200,'500','600'),1);
     assert.equal(rows().length,2);
   } finally {
     db.close();
@@ -222,18 +249,18 @@ test('99.9-cent closing test requires fresh repeated depth and available paper c
       body:{orderbook_fp:{yes_dollars:[['0.9980','1200']],no_dollars:[['0.0010',size]]}}});
     const first=read(close-8000), second=read(close-6900);
     const rows=() => paperRows(db).filter(r=>r.strategy==='btc999');
-    recordBtc(db,market,first,{...second,httpDate:first.httpDate},1);
-    recordBtc(db,market,first,read(close-6500,'99.99'),1);
-    recordBtc(db,market,read(close-11000),read(close-9800),1);
+    recordWithMargin(db,market,first,{...second,httpDate:first.httpDate},1);
+    recordWithMargin(db,market,first,read(close-6500,'99.99'),1);
+    recordWithMargin(db,market,read(close-11000),read(close-9800),1);
     assert.equal(rows().length,0);
-    recordBtc(db,market,first,read(close-6300),1);
-    recordBtc(db,market,first,read(close-6100),1);
+    recordWithMargin(db,market,first,read(close-6300),1);
+    recordWithMargin(db,market,first,read(close-6100),1);
     assert.deepEqual(rows().map(r=>[r.side,r.quantity,r.fees,r.depth]),[['yes',100,0.01,100]]);
     assert.equal(db.prepare('SELECT SUM(fresh) AS n FROM btc_999_books').get().n,3);
     await settle(db,{get:async()=>({body:{market:{...market,status:'finalized',result:'no'}}})});
     assert.ok(Math.abs(rows()[0].net + 99.91)<1e-9);
     db.prepare("UPDATE paper SET quantity=1000,price=0.99 WHERE strategy='btc999'").run();
-    recordBtc(db,{...market,ticker:'KXBTC15M-NEW'},first,second,1);
+    recordWithMargin(db,{...market,ticker:'KXBTC15M-NEW'},first,second,1);
     assert.equal(rows().length,1);
   } finally {
     db.close();

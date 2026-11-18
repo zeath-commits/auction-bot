@@ -128,3 +128,41 @@ export function chartProjection(prices, close, strike) {
   const gapBps = 10000 * (mean - strike) / strike;
   return { mean, gapBps, side: mean >= strike ? 'yes' : 'no' };
 }
+
+// A provisional paper-trading threshold. The public chart is a proxy for BRTI.
+export const minimumClosingMarginBps = 15;
+export function closingMargin(prices, closeMs, strike, requestedAt) {
+  const end=closeMs/1000, from=end-60;
+  if(!Number.isSafeInteger(end)||!(strike>0)||!Number.isFinite(strike)||
+      requestedAt<from*1000||requestedAt>=closeMs)return null;
+  const latestComplete=Math.floor(requestedAt/1000)-1;
+  let last=latestComplete;
+  while(last>=from && !prices.has(last))last--;
+  if(last<from || requestedAt-last*1000>3500)return null;
+  let total=0;
+  for(let t=from;t<=last;t++){
+    const price=prices.get(t);
+    if(!Number.isFinite(price)||price<=0)return null;
+    total+=Math.round(price*100);
+  }
+  const spot=prices.get(last);
+  const projected=(total+(end-last-1)*Math.round(spot*100))/6000;
+  return {closeMs,strike,lastAt:last*1000,requestedAt,spot,projected,seconds:last-from+1};
+}
+
+export async function readClosingMargin(closeMs,strike) {
+  const requestedAt=Date.now(), end=closeMs/1000;
+  const through=Math.floor(requestedAt/1000)-1;
+  if(through<end-60 || through>=end)return null;
+  const prices=await referencePrices(end-60,through);
+  const margin=closingMargin(prices,closeMs,strike,requestedAt);
+  return margin && {...margin,receivedAt:Date.now()};
+}
+
+export function marginAllows(margin,side,closeMs,strike,bookStart,decisionAt) {
+  if(!margin || !['yes','no'].includes(side) || !(strike>0) || margin.closeMs!==closeMs || margin.strike!==strike ||
+      !(margin.lastAt < margin.requestedAt && margin.requestedAt <= margin.receivedAt && margin.receivedAt<=bookStart &&
+      bookStart<=decisionAt && decisionAt-margin.lastAt<=4500 && decisionAt<closeMs)) return false;
+  const direction=side==='yes'?1:-1;
+  return [margin.spot,margin.projected].every(p=>Number.isFinite(p)&&p>0&&direction*(p-strike)*10000>=strike*minimumClosingMarginBps);
+}

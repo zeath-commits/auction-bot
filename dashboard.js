@@ -98,6 +98,9 @@ function paper(d) {
       ).size
     ]
   ]);
+  if (selected.startsWith('btc') || selected === 'us_btc10') {
+    note('New directional BTC paper entries require both the latest public chart price and the projected 60-second average to clear the strike by 0.15% on the selected side. The projection holds the last observed price flat through close. Missing or stale prices skip the entry.');
+  }
   if (selected === 'btc_underdog')
     note('One paper contract per market at the first 1¢ or 2¢ ask in the final minute that holds or improves on a second book check. Net includes modeled taker fees.');
   if (selected === 'btc_band60')
