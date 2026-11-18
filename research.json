@@ -36,6 +36,11 @@
   ],
   "studies": [
     {
+      "market": "Bitcoin final-ten-second purchases in an earlier week",
+      "test": "Applied the same 98–99¢ price band, size requirements and fee calculation to all 664 finalized quarter-hour markets closing November 4–10 Eastern. Used the first qualifying public buyer execution per market, including fractional-cent prices.",
+      "finding": "At 1,000 contracts, 21 purchases qualified and all won, producing $280.14 of modeled net in this week. At 100 contracts, 27 purchases qualified and all won, producing $37.34. Across both date ranges, 35 of 1,400 markets had a qualifying 1,000-contract execution. The median first purchase was 7.955 seconds before close. Replaying the public purchases chronologically, paying modeled taker fees and releasing funds at exchange settlement, grew $1,000 to $1,463.48 before operating costs. Each purchase cost $981.38–$990.70. The current forward study records repeat visible offers at one contract and their displayed depth."
+    },
+    {
       "market": "Bitcoin at 98–99¢ in the final ten seconds",
       "test": "Across 736 finalized 15-minute markets closing November 11 through 5:45 p.m. Eastern November 18, took the first non-block buyer execution in the final ten seconds at the required size, including fractional-cent prices. Modeled standard taker fees rounded up to a cent per purchase.",
       "finding": "At 100 contracts, 16 markets qualified and all won, giving $23.39 modeled net. At 1,000 contracts, 14 markets qualified and all won. Eight of these markets had a qualifying 1,000-contract purchase at exactly 98¢ or 99¢. Using $1,000 starting cash and crediting payouts at exchange settlement, the larger model spent $984.17–$990.70 per entry and ended at $1,183.34 before operating costs. A single lost entry would exceed all 14 gains combined. A separate forward paper strategy now records one contract and visible depth when two fresh order books agree on an offer in that final window."
