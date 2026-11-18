@@ -8,12 +8,14 @@ import { addPaper } from './strategy-monitor.mjs';
 
 import { initSoldStudy, scanSold } from './sothebys-sold.mjs';
 
+import { saleTiming } from './sale-timing.mjs';
+
 const calendar = JSON.parse(
   fs.readFileSync(new URL('./sothebys-bid-calendar.json', import.meta.url))
 );
 const strategy = 'sothebys_live_bid';
 
-export function extractSothebys(html, c) {
+export function extractSothebys(html, c, detailTarget = null) {
   const raw = html.match(
     /<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/
   );
@@ -21,10 +23,12 @@ export function extractSothebys(html, c) {
   const p = JSON.parse(raw[1]).props?.pageProps;
   if (p?.auctionId !== c.auctionId || !p.apolloCache)
     throw Error('Auction identity changed');
-  return c.targets.map((t) => {
+  if (detailTarget && p.lotId !== detailTarget.id)
+    throw Error('Lot page identity changed');
+  return (detailTarget ? [detailTarget] : c.targets).map((t) => {
     const matches = Object.values(p.apolloCache).filter(
       (x) =>
-        x.__typename === 'LotCard' &&
+        x.__typename === (detailTarget ? 'LotV2' : 'LotCard') &&
         x.lotNumber?.lotDisplayNumber === t.lot &&
         x.sapAuctionSaleNumber === c.sale
     );
@@ -34,15 +38,19 @@ export function extractSothebys(html, c) {
       card.lotId !== t.id ||
       card.title !== t.title ||
       card.creatorsDisplayTitle !== t.artist ||
-      c.url + '/' + card.slug?.lotSlug !== t.url
+      c.url + '/' + (detailTarget ? card.slug : card.slug?.lotSlug) !== t.url
     )
       throw Error('Lot identity changed: ' + t.lot);
     const state = p.apolloCache[card.bidState?.__ref];
     if (!state) throw Error('Bid state missing: ' + t.lot);
+    const withdrawal = detailTarget
+      ? p.apolloCache[card.withdrawnState?.__ref]?.state
+      : card.withdrawnState?.state;
+    const included = ['NotAffected', 'UnWithdrawn'].includes(withdrawal);
     const phase = state.bidTypeV2?.liveBidPhase,
       price = Number(state.currentBidV2?.amount);
     const eligible =
-      card.withdrawnState?.state === 'NotAffected' &&
+      included &&
       state.isClosed === false &&
       phase === 'Live' &&
       state.sold?.isSold === false &&
@@ -52,15 +60,23 @@ export function extractSothebys(html, c) {
       Number.isSafeInteger(price) &&
       price > 0;
     const final = state.sold?.premiums?.finalPriceV2;
+    const auction = detailTarget && p.apolloCache[card.auction?.__ref];
+    const inheritedUSD =
+      auction?.auctionId === c.auctionId &&
+      auction.currency === 'USD' &&
+      auction.currencyV2 === 'USD';
+    const currency = final?.currency ?? (inheritedUSD ? 'USD' : null);
     const closed =
       state.isClosed === true &&
       phase === 'Closed' &&
-      card.withdrawnState?.state === 'NotAffected' &&
+      included &&
       state.sold?.__typename === 'ResultVisible';
     const salePrice =
       closed &&
       state.sold.isSold === true &&
-      final?.currency === 'USD' &&
+      currency === 'USD' &&
+      final != null &&
+      Number.isSafeInteger(Number(final.amount)) &&
       Number(final.amount) > 0
         ? Number(final.amount)
         : null;
@@ -69,7 +85,7 @@ export function extractSothebys(html, c) {
       lot: t.lot,
       phase,
       closed: state.isClosed,
-      withdrawn: card.withdrawnState?.state,
+      withdrawn: withdrawal,
       reserveMet: state.reserveMet,
       count: state.numberOfBids,
       bid: eligible ? price : null,
@@ -79,9 +95,13 @@ export function extractSothebys(html, c) {
   });
 }
 
-async function source() {
+export function sourceGeneration(at, httpDate, age) {
+  // The CDN can advance Date and Age together while returning the same cached page.
+  return Math.min(httpDate, Math.floor(at / 1000) * 1000 - age * 1000);
+}
+export async function readSalePage(target = null) {
   const start = Date.now();
-  const r = await fetch(calendar.url, {
+  const r = await fetch(target?.url ?? calendar.url, {
     cache: 'no-store',
     redirect: 'error',
     signal: AbortSignal.timeout(7500),
@@ -90,15 +110,21 @@ async function source() {
   if (!r.ok) throw Error('Sotheby’s catalog HTTP ' + r.status);
   const data = await r.text(),
     at = Date.now(),
-    generation = Date.parse(r.headers.get('date')),
-    age = Number(r.headers.get('age') ?? 0);
+    httpDate = Date.parse(r.headers.get('date')),
+    age = Number(r.headers.get('age') ?? 0),
+    generation = sourceGeneration(at, httpDate, age);
   return {
     at,
+    requestedAt: start,
+    httpDate,
+    etag: r.headers.get('etag'),
     generation,
     age,
     soldFresh:
       at - start <= 2000 &&
       Number.isFinite(generation) &&
+      httpDate <= at + 1000 &&
+      Number.isInteger(age) &&
       at - generation >= -1000 &&
       at - generation <= 120000 &&
       age >= 0 &&
@@ -106,11 +132,13 @@ async function source() {
     fresh:
       at - start <= 2000 &&
       Number.isFinite(generation) &&
+      httpDate <= at + 1000 &&
+      Number.isInteger(age) &&
       at - generation >= -1000 &&
       at - generation <= 6000 &&
       age >= 0 &&
       age <= 4,
-    lots: extractSothebys(data, calendar)
+    lots: extractSothebys(data, calendar, target)
   };
 }
 
@@ -156,7 +184,7 @@ export function confirmedBid(first, second, highPriceStudy = false) {
     second.strike === first.strike &&
     second.bid >= first.bid &&
     second.count >= first.count &&
-    second.generation > first.generation &&
+    second.generation - first.generation >= 2000 &&
     second.at - first.at >= 1000 &&
     second.at - first.at <= 30000 &&
     [first, second].every(
@@ -189,6 +217,8 @@ export async function observeSothebysBids({
     at: new Date().toISOString()
   });
   initSoldStudy(db);
+  const timing = saleTiming(db, calendar.targets);
+  status.timing = timing.summary();
   let previous = new Map(),
     previousSold = new Map();
   const deadline = Date.parse(calendar.settlementWatchEnd);
@@ -206,9 +236,35 @@ export async function observeSothebysBids({
       continue;
     }
     let delay = tail ? 60000 : 10000;
+    const remaining = tail ? [] : timing.remaining();
+    const ctx = { io, marketList, stop };
+    const timingErrors = [];
+    const track = (promise) =>
+      promise.catch((e) => {
+        timingErrors.push(e.message);
+      });
+    const reads = remaining.map((t) =>
+      track(readSalePage(t).then((r) => timing.record('lot', r, ctx)))
+    );
+
     try {
-      const s = await source(),
+      const s = await readSalePage(),
         next = new Map();
+      if (remaining.length)
+        reads.push(
+          track(
+            timing.record(
+              'catalog',
+              {
+                ...s,
+                lots: s.lots.filter((l) =>
+                  remaining.some((t) => t.event === l.event)
+                )
+              },
+              ctx
+            )
+          )
+        );
       let priced = 0,
         crossed = 0;
       db.prepare('INSERT OR IGNORE INTO sothebys_bid_scans VALUES(?,?,?)').run(
@@ -327,6 +383,9 @@ export async function observeSothebysBids({
       status.at = new Date().toISOString();
       delay = 60000;
     }
+    await Promise.all(reads);
+    status.timing = timing.summary();
+    status.timingError = timingErrors.join(' · ') || null;
     await sleep(delay);
   }
 }
@@ -339,7 +398,7 @@ if (
       fs.readFileSync(new URL('./config.example.json', import.meta.url))
     )
   );
-  const s = await source();
+  const s = await readSalePage();
   let n = 0;
   for (const t of calendar.targets) n += (await marketList(io, t)).length;
   console.log(

@@ -39,7 +39,7 @@ export function recordSoldBooks(
         q.amount <= 0 ||
         p.amount !== q.amount ||
         p.side !== q.side ||
-        p.generation >= q.generation ||
+        !(q.generation - p.generation >= 2000) ||
         q.at - p.at < 1000 ||
         q.at - p.at > maxGapMs
       )

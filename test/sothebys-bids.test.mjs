@@ -1,6 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { extractSothebys, confirmedBid } from '../sothebys-bids.mjs';
+import {
+  extractSothebys,
+  confirmedBid,
+  sourceGeneration
+} from '../sothebys-bids.mjs';
 import { bidWindows } from '../live-bid-replay.mjs';
 
 test('live crossing needs a matched lot, active bidding, and a strictly lower strike', () => {
@@ -60,6 +64,13 @@ test('live crossing needs a matched lot, active bidding, and a strictly lower st
   bid.sold.premiums = { finalPriceV2: { currency: 'USD', amount: '4200' } };
   assert.equal(read().salePrice, 4200);
   assert.equal(read().bid, null);
+  card.withdrawnState.state = 'UnWithdrawn';
+  assert.equal(read().salePrice, 4200);
+  for (const state of ['Withdrawn', 'Unknown', null]) {
+    card.withdrawnState.state = state;
+    assert.equal(read().salePrice, null);
+    assert.equal(read().explicitUnsold, false);
+  }
   card.lotId = 'different';
   assert.throws(read, /identity/);
 });
@@ -103,4 +114,78 @@ test('archived crossings expire and cannot bridge gaps or equality', () => {
   rows[3].tick++;
   assert.deepEqual(bidWindows(rows, 100, true), [[t + 41000, t + 50000]]);
   assert.equal(bidWindows(rows, 110, false).length, 0);
+});
+
+test('response Date advancing with CDN Age cannot reconfirm the same cached catalog', () => {
+  assert.equal(
+    sourceGeneration(42653, 43000, 4),
+    sourceGeneration(47369, 48000, 9)
+  );
+  assert.ok(
+    sourceGeneration(54000, 54000, 0) > sourceGeneration(47369, 48000, 9)
+  );
+});
+
+test('lot page requires the matched auction currency and a closed sale', () => {
+  const target = {
+    id: 'I',
+    event: 'E',
+    lot: '4',
+    url: 'https://www.sothebys.com/sale/art',
+    artist: 'A',
+    title: 'T'
+  };
+  const c = {
+    url: 'https://www.sothebys.com/sale',
+    sale: 'S',
+    auctionId: 'Auction',
+    targets: [target]
+  };
+  const lot = {
+    lotId: 'I',
+    __typename: 'LotV2',
+    lotNumber: { lotDisplayNumber: '4' },
+    title: 'T',
+    creatorsDisplayTitle: 'A',
+    slug: 'art',
+    sapAuctionSaleNumber: 'S',
+    auction: { __ref: 'auction' },
+    bidState: { __ref: 'b' },
+    withdrawnState: { __ref: 'withdrawal' }
+  };
+  const b = {
+    isClosed: true,
+    bidTypeV2: { liveBidPhase: 'Closed' },
+    sold: {
+      __typename: 'ResultVisible',
+      isSold: true,
+      premiums: { finalPriceV2: { amount: '1000' } }
+    }
+  };
+  const auction = { auctionId: 'Auction', currency: 'USD', currencyV2: 'USD' };
+  const page = {
+    auctionId: 'Auction',
+    lotId: 'I',
+    apolloCache: { lot, b, auction, withdrawal: { state: 'UnWithdrawn' } }
+  };
+  const read = () =>
+    extractSothebys(
+      '<script id="__NEXT_DATA__">' +
+        JSON.stringify({ props: { pageProps: page } }) +
+        '</script>',
+      c,
+      target
+    )[0];
+  assert.equal(read().salePrice, 1000);
+  auction.currencyV2 = 'EUR';
+  assert.equal(read().salePrice, null);
+  auction.currencyV2 = 'USD';
+  b.sold.premiums.finalPriceV2.currency = 'EUR';
+  assert.equal(read().salePrice, null);
+  delete b.sold.premiums.finalPriceV2.currency;
+  b.isClosed = false;
+  b.bidTypeV2.liveBidPhase = 'Live';
+  assert.equal(read().salePrice, null);
+  page.lotId = 'Different';
+  assert.throws(read, /identity/);
 });

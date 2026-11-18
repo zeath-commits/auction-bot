@@ -205,6 +205,38 @@ function paper(d) {
         view.append(p);
       }
   }
+  if (selected === 'sothebys_sold' && d.sothebysStatus?.timing) {
+    const rows = d.sothebysStatus.timing.filter((x) => x.catalog || x.lot);
+    const offer = (x) =>
+      x?.error
+        ? 'Quote unavailable'
+        : x?.best != null
+          ? money(x.best)
+          : x?.checked != null
+            ? 'No offer through 99¢'
+            : '—';
+    table(
+      'First observed sold price',
+      [
+        'Artwork',
+        'Catalog time',
+        'Best ask',
+        'Lot page time',
+        'Best ask',
+        'Lot page lead'
+      ],
+      rows.map((r) => [
+        r.title,
+        time(r.catalog?.at),
+        offer(r.catalog),
+        time(r.lot?.at),
+        offer(r.lot),
+        r.lotLeadMs == null ? '—' : (r.lotLeadMs / 1000).toFixed(1) + ' s'
+      ]),
+      'Waiting for the auction house to publish a sold price.'
+    );
+    if (d.sothebysStatus.timingError) note(d.sothebysStatus.timingError);
+  }
   if (selected === 'sothebys_sold' && d.soldLimits) {
     table(
       'Paper price-limit comparison',

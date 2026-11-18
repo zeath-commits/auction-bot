@@ -28,6 +28,7 @@ test(
         'sothebys-bids.mjs',
         'sothebys-sold.mjs',
         'sold-limits.mjs',
+        'sale-timing.mjs',
         'nba-paper.mjs',
         'sothebys-bid-calendar.json',
         'watch-offers.mjs',
