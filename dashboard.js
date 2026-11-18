@@ -118,6 +118,8 @@ function paper(d) {
       return [p.ticker,p.supporting.map(b=>b.label).join(', '),money(p.reference),money(p.price+p.fees/5),(p.gap*100).toFixed(2)+'¢'];
     }), 'No paper entries yet.');
     for (const [title,r] of Object.entries(d.rangeBidStatus?.lots ?? {})) note(title+' · '+r.state);
+    table('Saved pre-auction quotes',['Kalshi event','Snapshots','Most recent'],(d.rangeBidCoverage ?? [])
+      .map(r=>[r.event,r.scans,time(r.lastAt)]),'Waiting for the first snapshot.');
     if (d.rangeBidStatus?.ended) note('Pre-auction test ended.');
   }
   if (selected === 'btc_chart10' && d.btcChartCoverage) {

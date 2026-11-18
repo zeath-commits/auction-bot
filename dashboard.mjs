@@ -524,6 +524,7 @@ const server = http.createServer((req, res) => {
           nbaStatus,
           recordPairStatus,
           rangeBidStatus,
+          rangeBidCoverage: db.prepare('SELECT event,COUNT(*) AS scans,MAX(at) AS lastAt FROM art_range_book_history GROUP BY event').all(),
           rangeBidEvidence: db.prepare('SELECT detail FROM art_range_signals').all().map(r=>JSON.parse(r.detail)),
           cs2Status,
           auctionPortfolio: auctionPortfolio(db),
