@@ -36,6 +36,11 @@
   ],
   "studies": [
     {
+      "market": "Bitcoin distance from the threshold at 98–99¢",
+      "test": "Screened 3,396 finalized Kalshi quarter-hour markets from October 14 through 5:45 p.m. Eastern November 18. Replayed all 21,170 public non-block purchases of at least one contract at 98–99¢ in the final ten seconds. Used completed one-second candles from the Polymarket US chart available by timestamp 1.4 seconds before each trade. Assumed the last reading persisted for the unfinished portion of the settlement minute. Historical candles are a proxy, and their live arrival times are unknown.",
+      "finding": "102 markets contained a qualifying purchase. None cleared a 0.15% cushion on both the latest reading and projected average, including all 504 purchases of at least 1,000 contracts. The largest cushion across all purchases was 0.03032%. Without the cushion, the first large purchase won in 80 of 81 markets. Starting with $1,000 and modeling 1,000 contracts per entry, the October 16 loss left too little cash for later purchases. Eight entries were affordable and the ending balance was $118.22 after modeled fees and before operating costs. The guarded replay had zero entries and zero trading profit. The live paper study continues with the original cushion."
+    },
+    {
       "market": "Losing Bitcoin purchases in the final ten seconds",
       "test": "Rechecked every 98–99¢ buyer execution in the last ten seconds of two markets previously known to contain a losing purchase. Used the first single execution of at least 1,000 contracts on either side to determine the historical rule’s entry.",
       "finding": "On October 16 at 5:15 a.m. Eastern, the first qualifying purchase was 1,001 YES at 98.2¢ with 5.98 seconds left. The final average was $82,163.26 against $82,163.44 required. A 1,000-contract entry cost $983.24 including modeled fees and paid zero. On October 31 at 10:15 a.m. Eastern, the first qualifying purchase was 3,027 NO at 98¢ and won. In that same market 5,775.13 YES contracts traded at 98–99¢ and lost, including 2,039.22 contracts at a single timestamp, although the largest individual losing print was only 647.03. A backtest requiring a single large print can select a different side from one that combines depth across price levels."
