@@ -36,6 +36,11 @@
   ],
   "studies": [
     {
+      "market": "Auction purchases after publication",
+      "test": "Checked all 224 settled thresholds on 29 sold artworks across four November 16–17 sales. Timed whole-share, non-block buyer executions through 95¢ from the first recorded auction-house price.",
+      "finding": "After an hour, 12 artworks across all four sales still had a qualifying purchase. After six hours, three artworks did. Warhol’s Flowers sold for $18,217,500. A buyer took three Above $17M YES at 61¢ about four hours and 49 minutes after the recorded result. Taking the first eligible purchase per artwork after one hour, capped at five shares, modeled 34 shares, $31.12 in cost and $2.88 net after fees. This assumes getting the actual buyers’ prices and sizes. Operating costs are excluded."
+    },
+    {
       "market": "Published auction prices and Artnet-based settlement",
       "test": "Compared auction-house results saved on November 16–17 to Kalshi’s final numeric settlement values on contracts naming Artnet. Counted each artwork once across four sales.",
       "finding": "All 29 distinct sold lots matched to the dollar, including 14 at Sotheby’s, seven at Phillips and eight at Christie’s. All 224 thresholds settled in the indicated direction. The Rothko matched at $17,705,000. This measures price agreement on the observed sold lots. Trade availability and the timing of Artnet’s own update were outside this comparison."
