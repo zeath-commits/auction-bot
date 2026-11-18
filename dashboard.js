@@ -102,6 +102,15 @@ function paper(d) {
     note('One paper contract per market at the first 1¢ or 2¢ ask in the final minute that holds or improves on a second book check. Net includes modeled taker fees.');
   if (selected === 'btc_band60')
     note('One paper contract in the final minute. The best offer must be from 98¢ through 99¢, including fractional cents, with at least one full contract on both checks. This test can overlap the exact-cent strategy.');
+  if (selected === 'art_record_pair') {
+    const pairs = rows.filter(r => r.side === 'yes').reduce((s,r)=>s+r.quantity,0);
+    const cost = rows.reduce((s,r)=>s+r.quantity*r.price+r.fees,0);
+    table('Van Gogh annual YES and lot NO', ['Paper pairs','Cost with fees','Net if one leg pays per pair'],
+      [[pairs,money(cost),money(pairs-cost)]]);
+    note('If this lot sells above its threshold, it also exceeds the annual record threshold of $117.18 million. The model buys equal quantities on two reads and reserves whole-cent fees. Settlement timing and price revisions can differ across the two contracts.');
+    if (d.recordPairStatus?.at) note((d.recordPairStatus.error ?? d.recordPairStatus.strikes+' eligible lot thresholds')+
+      ' · checked '+time(d.recordPairStatus.at));
+  }
   if (selected === 'btc_chart10' && d.btcChartCoverage) {
     const c = d.btcChartCoverage;
     note('The projection uses 46 one-second chart prices and holds the last price flat for the remaining 14 seconds. A paper entry requires a projected margin of at least 0.05% on the offered side and two subsequent order-book checks at 98¢ or 99¢.');

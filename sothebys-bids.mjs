@@ -143,13 +143,13 @@ export async function readSalePage(target = null) {
   };
 }
 
-async function marketList(io, t) {
+export async function marketList(io, t) {
   const { body } = await io.get(
       '/events/' + t.event + '?with_nested_markets=true'
     ),
     e = body.event;
   if (
-    e?.event_ticker !== t.event ||
+    e?.event_ticker !== t.event || e.fee_type_override != null || e.fee_multiplier_override != null ||
     e.settlement_sources?.length !== 1 ||
     e.settlement_sources[0].name !== 'Sotheby’s' ||
     e.settlement_sources[0].url !== t.source

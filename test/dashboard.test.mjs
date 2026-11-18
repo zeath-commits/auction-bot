@@ -33,6 +33,7 @@ test(
         'sale-timing.mjs',
         'auction-quote-timing.mjs',
         'nba-paper.mjs',
+        'art-record-pair.mjs',
         'esports-paper.mjs',
         'weather-paper.mjs',
         'weather-station.mjs',

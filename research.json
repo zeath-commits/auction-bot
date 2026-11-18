@@ -36,6 +36,11 @@
   ],
   "studies": [
     {
+      "market": "Blaquier-Arrieta collection",
+      "test": "Sale schedule versus last trading time on November 18",
+      "finding": "Kalshi listed 15 Artnet-verified thresholds for the sum of prices at Sotheby’s 12-lot evening sale. Their posted closing times were 4:28–4:29 p.m. Eastern, ahead of the auction’s 6 p.m. start. A strategy based on the published collection total had no scheduled trading window. The five individual artwork markets had later closing times."
+    },
+    {
       "market": "Kalshi Bitcoin closing prices",
       "test": "Public buyer executions in 14 windows the paper monitor sampled",
       "finding": "In the final minute, 538 favorite-side buys of at least one contract printed at exactly 98¢ or 99¢ across four markets. All four first buys won, worth 7.44¢ combined at one share per market after modeled fees. The live monitor recorded zero qualifying entries. In the final ten seconds none of the 14 markets had a qualifying buy. One had 13 buys above 99¢. Trade prints cannot establish that the same prices were available to the bot."
