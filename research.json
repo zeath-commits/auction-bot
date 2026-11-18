@@ -36,6 +36,11 @@
   ],
   "studies": [
     {
+      "market": "Sotheby’s live bids and buyer’s premium",
+      "test": "Applied Sotheby’s published New York fine-art premium tiers to archived November 16 bids. Compared projections with published sale totals, Kalshi settlements and public trades.",
+      "finding": "The standard formula matched 8 of 14 published totals and overstated 6 by $100,000–$1.3 million. On the final displayed bids alone it predicted 23 additional YES thresholds, of which 2 settled NO. The Rothko estimate was $18.505 million and its published result was $17.705 million. In the archive of live bidding, two successive readings produced 17 premium-only threshold signals across eight artworks. All 17 settled YES. Six had a public YES buy through 95¢ during the sampled windows, worth $0.48 total if one share had filled at each first eligible trade after estimated fees. Historical trades cannot confirm our place in the book."
+    },
+    {
       "market": "Kalshi Bitcoin at 99.9¢",
       "test": "Earlier replication on October 21–27, 2026, using the same size, price, and final-ten-second rules.",
       "finding": "Of 664 finalized markets, 68 had a qualifying taker purchase at size 100 and all won, for $6.12 modeled net. At size 1,000, all 64 qualifying purchases won, for $59.52. Across the three sampled weeks there were 148 qualifying markets at size 100 and $13.32 of modeled profit. One losing entry would have erased that amount. Resting participants matched size 100 on the 99.9¢ side in 653 markets in this earlier week. Public executions reveal neither our hypothetical queue position nor whether the offers were available on two reads."

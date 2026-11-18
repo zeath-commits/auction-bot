@@ -366,7 +366,7 @@ function paper(d) {
           time(pair.at)
       );
   if (
-    ['all', 'sothebys_live_bid', 'sothebys_bid_high', 'sothebys_sold'].includes(
+    ['all', 'sothebys_live_bid', 'sothebys_bid_high', 'sothebys_bid_premium', 'sothebys_sold'].includes(
       selected
     ) &&
     d.sothebysStatus?.scheduled
@@ -390,6 +390,13 @@ function paper(d) {
         ' fresh catalog reads'
     );
     view.append(p);
+    if (selected === 'sothebys_bid_premium') {
+      note('One paper YES contract through 95¢ when the bid has yet to exceed the threshold and the standard New York buyer’s premium would put it above. The test requires two live source updates and two order-book checks. Published sale prices can differ from the estimate.');
+      if (s.premiumCrossings != null) note('Thresholds crossed by the estimate alone on the latest scan · ' + s.premiumCrossings);
+      table('Premium forecasts against settlement', ['Market','Displayed bid','Projected sale','Threshold','Settlement'],
+        (d.premiumSignals ?? []).map(r=>[r.ticker,money(r.bid),money(r.estimated),money(r.strike),r.result?.toUpperCase() ?? 'Pending']),
+        'Waiting for a live bid to confirm a forecast twice.');
+    }
     if (s.sold)
       note(
         s.sold.error ??
@@ -400,7 +407,7 @@ function paper(d) {
             time(s.sold.at)
       );
     if (
-      ['sothebys_live_bid', 'sothebys_bid_high', 'sothebys_sold'].includes(
+      ['sothebys_live_bid', 'sothebys_bid_high', 'sothebys_bid_premium', 'sothebys_sold'].includes(
         selected
       )
     )

@@ -176,27 +176,47 @@ export async function marketList(io, t) {
   return markets;
 }
 
-export function confirmedBid(first, second, highPriceStudy = false) {
-  return (
-    first &&
-    second &&
+function repeatedBid(first, second) {
+  return first && second &&
     first.ticker === second.ticker &&
-    first.bid > first.strike &&
     second.strike === first.strike &&
     second.bid >= first.bid &&
     second.count >= first.count &&
     second.generation - first.generation >= 2000 &&
     second.at - first.at >= 1000 &&
-    second.at - first.at <= 30000 &&
-    [first, second].every(
+    second.at - first.at <= 30000;
+}
+
+function repeatedOffer(first, second, highPriceStudy) {
+  return [first, second].every(
       (q) =>
         q.size >= 1 &&
         (highPriceStudy
           ? [0.97, 0.98].includes(q.price)
           : q.price > 0 && q.price <= 0.95)
     ) &&
-    second.price <= first.price
-  );
+    second.price <= first.price;
+}
+
+export function confirmedBid(first, second, highPriceStudy = false) {
+  return repeatedBid(first, second) && first.bid > first.strike && repeatedOffer(first, second, highPriceStudy);
+}
+
+// Standard New York fine-art buyer's premium, used as a forecast for this sale.
+// Even a closed lot's displayed bid can produce a different published total.
+export function estimatedSalePrice(bid) {
+  if (!Number.isSafeInteger(bid) || bid <= 0) return null;
+  const cents = 100 * bid + 28 * Math.min(bid, 2000000) +
+    22 * Math.min(Math.max(bid - 2000000, 0), 6000000) + 15 * Math.max(bid - 8000000, 0);
+  return Number.isSafeInteger(cents) ? cents / 100 : null;
+}
+
+export function confirmedPremiumSignal(first, second) {
+  return repeatedBid(first,second) && second.bid <= second.strike && estimatedSalePrice(first.bid) > first.strike;
+}
+
+export function confirmedPremiumBid(first, second) {
+  return confirmedPremiumSignal(first,second) && second.bookAsOf > first.bookAsOf && repeatedOffer(first,second,false);
 }
 
 export async function observeSothebysBids({
@@ -269,7 +289,7 @@ export async function observeSothebysBids({
             )
           )
         );
-      let priced = 0,
+      let priced = 0, premiumCrossings = 0,
         crossed = 0;
       db.prepare('INSERT OR IGNORE INTO sothebys_bid_scans VALUES(?,?,?)').run(
         s.at,
@@ -279,10 +299,13 @@ export async function observeSothebysBids({
       const live = s.fresh && !tail ? s.lots.filter((l) => l.bid !== null) : [];
       for (const l of live) {
         const t = calendar.targets.find((t) => t.event === l.event),
+          estimated = estimatedSalePrice(l.bid),
           markets = (await marketList(io, t)).filter(
-            (m) => m.floor_strike < l.bid && checkMarketActive(m, Date.now())
+            (m) => (m.floor_strike < l.bid || m.floor_strike < estimated) && checkMarketActive(m, Date.now())
           );
-        crossed += markets.length;
+        const rawCrossings = markets.filter(m=>m.floor_strike < l.bid).length;
+        crossed += rawCrossings;
+        premiumCrossings += markets.length - rawCrossings;
         if (!markets.length) continue;
         checkFees((await io.get('/series/KXART')).body);
         const ex = (await io.get('/exchange/status')).body;
@@ -309,6 +332,8 @@ export async function observeSothebysBids({
             ticker: m.ticker,
             strike: m.floor_strike,
             bid: l.bid,
+            estimatedSalePrice: estimated,
+            bookAsOf: Date.parse(books.httpDate)-1000*Number(books.cacheAge??0),
             count: l.count,
             generation: s.generation,
             sourceAt: s.at,
@@ -319,14 +344,17 @@ export async function observeSothebysBids({
           db.prepare(
             'INSERT OR IGNORE INTO sothebys_bid_quotes VALUES(?,?,?)'
           ).run(m.ticker, entry.at, JSON.stringify(entry));
-          if (best && entry.price <= 0.95) priced++;
+          if (best && m.floor_strike < l.bid && entry.price <= 0.95) priced++;
           next.set(m.ticker, entry);
           const prior = previous.get(m.ticker);
+          if (confirmedPremiumSignal(prior,entry))
+            db.prepare('INSERT OR IGNORE INTO auction_premium_signals(ticker,event,at,bid,estimated,strike) VALUES(?,?,?,?,?,?)')
+              .run(m.ticker,t.event,entry.at,l.bid,estimated,m.floor_strike);
           const cohort = confirmedBid(prior, entry)
             ? strategy
             : confirmedBid(prior, entry, true)
               ? 'sothebys_bid_high'
-              : null;
+              : confirmedPremiumBid(prior, entry) ? 'sothebys_bid_premium' : null;
           if (cohort)
             addPaper(db, {
               id: cohort + '/' + m.ticker,
@@ -376,6 +404,7 @@ export async function observeSothebysBids({
           : 'Stale or slow catalog read',
         liveLots: live.length,
         crossed,
+        premiumCrossings,
         priced,
         error: null
       });

@@ -1,11 +1,47 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { openLedger, settle, paperRows } from '../strategy-monitor.mjs';
 import {
   extractSothebys,
   confirmedBid,
+  confirmedPremiumBid,
+  confirmedPremiumSignal,
+  estimatedSalePrice,
   sourceGeneration
 } from '../sothebys-bids.mjs';
 import { bidWindows } from '../live-bid-replay.mjs';
+
+test('New York premium estimate is tiered and only trades repeated incremental crossings', () => {
+  assert.deepEqual([2000000,8000000,15500000,104000000].map(estimatedSalePrice),[2560000,9880000,18505000,120280000]);
+  assert.equal(estimatedSalePrice(null),null);
+  const first={ticker:'KXART-TEST',strike:120e6,bid:104e6,count:5,generation:1000,at:2000,bookAsOf:1800,price:0.94,size:2};
+  const second={...first,at:5000,generation:4000,bookAsOf:4800};
+  assert.ok(confirmedPremiumBid(first,second));
+  assert.ok(confirmedPremiumSignal(first,{...second,price:null,size:0}));
+  assert.ok(!confirmedPremiumBid(first,{...second,price:null,size:0}));
+  for(const change of [{bid:121e6},{bid:103e6},{bookAsOf:1800},{price:0.96},{size:0.99},{generation:1000}])
+    assert.ok(!confirmedPremiumBid(first,{...second,...change}));
+  assert.ok(!confirmedPremiumBid({...first,strike:120280000},{...second,strike:120280000}));
+});
+
+test('an auction premium forecast without a paper entry is scored against official settlement', async () => {
+  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'art-premium-')),db=openLedger(dir);
+  try {
+    db.prepare('INSERT INTO auction_premium_signals VALUES(?,?,?,?,?,?,NULL)').run('KXART-TEST','lot',1000,15500000,18505000,18000000);
+    await settle(db,{get:async route=>{
+      assert.equal(route,'/markets/KXART-TEST');
+      return {body:{market:{ticker:'KXART-TEST',status:'finalized',result:'no'}}};
+    }});
+    assert.equal(db.prepare('SELECT result FROM auction_premium_signals').get().result,'no');
+    assert.equal(paperRows(db).length,0);
+  } finally {
+    db.close();
+    fs.rmSync(dir,{recursive:true,force:true});
+  }
+});
 
 test('live crossing needs a matched lot, active bidding, and a strictly lower strike', () => {
   const c = {

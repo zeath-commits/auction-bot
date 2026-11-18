@@ -542,6 +542,7 @@ const server = http.createServer((req, res) => {
               'SELECT COUNT(*) AS scans,COALESCE(SUM(fresh),0) AS fresh FROM sothebys_bid_scans'
             )
             .get(),
+          premiumSignals: db.prepare('SELECT * FROM auction_premium_signals ORDER BY at DESC,ticker').all(),
           closingCoverage: db
             .prepare(
               'SELECT COUNT(*) AS closed, COUNT(CASE WHEN attempts>0 THEN 1 END) AS attempted, COUNT(CASE WHEN usable>0 THEN 1 END) AS usable FROM us_closing_windows WHERE closeAt<=?'

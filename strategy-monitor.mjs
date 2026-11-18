@@ -15,6 +15,7 @@ export const strategies = {
   sothebys_sold: 'Sotheby’s · published sale price and available quantity',
   sothebys_live_bid: 'Sotheby’s · live bids above a threshold',
   sothebys_bid_high: 'Sotheby’s · live bid with a 97–98¢ offer',
+  sothebys_bid_premium: 'Sotheby’s · estimated sale price with buyer’s premium',
   us_btc10: 'Polymarket US · BTC final 10 seconds',
   cross_us_btc: 'Bitcoin · Kalshi and Polymarket US pair',
   cross_us_middle: 'Bitcoin · wide opening-price gap',
@@ -55,6 +56,8 @@ export function openLedger(directory) {
       secondQuote TEXT, fresh INTEGER, PRIMARY KEY(ticker,at));
     CREATE TABLE IF NOT EXISTS btc_999_queue(ticker TEXT PRIMARY KEY,side TEXT,arrival INTEGER,
       closeAt INTEGER,ahead REAL,checked INTEGER,volume REAL,result TEXT);
+    CREATE TABLE IF NOT EXISTS auction_premium_signals(ticker TEXT PRIMARY KEY,event TEXT,at INTEGER,
+      bid INTEGER,estimated REAL,strike REAL,result TEXT);
   `);
   return db;
 }
@@ -227,6 +230,7 @@ export async function settle(db, io) {
     SELECT ticker FROM paper WHERE payout IS NULL AND ticker NOT LIKE 'cpc-btc-updown-5m-%'
     AND (strategy NOT IN ('btc60','btc_band60','btc10','btc_chart10','btc999','btcDepth','btc_underdog','cross_us_btc','cross_us_middle') OR closeAt<=?)
     UNION SELECT ticker FROM btc_chart_windows WHERE side IS NOT NULL AND result IS NULL AND closeAt<=?
+    UNION SELECT ticker FROM auction_premium_signals WHERE result IS NULL
     ) pending LEFT JOIN results r USING(ticker) WHERE COALESCE(r.checked,0)<?
     ORDER BY COALESCE(r.checked,0) LIMIT 10`
     )
@@ -236,8 +240,10 @@ export async function settle(db, io) {
       await io.get('/markets/' + encodeURIComponent(ticker))
     ).body;
     if (m.ticker !== ticker) throw Error('Unexpected settlement ticker');
-    if (m.status === 'finalized' && ['yes','no','scalar'].includes(m.result))
+    if (m.status === 'finalized' && ['yes','no','scalar'].includes(m.result)) {
       db.prepare('UPDATE btc_chart_windows SET result=? WHERE ticker=? AND result IS NULL').run(m.result, ticker);
+      db.prepare('UPDATE auction_premium_signals SET result=? WHERE ticker=? AND result IS NULL').run(m.result,ticker);
+    }
     if (m.status === 'finalized' && ['yes', 'no'].includes(m.result)) {
       db.prepare(
         'UPDATE paper SET payout=CASE WHEN side=? THEN quantity ELSE 0 END,result=? WHERE ticker=? AND payout IS NULL'
