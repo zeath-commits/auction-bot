@@ -36,6 +36,11 @@
   ],
   "studies": [
     {
+      "market": "Sotheby’s live bidding",
+      "test": "November 16 · live bid strictly above an Artnet threshold",
+      "finding": "Across 58 archived live-bid observations on ten artworks, seven artworks crossed 14 thresholds. All 14 settled YES. All six public executions in the sampled windows were YES buys at 97¢ or 98¢ across three thresholds. No whole-share buy qualified at 95¢ or less. The archive did not capture the live asks for those crossings. The November 18 forward test compares bids with fresh offers on five lots that settle directly from Sotheby’s."
+    },
+    {
       "market": "Sotheby's auction results",
       "test": "November 16 · repeat purchases after a public result",
       "finding": "Across 24 thresholds with buys at 95¢ or less at least 30 seconds after a result, 11 had another eligible buy at least a minute later. Grouping simultaneous fills, a five-share cap gave $6.29 modeled net for first buys and $17.47 including repeats. Using the full printed quantity up to $1,000 of cash gave $103.13 modeled net on $999.87, with $708.83 of cost on the Rothko alone. This assumes taking the place of actual buyers. Available depth at those times is unknown."

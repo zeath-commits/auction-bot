@@ -25,6 +25,8 @@ test(
         'late-auction.mjs',
         'us-bitcoin-paper.mjs',
         'bitcoin-reference.mjs',
+        'sothebys-bids.mjs',
+        'sothebys-bid-calendar.json',
         'watch-offers.mjs',
         'paper-unsold.mjs',
         'dashboard.mjs',

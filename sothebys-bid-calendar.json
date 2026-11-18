@@ -1,0 +1,65 @@
+{
+  "sale": "N12368",
+  "auctionId": "bcef4231-708a-4487-9b3f-53b866de0727",
+  "url": "https://www.sothebys.com/en/buy/auction/2026/legendary-the-blaquier-arrieta-collection-evening-auction",
+  "start": "2026-11-18T22:55:00Z",
+  "scheduled": "2026-11-18T23:00:00Z",
+  "end": "2026-11-19T03:00:00Z",
+  "targets": [
+    {
+      "lot": "4",
+      "id": "7daabbbb-c18e-4dc8-84a2-f503e62b4f3b",
+      "title": "Le Jardin des Tuileries",
+      "artist": "Claude Monet",
+      "url": "https://www.sothebys.com/en/buy/auction/2026/legendary-the-blaquier-arrieta-collection-evening-auction/claude-monet-le-jardin-des-tuileries",
+      "source": "https://www.sothebys.com/en/buy/auction/2026/legendary-the-blaquier-arrieta-collection-evening-auction/claude-monet-le-jardin-des-tuileries?locale=en",
+      "event": "KXART-MONJAR18NOV26",
+      "contracts": 9,
+      "ruleHash": "e076e7860ebfc982c78c52d6b4c11e67696a460029df94fbfb60fe2a84f660a6"
+    },
+    {
+      "lot": "5",
+      "id": "ac1f9fd6-946e-473e-9a6a-0483bc4b8ae8",
+      "title": "Châtaigniers en fleurs",
+      "artist": "Vincent van Gogh",
+      "url": "https://www.sothebys.com/en/buy/auction/2026/legendary-the-blaquier-arrieta-collection-evening-auction/vincent-van-gogh-chataigner-en-fleurs-roses-et",
+      "source": "https://www.sothebys.com/en/buy/auction/2026/legendary-the-blaquier-arrieta-collection-evening-auction/vincent-van-gogh-chataigner-en-fleurs-roses-et?locale=en",
+      "event": "KXART-VANCHAT18NOV26",
+      "contracts": 9,
+      "ruleHash": "885071144f7703ecabbcf0fd36ea1822fecfd41d43095f32c95e7dcb8fd0d34e"
+    },
+    {
+      "lot": "8",
+      "id": "7923653d-f416-4495-839e-f226e2e28891",
+      "title": "En Canot (Jeune fille à la barque)",
+      "artist": "Pierre-Auguste Renoir",
+      "url": "https://www.sothebys.com/en/buy/auction/2026/legendary-the-blaquier-arrieta-collection-evening-auction/pierre-auguste-renoir-en-canot-or-jeune-fille-a-la",
+      "source": "https://www.sothebys.com/",
+      "event": "KXART-RENCAN18NOV26",
+      "contracts": 9,
+      "ruleHash": "ec8742117cb103c74f1dc436a449a3069dd31b9243e97ff2c489d2b4d1f9ee86"
+    },
+    {
+      "lot": "9",
+      "id": "626a63fa-399d-485e-9dbe-b49db45854a2",
+      "title": "Arlequin",
+      "artist": "Paul Cézanne",
+      "url": "https://www.sothebys.com/en/buy/auction/2026/legendary-the-blaquier-arrieta-collection-evening-auction/paul-cezanne-arlequin",
+      "source": "https://www.sothebys.com/en/buy/auction/2026/legendary-the-blaquier-arrieta-collection-evening-auction/paul-cezanne-arlequin?locale=en",
+      "event": "KXART-CEZARL18NOV26",
+      "contracts": 9,
+      "ruleHash": "fe61f9b7745646c47c76d12fab3e15cf27c96f0257171463728246d209d6f315"
+    },
+    {
+      "lot": "10",
+      "id": "3f6a045b-de3a-41c5-a63a-787006407837",
+      "title": "La Place du Théâtre-Français et l’avenue de l’Opéra, soleil d’après-midi en hiver",
+      "artist": "Camille Pissarro",
+      "url": "https://www.sothebys.com/en/buy/auction/2026/legendary-the-blaquier-arrieta-collection-evening-auction/camille-pissarro-la-place-du-theatre-francais",
+      "source": "https://www.sothebys.com/en/buy/auction/2026/legendary-the-blaquier-arrieta-collection-evening-auction/camille-pissarro-la-place-du-theatre-francais?locale=en",
+      "event": "KXART-PISTHE18NOV26",
+      "contracts": 9,
+      "ruleHash": "0e082b31ebcb1312c0b2cf463315547119879058f896510901f4d371890c20d7"
+    }
+  ]
+}

@@ -7,6 +7,7 @@ import { ROOT } from './bot.mjs';
 import { observePairs, pairSeries } from './auction-pairs.mjs';
 import { observeLateAuctions } from './late-auction.mjs';
 import { observeUS } from './us-bitcoin-paper.mjs';
+import { observeSothebysBids } from './sothebys-bids.mjs';
 import {
   addPaper,
   observe,
@@ -30,6 +31,7 @@ const config = JSON.parse(
 const status = { state: 'Starting', at: null };
 const lateAuctionStatus = { at: null };
 const usBitcoinStatus = { at: null };
+const sothebysStatus = {};
 const pairStatus = Object.fromEntries(
   Object.entries(pairSeries).map(([k, label]) => [k, { label, at: null }])
 );
@@ -457,6 +459,12 @@ const server = http.createServer((req, res) => {
           pairStatus,
           lateAuctionStatus,
           usBitcoinStatus,
+          sothebysStatus,
+          sothebysCoverage: db
+            .prepare(
+              'SELECT COUNT(*) AS scans,COALESCE(SUM(fresh),0) AS fresh FROM sothebys_bid_scans'
+            )
+            .get(),
           closingCoverage: db
             .prepare(
               'SELECT COUNT(*) AS closed, COUNT(CASE WHEN attempts>0 THEN 1 END) AS attempted, COUNT(CASE WHEN usable>0 THEN 1 END) AS usable FROM us_closing_windows WHERE closeAt<=?'
@@ -517,6 +525,14 @@ server.listen(port, host, () => {
     }
   }
   importSafe();
+  observeSothebysBids({
+    db,
+    config,
+    status: sothebysStatus,
+    stop: () => stopping || exists(path.join(ROOT, 'STOP'))
+  }).catch((e) => {
+    sothebysStatus.error = e.message;
+  });
   observeUS({
     db,
     config,

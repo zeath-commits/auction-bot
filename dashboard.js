@@ -139,6 +139,42 @@ function paper(d) {
           ' · ' +
           time(pair.at)
       );
+  if (
+    ['all', 'sothebys_live_bid', 'sothebys_bid_high'].includes(selected) &&
+    d.sothebysStatus?.scheduled
+  ) {
+    const s = d.sothebysStatus;
+    const p = el('p', null, 'note'),
+      a = el('a', 'Sotheby’s live-bid paper test');
+    a.href = s.url;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    p.append(
+      a,
+      ' · ' +
+        time(s.scheduled) +
+        ' · ' +
+        (s.error ?? s.state) +
+        ' · ' +
+        d.sothebysCoverage.fresh +
+        '/' +
+        d.sothebysCoverage.scans +
+        ' fresh catalog reads'
+    );
+    view.append(p);
+    if (['sothebys_live_bid', 'sothebys_bid_high'].includes(selected))
+      for (const t of s.targets) {
+        const link = el('a', t.title),
+          p = el('p');
+        link.href =
+          'https://kalshi.com/markets/kxart/what-will-the-price-of-art-be/' +
+          t.event.toLowerCase();
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        p.append(link);
+        view.append(p);
+      }
+  }
   if (d.lateAuctionStatus?.at) {
     const late = d.lateAuctionStatus;
     if (late.saleDepth?.active) {

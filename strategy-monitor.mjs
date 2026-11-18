@@ -5,6 +5,8 @@ import { setTimeout as sleep } from 'node:timers/promises';
 import { Transport } from './transport.mjs';
 
 export const strategies = {
+  sothebys_live_bid: 'Sotheby’s · live bids above a threshold',
+  sothebys_bid_high: 'Sotheby’s · live bid with a 97–98¢ offer',
   us_btc10: 'Polymarket US · BTC final 10 seconds',
   cross_us_btc: 'Bitcoin · Kalshi and Polymarket US pair',
   cross_us_middle: 'Bitcoin · wide opening-price gap',

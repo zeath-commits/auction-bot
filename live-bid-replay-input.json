@@ -1,0 +1,520 @@
+{
+  "lots": [
+    {
+      "sale": "N12365",
+      "event": "KXART-SOT4A16NOV26",
+      "lot": "4A",
+      "title": "Reflections on “Painter and Model”",
+      "artist": "Roy Lichtenstein",
+      "id": "027e1a60-4f05-4bd5-b18d-775859181757",
+      "source": "https://www.sothebys.com/en/buy/auction/2026/the-now-contemporary-evening-auction-2/reflections-on-painter-and-model",
+      "observations": [
+        {
+          "tick": 64,
+          "at": "2026-11-17T00:16:43.680Z",
+          "until": 1794874613680,
+          "bid": 20000000,
+          "count": 3
+        },
+        {
+          "tick": 65,
+          "at": "2026-11-17T00:17:04.106Z",
+          "until": 1794874634106,
+          "bid": 20000000,
+          "count": 3
+        },
+        {
+          "tick": 66,
+          "at": "2026-11-17T00:17:24.459Z",
+          "until": 1794874654459,
+          "bid": 20000000,
+          "count": 3
+        },
+        {
+          "tick": 67,
+          "at": "2026-11-17T00:17:44.986Z",
+          "until": 1794874674986,
+          "bid": 20000000,
+          "count": 3
+        },
+        {
+          "tick": 68,
+          "at": "2026-11-17T00:18:05.513Z",
+          "until": 1794874695513,
+          "bid": 20000000,
+          "count": 3
+        },
+        {
+          "tick": 69,
+          "at": "2026-11-17T00:18:25.909Z",
+          "until": 1794874715909,
+          "bid": 20000000,
+          "count": 3
+        }
+      ]
+    },
+    {
+      "sale": "N12365",
+      "event": "KXART-SOT5A16NOV26",
+      "lot": "5A",
+      "title": "Untitled",
+      "artist": "Matthew Wong",
+      "id": "64326a37-e970-4216-b3fd-6275536df2a2",
+      "source": "https://www.sothebys.com/en/buy/auction/2026/the-now-contemporary-evening-auction-2/untitled-3",
+      "observations": [
+        {
+          "tick": 70,
+          "at": "2026-11-17T00:18:46.262Z",
+          "until": 1794874736262,
+          "bid": 3300000,
+          "count": 4
+        },
+        {
+          "tick": 71,
+          "at": "2026-11-17T00:19:06.596Z",
+          "until": 1794874756596,
+          "bid": 3300000,
+          "count": 4
+        },
+        {
+          "tick": 72,
+          "at": "2026-11-17T00:19:26.993Z",
+          "until": 1794874776993,
+          "bid": 3300000,
+          "count": 4
+        },
+        {
+          "tick": 73,
+          "at": "2026-11-17T00:19:47.346Z",
+          "until": 1794874797346,
+          "bid": 3300000,
+          "count": 4
+        },
+        {
+          "tick": 74,
+          "at": "2026-11-17T00:20:07.867Z",
+          "until": 1794874817867,
+          "bid": 3300000,
+          "count": 4
+        },
+        {
+          "tick": 75,
+          "at": "2026-11-17T00:20:28.255Z",
+          "until": 1794874838255,
+          "bid": 3300000,
+          "count": 4
+        }
+      ]
+    },
+    {
+      "sale": "N12365",
+      "event": "KXART-SOT10116NOV26",
+      "lot": "101",
+      "title": "Flowers",
+      "artist": "Andy Warhol",
+      "id": "3b3a98d2-8e00-4105-9841-f17e7708a21c",
+      "source": "https://www.sothebys.com/en/buy/auction/2026/the-now-contemporary-evening-auction-2/flowers",
+      "observations": [
+        {
+          "tick": 111,
+          "at": "2026-11-17T00:33:16.610Z",
+          "until": 1794875606610,
+          "bid": 4800000,
+          "count": 15
+        },
+        {
+          "tick": 112,
+          "at": "2026-11-17T00:33:38.895Z",
+          "until": 1794875628895,
+          "bid": 4800000,
+          "count": 15
+        },
+        {
+          "tick": 113,
+          "at": "2026-11-17T00:34:01.202Z",
+          "until": 1794875651202,
+          "bid": 4800000,
+          "count": 15
+        },
+        {
+          "tick": 114,
+          "at": "2026-11-17T00:34:23.486Z",
+          "until": 1794875673486,
+          "bid": 4800000,
+          "count": 15
+        },
+        {
+          "tick": 115,
+          "at": "2026-11-17T00:34:45.812Z",
+          "until": 1794875695812,
+          "bid": 4800000,
+          "count": 15
+        }
+      ]
+    },
+    {
+      "sale": "N12365",
+      "event": "KXART-SOT10716NOV26",
+      "lot": "107",
+      "title": "White Relief with Black II",
+      "artist": "Ellsworth Kelly ",
+      "id": "ae1b087c-5aea-4650-965c-9bd4854c3abd",
+      "source": "https://www.sothebys.com/en/buy/auction/2026/the-now-contemporary-evening-auction-2/ellsworth-kelly-white-relief-with-black-ii",
+      "observations": [
+        {
+          "tick": 143,
+          "at": "2026-11-17T00:47:38.375Z",
+          "until": 1794876468375,
+          "bid": 1400000,
+          "count": 3
+        },
+        {
+          "tick": 144,
+          "at": "2026-11-17T00:48:01.848Z",
+          "until": 1794876491848,
+          "bid": 1400000,
+          "count": 3
+        },
+        {
+          "tick": 145,
+          "at": "2026-11-17T00:48:25.275Z",
+          "until": 1794876515275,
+          "bid": 1400000,
+          "count": 3
+        },
+        {
+          "tick": 146,
+          "at": "2026-11-17T00:48:48.697Z",
+          "until": 1794876538697,
+          "bid": 1400000,
+          "count": 3
+        },
+        {
+          "tick": 147,
+          "at": "2026-11-17T00:49:12.278Z",
+          "until": 1794876562278,
+          "bid": 1400000,
+          "count": 3
+        }
+      ]
+    },
+    {
+      "sale": "N12365",
+      "event": "KXART-SOT11216NOV26",
+      "lot": "112",
+      "title": "Flowers",
+      "artist": "Andy Warhol",
+      "id": "01a16a23-54e3-7354-b52f-8fc8f0ce5bf1",
+      "source": "https://www.sothebys.com/en/buy/auction/2026/the-now-contemporary-evening-auction-2/andy-warhol-flowers",
+      "observations": [
+        {
+          "tick": 159,
+          "at": "2026-11-17T01:04:02.797Z",
+          "until": 1794877452797,
+          "bid": 12800000,
+          "count": 11
+        },
+        {
+          "tick": 160,
+          "at": "2026-11-17T01:04:25.982Z",
+          "until": 1794877475982,
+          "bid": 12800000,
+          "count": 11
+        },
+        {
+          "tick": 161,
+          "at": "2026-11-17T01:04:48.932Z",
+          "until": 1794877498932,
+          "bid": 12800000,
+          "count": 11
+        },
+        {
+          "tick": 162,
+          "at": "2026-11-17T01:05:12.406Z",
+          "until": 1794877522406,
+          "bid": 12800000,
+          "count": 11
+        },
+        {
+          "tick": 163,
+          "at": "2026-11-17T01:05:35.890Z",
+          "until": 1794877545890,
+          "bid": 12800000,
+          "count": 11
+        },
+        {
+          "tick": 164,
+          "at": "2026-11-17T01:05:59.186Z",
+          "until": 1794877569186,
+          "bid": 15250000,
+          "count": 19
+        },
+        {
+          "tick": 165,
+          "at": "2026-11-17T01:06:22.471Z",
+          "until": 1794877592471,
+          "bid": 15250000,
+          "count": 19
+        },
+        {
+          "tick": 166,
+          "at": "2026-11-17T01:06:45.715Z",
+          "until": 1794877615715,
+          "bid": 15250000,
+          "count": 19
+        },
+        {
+          "tick": 167,
+          "at": "2026-11-17T01:07:08.814Z",
+          "until": 1794877638814,
+          "bid": 15250000,
+          "count": 19
+        },
+        {
+          "tick": 168,
+          "at": "2026-11-17T01:07:31.829Z",
+          "until": 1794877661829,
+          "bid": 15250000,
+          "count": 19
+        },
+        {
+          "tick": 169,
+          "at": "2026-11-17T01:07:55.073Z",
+          "until": 1794877685073,
+          "bid": 15250000,
+          "count": 19
+        }
+      ]
+    },
+    {
+      "sale": "N12365",
+      "event": "KXART-SOT11816NOV26",
+      "lot": "118",
+      "title": "Candy Blue Night",
+      "artist": "Yoshitomo Nara",
+      "id": "bd1dc09e-14bc-40e5-a1d6-acae4cfe2ae2",
+      "source": "https://www.sothebys.com/en/buy/auction/2026/the-now-contemporary-evening-auction-2/candy-blue-night",
+      "observations": [
+        {
+          "tick": 185,
+          "at": "2026-11-17T01:14:27.030Z",
+          "until": 1794878077030,
+          "bid": 4500000,
+          "count": 3
+        },
+        {
+          "tick": 186,
+          "at": "2026-11-17T01:14:51.415Z",
+          "until": 1794878101415,
+          "bid": 4500000,
+          "count": 3
+        },
+        {
+          "tick": 187,
+          "at": "2026-11-17T01:15:15.864Z",
+          "until": 1794878125864,
+          "bid": 4500000,
+          "count": 3
+        },
+        {
+          "tick": 188,
+          "at": "2026-11-17T01:15:40.180Z",
+          "until": 1794878150180,
+          "bid": 4500000,
+          "count": 3
+        },
+        {
+          "tick": 189,
+          "at": "2026-11-17T01:16:04.875Z",
+          "until": 1794878174875,
+          "bid": 4500000,
+          "count": 3
+        }
+      ]
+    },
+    {
+      "sale": "N12365",
+      "event": "KXART-SOT12316NOV26",
+      "lot": "123",
+      "title": "Self-Portrait",
+      "artist": "Francis Bacon",
+      "id": "f7349475-ab79-47ad-918d-16f66a33e3fe",
+      "source": "https://www.sothebys.com/en/buy/auction/2026/the-now-contemporary-evening-auction-2/francis-bacon-self-portrait",
+      "observations": [
+        {
+          "tick": 197,
+          "at": "2026-11-17T01:20:43.256Z",
+          "until": 1794878453256,
+          "bid": 11800000,
+          "count": 9
+        },
+        {
+          "tick": 198,
+          "at": "2026-11-17T01:21:09.024Z",
+          "until": 1794878479024,
+          "bid": 11800000,
+          "count": 9
+        },
+        {
+          "tick": 199,
+          "at": "2026-11-17T01:21:34.900Z",
+          "until": 1794878504900,
+          "bid": 11800000,
+          "count": 9
+        },
+        {
+          "tick": 200,
+          "at": "2026-11-17T01:22:00.719Z",
+          "until": 1794878530719,
+          "bid": 11800000,
+          "count": 9
+        }
+      ]
+    },
+    {
+      "sale": "N12365",
+      "event": "KXART-SOT13016NOV26",
+      "lot": "130",
+      "title": "Light Leaks",
+      "artist": "Ed Ruscha",
+      "id": "ed7647ab-6f26-4e2e-b9e4-2819e0a42b65",
+      "source": "https://www.sothebys.com/en/buy/auction/2026/the-now-contemporary-evening-auction-2/ed-ruscha-light-leaks",
+      "observations": [
+        {
+          "tick": 209,
+          "at": "2026-11-17T01:30:37.644Z",
+          "until": 1794879047644,
+          "bid": 3500000,
+          "count": 15
+        },
+        {
+          "tick": 210,
+          "at": "2026-11-17T01:31:07.918Z",
+          "until": 1794879077918,
+          "bid": 3500000,
+          "count": 15
+        },
+        {
+          "tick": 211,
+          "at": "2026-11-17T01:31:36.902Z",
+          "until": 1794879106902,
+          "bid": 3500000,
+          "count": 15
+        },
+        {
+          "tick": 212,
+          "at": "2026-11-17T01:32:06.514Z",
+          "until": 1794879136514,
+          "bid": 3500000,
+          "count": 15
+        }
+      ]
+    },
+    {
+      "sale": "N12505",
+      "event": "KXART-SOT1616NOV26",
+      "lot": "16",
+      "title": "Concetto spaziale, Attese",
+      "artist": "Lucio Fontana",
+      "id": "2ab4bfb5-6891-4bbf-a107-42e68ea4ccb9",
+      "source": "https://www.sothebys.com/en/buy/auction/2026/vision-the-extraordinary-collection-of-theodore-and-ruth-baum-evening-auction/lucio-fontana-concetto-spaziale-attese",
+      "observations": [
+        {
+          "tick": 36,
+          "at": "2026-11-16T23:49:47.270Z",
+          "until": 1794872997270,
+          "bid": 4200000,
+          "count": 2
+        },
+        {
+          "tick": 37,
+          "at": "2026-11-16T23:50:07.885Z",
+          "until": 1794873017885,
+          "bid": 4200000,
+          "count": 2
+        },
+        {
+          "tick": 38,
+          "at": "2026-11-16T23:50:28.215Z",
+          "until": 1794873038215,
+          "bid": 4200000,
+          "count": 2
+        },
+        {
+          "tick": 39,
+          "at": "2026-11-16T23:50:48.562Z",
+          "until": 1794873058562,
+          "bid": 4200000,
+          "count": 2
+        },
+        {
+          "tick": 40,
+          "at": "2026-11-16T23:51:08.951Z",
+          "until": 1794873078951,
+          "bid": 4200000,
+          "count": 2
+        },
+        {
+          "tick": 41,
+          "at": "2026-11-16T23:51:29.292Z",
+          "until": 1794873099292,
+          "bid": 4200000,
+          "count": 2
+        }
+      ]
+    },
+    {
+      "sale": "N12505",
+      "event": "KXART-SOT1916NOV26",
+      "lot": "19",
+      "title": "Untitled Blue Monochrome, (IKB 175)",
+      "artist": "Yves Klein",
+      "id": "e3029008-d2e1-4a51-9280-9f64bb297685",
+      "source": "https://www.sothebys.com/en/buy/auction/2026/vision-the-extraordinary-collection-of-theodore-and-ruth-baum-evening-auction/yves-klein-ikb-175",
+      "observations": [
+        {
+          "tick": 48,
+          "at": "2026-11-16T23:53:51.933Z",
+          "until": 1794873241933,
+          "bid": 2000000,
+          "count": 9
+        },
+        {
+          "tick": 49,
+          "at": "2026-11-16T23:54:12.432Z",
+          "until": 1794873262432,
+          "bid": 2000000,
+          "count": 9
+        },
+        {
+          "tick": 50,
+          "at": "2026-11-16T23:54:32.891Z",
+          "until": 1794873282891,
+          "bid": 2000000,
+          "count": 9
+        },
+        {
+          "tick": 51,
+          "at": "2026-11-16T23:54:53.210Z",
+          "until": 1794873303210,
+          "bid": 2000000,
+          "count": 9
+        },
+        {
+          "tick": 52,
+          "at": "2026-11-16T23:55:13.704Z",
+          "until": 1794873323704,
+          "bid": 2000000,
+          "count": 9
+        },
+        {
+          "tick": 53,
+          "at": "2026-11-16T23:55:34.030Z",
+          "until": 1794873344030,
+          "bid": 2000000,
+          "count": 9
+        }
+      ]
+    }
+  ]
+}
