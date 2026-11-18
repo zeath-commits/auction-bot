@@ -17,6 +17,8 @@ Run `npm start` to open the strategy dashboard at http://127.0.0.1:8787. The ser
 
 ### Strategy dashboard
 
+The NBA monitor records when it first receives a five-point play with 35–50 seconds left in regulation. When the play and the live scoreboard agree, it checks two ways to back the leader. The original comparison uses leader YES. A second paper comparison takes the cheaper of leader YES and opponent NO after validating both game rules and confirming the offer twice. Each records at most one paper contract per game. Individual comparison ledgers can overlap.
+
 For the November 18 Sotheby’s sale, the published-price view compares whole-contract offers through 99¢ before the bot first sees a sold price, just afterward, 30 seconds later and five minutes later. It keeps both sides of the book before the result arrives. Each cell reports the actual local receipt offset and uses a 12-second observation window. Missing or stale samples appear separately from a sampled book with no qualifying offer. These observations add no positions to either ledger.
 
 The 3 p.m. weather test covers Philadelphia, Central Park, Miami and Chicago Midway. It fixes the observation cutoff at 3 p.m. local standard time, subtracts 1°F from the supported station high, and checks Kalshi offers twice through the earlier of 4 p.m. or publication of the afternoon climate report. The market rules name The Weather Company as the settlement source. Historical trade comparisons use `node weather-three-replay.mjs` and `node weather-three-replay.mjs --first-crossing` after generating the weather report and station archives.

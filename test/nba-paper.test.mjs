@@ -1,6 +1,33 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { liveSignal, nbaOffer } from '../nba-paper.mjs';
+import { liveSignal, nbaOffer, nbaRoutes, repeatedNbaOffers } from '../nba-paper.mjs';
+
+test('NBA offer comparison validates game equivalence and confirms each route independently', () => {
+  const event = 'KXNBAGAME-TEST';
+  const signal = {ticker:event+'-NYK',opponent:event+'-PHI'};
+  function market(ticker, team) {
+    return {ticker,event_ticker:event,market_type:'binary',notional_value_dollars:'1.0000',status:'active',
+      close_time:'2026-11-19T03:00:00Z',yes_sub_title:team,
+      rules_primary:'If '+team+' wins the New York vs Philadelphia game, then the market resolves to Yes.',
+      rules_secondary:'League cancellation rules apply.'};
+  }
+  const markets = [market(signal.ticker,'New York'),market(signal.opponent,'Philadelphia')];
+  const body = {event:{event_ticker:event, series_ticker:'KXNBAGAME', mutually_exclusive:true,markets}};
+  const routes = nbaRoutes(body,signal,event);
+  assert.deepEqual(routes.map(r=>r.side),['yes','no']);
+  function books(leaderBid,opponentBid) {
+    return [{ticker:signal.ticker,orderbook_fp:{no_dollars:[[leaderBid,'2.00']]}},
+      {ticker:signal.opponent,orderbook_fp:{yes_dollars:[[opponentBid,'5.00']]}}];
+  }
+  const at = Date.parse('2026-11-19T02:00:00Z');
+  const offers = (a,b) => repeatedNbaOffers(routes,a,b,at);
+  assert.equal(offers(books('.02','.03'),books('.02','.03'))[0].side,'no');
+  assert.equal(offers(books('.02','.02'),books('.02','.02'))[0].side,'yes');
+  assert.deepEqual(offers(books('.02','.04'),books('.02','.03')).map(o=>o.side),['yes']);
+  assert.equal(repeatedNbaOffers(routes,books('.02','.03'),books('.02','.03'),Date.parse(markets[0].close_time)).length,0);
+  markets[1].rules_secondary='Different cancellation rules.';
+  assert.deepEqual(nbaRoutes(body,signal,event).map(r=>r.side),['yes']);
+});
 
 test('five-point NBA signal needs a fresh play and a matching live scoreboard', () => {
   const now = Date.parse('2026-11-19T02:00:00Z'),

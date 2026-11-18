@@ -258,7 +258,7 @@ function paper(d) {
         '. The observed high includes a one-degree buffer when testing a crossing. Kalshi settles these contracts from The Weather Company.'
     );
   }
-  if (['all', 'nba_five'].includes(selected) && d.nbaStatus?.at) {
+  if (['all', 'nba_five','nba_best_route'].includes(selected) && d.nbaStatus?.at) {
     const n = d.nbaStatus;
     note(
       'NBA final minute · ' +
@@ -272,6 +272,12 @@ function paper(d) {
         ' · checked ' +
         time(n.at)
     );
+    if (selected === 'nba_best_route' && n.arrivals) {
+      const a = n.arrivals;
+      note('One paper contract on the cheaper confirmed offer to back the leader. Leader YES wins ties in price. Opponent NO requires matching game and exceptional settlement rules.');
+      table('Five-point plays seen by the monitor', ['Games','Distinct plays','Seen within 5s','Seen within 15s','Passed score checks on first sight'],
+        [[a.games,a.plays,a.withinFive,a.withinFifteen,a.matched]]);
+    }
   }
   for (const pair of Object.values(d.pairStatus ?? {}))
     if (pair.at)

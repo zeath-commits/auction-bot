@@ -36,6 +36,11 @@
   ],
   "studies": [
     {
+      "market": "NBA game winners",
+      "test": "Both ways to back a five-point leader, accounting for score delay",
+      "finding": "In the 2025–26 regular season, the first qualifying buy on either leader YES or opponent NO five to fifteen seconds after the play matched 22 games. Twenty-one won for a modeled $0.1973 loss at one contract per game. Waiting at least ten seconds gave 16 wins in 17 and a $0.4405 loss. The next season through November 15 contributed five winning entries worth $0.0651 combined. The archived postseason games contributed one win worth $0.0186. Public prints do not establish when our monitor could have entered."
+    },
+    {
       "market": "Fine art",
       "test": "Delayed start on two-book auction replay, November 16",
       "finding": "Untitled (Shipwreck) was the only lot with qualifying depth on two archived order books. Starting 30 seconds, one minute or three minutes after the first recorded sold price still showed one contract at 91¢ and one at 92¢ on two subsequent reads. Each delay modeled $0.159 net after fees. Starting five minutes late found zero qualifying pairs in the available archive. These delays reuse the same two shares."

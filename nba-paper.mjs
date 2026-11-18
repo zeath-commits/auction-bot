@@ -106,14 +106,15 @@ export function liveSignal(summary, game, now) {
   const leader = t[scores.home > scores.away ? 'home' : 'away'];
   return {
     ticker: eventTicker(game) + '-' + leader,
+    opponent: eventTicker(game) + '-' + t[scores.home > scores.away ? 'away' : 'home'],
     stamp: p.wallclock,
     seconds,
     home: scores.home,
     away: scores.away
   };
 }
-export function nbaOffer(book) {
-  const bids = book?.orderbook_fp?.no_dollars;
+export function nbaOffer(book, side = 'yes') {
+  const bids = book?.orderbook_fp?.[side === 'yes' ? 'no_dollars' : 'yes_dollars'];
   if (!Array.isArray(bids)) return null;
   const valid = bids
     .map(([p, q]) => [Number(p), Number(q)])
@@ -125,10 +126,47 @@ export function nbaOffer(book) {
   const price = Math.round((1 - best) * 10000) / 10000;
   return depth >= 1 && price > 0 && price <= 0.99 ? { price, depth } : null;
 }
+
+function gameRule(m, ticker, event) {
+  if (m?.ticker !== ticker || m.event_ticker !== event || m.market_type !== 'binary' ||
+      m.notional_value_dollars !== '1.0000' || m.status !== 'active' || !m.yes_sub_title) return null;
+  const prefix = 'If ' + m.yes_sub_title;
+  return m.rules_primary?.startsWith(prefix + ' wins the ') && m.rules_primary.endsWith('then the market resolves to Yes.')
+    ? m.rules_primary.slice(prefix.length) : null;
+}
+
+export function nbaRoutes(body, signal, eventTicker) {
+  const event = body.event;
+  if (event?.event_ticker !== eventTicker || event.series_ticker !== 'KXNBAGAME') return [];
+  const markets = body.markets?.length ? body.markets : event.markets ?? [];
+  const leader = markets.find(m => m.ticker === signal.ticker);
+  const opponent = markets.find(m => m.ticker === signal.opponent);
+  const rule = gameRule(leader,signal.ticker,eventTicker);
+  if (!rule) return [];
+  const routes = [{market:leader,side:'yes'}];
+  if (event.mutually_exclusive === true && markets.length === 2 && leader.ticker !== opponent?.ticker &&
+      gameRule(opponent,signal.opponent,eventTicker) === rule &&
+      typeof leader.rules_secondary === 'string' && opponent.rules_secondary === leader.rules_secondary &&
+      leader.close_time === opponent.close_time)
+    routes.push({market:opponent,side:'no'});
+  return routes;
+}
+export function repeatedNbaOffers(routes, first, second, at) {
+  function ask(books,r) {
+    return nbaOffer(books.find(b => b.ticker === r.market.ticker), r.side);
+  }
+  return routes.flatMap(r => {
+    const a = ask(first,r), b = ask(second,r);
+    if (!a || !b || b.price > a.price || !(at < Date.parse(r.market.close_time))) return [];
+    return [{ticker:r.market.ticker,side:r.side,price:b.price,depth:Math.min(a.depth,b.depth),closeAt:Date.parse(r.market.close_time)}];
+  }).sort((a,b) => a.price-b.price || Number(a.side==='no')-Number(b.side==='no'));
+}
 export async function observeNBA({ db, config, stop, status }) {
   db.exec(
     'CREATE TABLE IF NOT EXISTS nba_observations(game TEXT PRIMARY KEY, ticker TEXT, signal TEXT, decision TEXT, observed TEXT)'
   );
+  db.exec(`CREATE TABLE IF NOT EXISTS nba_feed_arrivals(game TEXT, play TEXT, observed INTEGER,lag INTEGER,accepted INTEGER,
+    PRIMARY KEY(game,play)); CREATE TABLE IF NOT EXISTS nba_route_books(game TEXT,read INTEGER,at INTEGER,detail TEXT,PRIMARY KEY(game,read))`);
   const io = new Transport({
     ...config,
     maxHttpAgeSeconds: 1,
@@ -140,7 +178,14 @@ export async function observeNBA({ db, config, stop, status }) {
 
   async function check(game) {
     const url = 'summary?event=' + game.id;
-    const first = liveSignal(await espn(url), game, Date.now());
+    const summary = await espn(url), received = Date.now();
+    const first = liveSignal(summary, game, received);
+    const p = summary.plays?.at(-1), seconds = clock(p?.clock?.displayValue);
+    if (String(summary.header?.id) === game.id && p?.period?.number === 4 && seconds >= 35 && seconds <= 50 &&
+        Math.abs(p.homeScore-p.awayScore) === 5 && Number.isFinite(Date.parse(p.wallclock))) {
+      db.prepare('INSERT OR IGNORE INTO nba_feed_arrivals VALUES(?,?,?,?,?)')
+        .run(game.id,String(p.id ?? p.wallclock),received,received-Date.parse(p.wallclock),Number(!!first));
+    }
     if (!first || stop()) return;
     const now = new Date().toISOString();
     const inserted = db
@@ -152,23 +197,17 @@ export async function observeNBA({ db, config, stop, status }) {
         .prepare('UPDATE nba_observations SET decision=? WHERE game=?')
         .run(decision, game.id);
     try {
-      const path = '/markets/' + first.ticker,
-        book = path + '/orderbook?depth=5';
-      const [m, a] = await Promise.all([io.get(path), io.get(book)]);
-      const market = m.body.market,
-        offer = nbaOffer(a.body);
-      if (
-        market?.ticker !== first.ticker ||
-        market.event_ticker !== eventTicker(game) ||
-        market.status !== 'active' ||
-        !market.yes_sub_title ||
-        !market.rules_primary?.startsWith(
-          'If ' + market.yes_sub_title + ' wins the '
-        ) ||
-        !market.rules_primary.endsWith('then the market resolves to Yes.')
-      )
-        return finish('Market unavailable or rules mismatch');
-      if (!offer) return finish('No eligible YES ask');
+      const event = eventTicker(game);
+      const query = new URLSearchParams([['tickers',first.ticker],['tickers',first.opponent],['depth','5']]);
+      const book = '/markets/orderbooks?' + query;
+      const [m, a] = await Promise.all([io.get('/events/'+event+'?with_nested_markets=true'), io.get(book)]);
+      const routes = nbaRoutes(m.body,first,event);
+      if (!routes.length) return finish('Market unavailable or rules mismatch');
+      const store = (n,r) => db.prepare('INSERT OR IGNORE INTO nba_route_books VALUES(?,?,?,?)')
+        .run(game.id,n,r.receivedAt,JSON.stringify({requestedAt:r.requestedAt,books:r.body.orderbooks}));
+      store(1,a);
+      if (!routes.some(r => nbaOffer(a.body.orderbooks.find(b=>b.ticker===r.market.ticker),r.side)))
+        return finish('No qualifying ask on either route');
       await sleep(1000);
       const [b, summary, scoreboard] = await Promise.all([
         io.get(book),
@@ -176,9 +215,9 @@ export async function observeNBA({ db, config, stop, status }) {
         espn('scoreboard?dates=' + dates(game.date).board)
       ]);
       const updated = scoreboard.events?.find((g) => g.id === game.id);
+      store(2,b);
       const completed = Date.now(),
-        latest = updated && liveSignal(summary, updated, completed),
-        second = nbaOffer(b.body);
+        latest = updated && liveSignal(summary, updated, completed);
       if (
         stop() ||
         !latest ||
@@ -186,30 +225,19 @@ export async function observeNBA({ db, config, stop, status }) {
         latest.stamp !== first.stamp ||
         latest.seconds !== first.seconds ||
         latest.home !== first.home ||
-        latest.away !== first.away ||
-        !(completed < Date.parse(market.close_time))
+        latest.away !== first.away
       )
         return finish('Score changed or expired');
-      if (!second || second.price > offer.price)
+      const offers = repeatedNbaOffers(routes,a.body.orderbooks,b.body.orderbooks,completed);
+      if (!offers.length)
         return finish('Offer disappeared or increased');
-      const fees =
-        Math.ceil(
-          0.07 * multiplier * second.price * (1 - second.price) * 10000 - 1e-9
-        ) / 10000;
       db.exec('BEGIN');
       try {
-        addPaper(db, {
-          id: 'nba_five/' + game.id,
-          strategy: 'nba_five',
-          ticker: first.ticker,
-          side: 'yes',
-          at: new Date(completed).toISOString(),
-          quantity: 1,
-          price: second.price,
-          fees,
-          depth: Math.min(offer.depth, second.depth),
-          closeAt: Date.parse(market.close_time)
-        });
+        for (const [strategy,quote] of [['nba_five',offers.find(o=>o.side==='yes')],['nba_best_route',offers[0]]]) {
+          if (!quote) continue;
+          const fees = Math.ceil(0.07 * multiplier * quote.price * (1 - quote.price) * 10000 - 1e-9) / 10000;
+          addPaper(db, {id:strategy+'/'+game.id,strategy,...quote,at:new Date(completed).toISOString(),quantity:1,fees});
+        }
         finish('Paper entry');
         db.exec('COMMIT');
       } catch (e) {
@@ -300,6 +328,10 @@ export async function observeNBA({ db, config, stop, status }) {
     status.observations = db
       .prepare('SELECT COUNT(*) AS n FROM nba_observations')
       .get().n;
+    status.arrivals = db.prepare(`SELECT COUNT(*) AS plays,COUNT(DISTINCT game) AS games,
+      COUNT(CASE WHEN lag>=0 AND lag<=5000 THEN 1 END) AS withinFive,
+      COUNT(CASE WHEN lag>=0 AND lag<=15000 THEN 1 END) AS withinFifteen,
+      COUNT(CASE WHEN accepted=1 THEN 1 END) AS matched FROM nba_feed_arrivals`).get();
     await sleep(delay);
   }
 }
