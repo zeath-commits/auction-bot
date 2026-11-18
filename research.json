@@ -36,6 +36,11 @@
   ],
   "studies": [
     {
+      "market": "Auction prices confirmed by a second market",
+      "test": "Used Polymarket’s recorded winning-range close plus 30 seconds on five November artworks. Checked later Kalshi buyer executions only where the entire range implied one side of the threshold.",
+      "finding": "36 of 43 Kalshi thresholds had a determinate side. Two artworks had subsequent whole-share buys through 95¢. Buying up to five contracts at the first qualifying trade per artwork modeled ten contracts costing $9.53 and paying $10. A third artwork had a buy through 99¢. The live monitor records its own first receipt of a final Polymarket range before measuring later Kalshi offers."
+    },
+    {
       "market": "Auction results in foreign currencies",
       "test": "Compared four works in Christie’s October 14 London results with the same works in Artnet’s October top ten. Checked the premium-inclusive sale-currency amount and each publisher’s US-dollar equivalent.",
       "finding": "All four GBP prices matched exactly. The US-dollar equivalents differed by $86,446 to $280,969. For Kandinsky’s Das bunte Leben both sources reported £31,560,000. Christie’s converted that to $41,785,440 and Artnet to $41,504,471. These are publisher comparisons. Rothko was sold directly in USD and its Kalshi settlement matched the Sotheby’s result."

@@ -1,6 +1,21 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { rangeSignals } from '../art-range-bids.mjs';
+import { rangeSignals, rangeSide, resolvedRange } from '../art-range-bids.mjs';
+
+test('resolved buckets imply a side only outside the interval and honor equality at its upper end',()=>{
+  const m={closed:true,umaResolutionStatus:'resolved',groupItemTitle:'$75m-$90m',outcomes:'["Yes","No"]',outcomePrices:'["1","0"]'};
+  const e={closed:true,markets:[m]};
+  const range=resolvedRange(e);
+  assert.equal(rangeSide(range,74e6),'yes');
+  assert.equal(rangeSide(range,75e6),null);
+  assert.equal(rangeSide(range,86e6),null);
+  assert.equal(rangeSide(range,90e6),'no');
+  assert.equal(rangeSide(resolvedRange({...e,markets:[{...m,groupItemTitle:'<$75m'}]}),75e6),'no');
+  assert.equal(rangeSide(resolvedRange({...e,markets:[{...m,groupItemTitle:'$90m+'}]}),90e6),null);
+  assert.equal(resolvedRange({...e,closed:false}),null);
+  assert.throws(()=>resolvedRange({...e,markets:[m,m]}));
+  assert.throws(()=>resolvedRange({...e,markets:[{...m,outcomePrices:'["0.5","0.5"]'}]}));
+});
 
 test('price-range signal excludes the equality bracket, stale bids and insufficient Kalshi depth',()=>{
   const at=1000000;

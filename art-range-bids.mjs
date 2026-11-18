@@ -4,7 +4,7 @@ import calendar from './sothebys-bid-calendar.json' with { type: 'json' };
 import otherSales from './paper-calendar.json' with { type: 'json' };
 import { marketList } from './sothebys-bids.mjs';
 import { captureAuctionQuotes } from './auction-quote-timing.mjs';
-import { checkEvent, checkFees } from './core.mjs';
+import { checkEvent, checkFees, checkMarketActive } from './core.mjs';
 import { Transport } from './transport.mjs';
 import { addPaper } from './strategy-monitor.mjs';
 
@@ -36,18 +36,85 @@ async function publicJSON(url,maxAge=2) {
   return r.json();
 }
 
-async function ranges(target) {
-  // Listing metadata is cached for five minutes. Tradable prices come from separate time-stamped books.
+async function listing(target) {
   const e=await publicJSON('https://gamma-api.polymarket.com/events/slug/'+target.slug,300);
-  if(e.slug!==target.slug || !e.active || e.closed || !e.negRisk || !e.markets?.length ||
-      e.markets.some(m=>!m.active || m.closed || !m.negRisk || !m.acceptingOrders || !m.enableOrderBook))
-    throw Error('Range markets unavailable');
+  if(e.slug!==target.slug || !e.negRisk || !e.markets?.length || e.markets.some(m=>!m.negRisk))
+    throw Error('Unexpected range listing');
   const rules=e.markets.map(m=>[m.groupItemTitle,m.description,m.conditionId,m.clobTokenIds,m.outcomes,m.negRiskMarketID])
     .sort((a,b)=>a[0].localeCompare(b[0]));
   if(createHash('sha256').update(JSON.stringify(rules)).digest('hex')!==target.hash)
     throw Error('Range rules or outcome tokens changed');
+  return e;
+}
+
+async function ranges(target) {
+  const e=await listing(target);
+  if(!e.active || e.closed || e.markets.some(m=>!m.active || m.closed || !m.acceptingOrders || !m.enableOrderBook))
+    throw Error('Range markets unavailable');
   return e.markets.map(m=>({label:m.groupItemTitle, floor:Number(m.groupItemTitle.match(/^\$(\d+)m/i)?.[1] ?? 0)*1e6,
     token:JSON.parse(m.clobTokenIds)[JSON.parse(m.outcomes).indexOf('Yes')], condition:m.conditionId}));
+}
+
+export function resolvedRange(e) {
+  if (!e.closed || !e.markets.every(m=>m.closed && m.umaResolutionStatus==='resolved')) return null;
+  const winners=e.markets.filter(m=>{
+    const prices=JSON.parse(m.outcomePrices),outcomes=JSON.parse(m.outcomes);
+    if(outcomes.length!==2||!outcomes.includes('Yes')||!outcomes.includes('No')||
+      prices.length!==2||!prices.includes('1')||!prices.includes('0'))throw Error('Range has no binary payout');
+    return prices[outcomes.indexOf('Yes')]==='1';
+  });
+  if(winners.length!==1)throw Error('Range outcome unclear');
+  const label=winners[0].groupItemTitle;
+  const parts=label.match(/^(?:<\$(\d+(?:\.\d+)?)m|\$(\d+(?:\.\d+)?)m-\$(\d+(?:\.\d+)?)m|\$(\d+(?:\.\d+)?)m\+)$/i);
+  if(!parts)throw Error('Unknown resolved range '+label);
+  return {label,low:Number(parts[2]??parts[4]??0)*1e6,high:parts[1]||parts[3]?Number(parts[1]??parts[3])*1e6:null};
+}
+
+export function rangeSide({low,high},strike) {
+  if(low>strike)return 'yes';
+  if(high!==null && high<=strike)return 'no';
+  return null;
+}
+
+export async function observeRangeResults({db,config,status,stop}) {
+  db.exec(`CREATE TABLE IF NOT EXISTS auction_range_receipts(event TEXT PRIMARY KEY,at INTEGER NOT NULL,label TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS auction_range_post_books(event TEXT,at INTEGER,detail TEXT NOT NULL,PRIMARY KEY(event,at))`);
+  const io=new Transport({...config,maxHttpAgeSeconds:2});
+  const finished=new Set();
+  status.resolutions={};
+  while(!stop() && finished.size<targets.length) {
+    for(const target of targets) {
+      if(stop() || finished.has(target.slug))continue;
+      const lot=target.event ? otherSales.auctions.flatMap(s=>s.targets).find(t=>t.event===target.event) :
+        calendar.targets.find(t=>t.lot===target.lot);
+      if(Date.now()<Date.parse(target.scheduled??calendar.scheduled)) {
+        status.resolutions[lot.title]='Auction scheduled';continue;
+      }
+      try {
+        const markets=await readMarkets(io,lot);
+        if(markets.every(m=>m.status==='finalized'||m.status==='settled')){
+          finished.add(target.slug);status.resolutions[lot.title]='Kalshi settled';continue;
+        }
+        const e=await listing(target),range=resolvedRange(e),received=Date.now();
+        if(!range){status.resolutions[lot.title]='Waiting for a resolved range';continue;}
+        db.prepare('INSERT OR IGNORE INTO auction_range_receipts VALUES(?,?,?)').run(lot.event,received,range.label);
+        const first=db.prepare('SELECT at,label FROM auction_range_receipts WHERE event=?').get(lot.event);
+        if(first.label!==range.label)throw Error('Published range changed');
+        status.resolutions[lot.title]='Observed '+range.label+' at '+new Date(first.at).toISOString();
+        if(received<first.at+30000)continue;
+        const relevant=markets.filter(m=>checkMarketActive(m,received)&&rangeSide(range,m.floor_strike));
+        if(!relevant.length)continue;
+        const sample=await captureAuctionQuotes(io,relevant);
+        if(!sample||sample.asOf<first.at+30000||stop())continue;
+        const quotes=sample.rows.map(r=>{const side=rangeSide(range,r.strike);return {ticker:r.ticker,side,offer:r[side]};});
+        db.prepare('INSERT OR IGNORE INTO auction_range_post_books VALUES(?,?,?)')
+          .run(lot.event,sample.at,JSON.stringify({slug:target.slug,label:range.label,firstAt:first.at,asOf:sample.asOf,quotes}));
+        const offered=quotes.filter(r=>r.offer && r.offer.price<=.95).length;
+        status.resolutions[lot.title]+=' · '+offered+'/'+quotes.length+' thresholds offered through 95¢';
+      }catch(err){status.resolutions[lot.title]=err.message;}
+    }
+    await sleep(30000);
+  }
 }
 
 async function bidAtSize(bucket) {

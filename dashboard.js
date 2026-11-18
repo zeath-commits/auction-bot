@@ -140,6 +140,9 @@ function paper(d) {
     table('Saved pre-auction quotes',['Kalshi event','Snapshots','Most recent'],(d.rangeBidCoverage ?? [])
       .map(r=>[r.event,r.scans,time(r.lastAt)]),'Waiting for the first snapshot.');
     if (d.rangeBidStatus?.ended) note('Pre-auction test ended.');
+    table('Polymarket resolution and subsequent Kalshi offers',['Artwork','Observation'],
+      Object.entries(d.rangeBidStatus?.resolutions??{}),'Waiting for range observations.');
+    if(d.rangeBidStatus?.resolutionError)note(d.rangeBidStatus.resolutionError);
   }
   if (selected === 'btc_chart10' && d.btcChartCoverage) {
     const c = d.btcChartCoverage;

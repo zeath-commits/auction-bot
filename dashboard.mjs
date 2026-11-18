@@ -19,7 +19,7 @@ import {
 } from './auction-portfolio.mjs';
 import { observeNBA } from './nba-paper.mjs';
 import { observeRecordPair } from './art-record-pair.mjs';
-import { observeRangeBids } from './art-range-bids.mjs';
+import { observeRangeBids, observeRangeResults } from './art-range-bids.mjs';
 import { observeCS2 } from './esports-paper.mjs';
 import { observeUS } from './us-bitcoin-paper.mjs';
 import { observeSothebysBids } from './sothebys-bids.mjs';
@@ -637,6 +637,9 @@ server.listen(port, host, () => {
     }
   }
   importSafe();
+  observeRangeResults({db,config,status:rangeBidStatus,
+    stop:() => stopping || exists(path.join(ROOT,'STOP'))
+  }).catch(e => {rangeBidStatus.resolutionError=e.message;});
   observeRangeBids({db,config,status:rangeBidStatus,
     stop:() => stopping || exists(path.join(ROOT,'STOP'))
   }).catch(e => {rangeBidStatus.error=e.message;});
