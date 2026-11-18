@@ -148,6 +148,12 @@ function paper(d) {
       [[c.closed, c.attempted, c.atTen, c.beforeClose, c.wide, c.correct + ' / ' + c.settled]]);
   }
   if (['all','art_record_pair','art_range_bids'].includes(selected)) {
+    const trials=(d.auctionExitTrials ?? []).filter(t=>selected==='all'||selected===t.strategy);
+    if (trials.length) {
+      table('First profitable paper exit versus holding', ['Position','Registered','Entry cost','First full exit','Exit net','Net at settlement'],
+        trials.map(t=>[t.id,time(t.registered),money(t.cost),t.soldAt?time(t.soldAt):'No exit recorded',money(t.exitNet),money(t.heldNet)]));
+      note('Each comparison fixes the starting shares and cost. A simulated exit needs enough bids for every leg on two fresh reads and a positive return after fees. The hold-to-settlement ledger tracks the same shares separately.');
+    }
     const holdings = (d.auctionStudyHoldings ?? []).filter(h => selected === 'all' || h.strategy === selected);
     if (holdings.length) {
       const marks = holdings.map(h => d.auctionExits.rows?.find(r =>

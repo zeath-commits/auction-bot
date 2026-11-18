@@ -1,12 +1,52 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { openLedger, addPaper } from '../strategy-monitor.mjs';
 import {
   auctionPortfolio,
   auctionHoldings,
   auctionStudyHoldings,
+  registerExitTrials,
+  checkExitTrials,
+  exitTrialResults,
   exitQuote
 } from '../auction-portfolio.mjs';
+test('paper exit freezes the cohort and requires two fresh profitable books for every leg', () => {
+  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'paper-exit-')),db=openLedger(dir);
+  try {
+    const at=Math.floor(Date.now()/1000)*1000,strategy='art_record_pair';
+    for (const [ticker,side,price] of [['AN','yes',0.74],['LOT','no',0.20]])
+      addPaper(db,{id:ticker,strategy,ticker,side,price,fees:0.01,quantity:10,at:new Date(at).toISOString()});
+    const held=auctionStudyHoldings(db);
+    registerExitTrials(db,held,at);
+    registerExitTrials(db,held.map(h=>({...h,quantity:h.quantity*2,cost:h.cost*2})),at+1);
+    const snap=(ms,size,yesPrice='0.85')=>({requestedAt:ms,receivedAt:ms+20,httpDate:new Date(ms).toUTCString(),
+      body:{orderbooks:[{ticker:'AN',orderbook_fp:{yes_dollars:[[yesPrice,'20']]}},
+        {ticker:'LOT',orderbook_fp:{no_dollars:[['0.15',size]]}}]}});
+    const a=snap(at+1000,'10'),b=snap(at+2200,'10');
+    const check=(first,second,tickers=['AN','LOT'])=>checkExitTrials(db,held,first,second,tickers);
+    check(a,b,['AN']);
+    check(a,{...b,httpDate:a.httpDate});
+    check(a,snap(at+2200,'9'));
+    check(snap(at+1000,'10','0.80'),snap(at+2200,'10','0.80'));
+    assert.equal(exitTrialResults(db)[0].soldAt,null);
+    check(a,b);
+    check(a,snap(at+3200,'10'));
+    let t=exitTrialResults(db)[0];
+    assert.equal(t.soldAt,b.receivedAt);
+    assert.ok(Math.abs(t.cost-9.42)<1e-8 && Math.abs(t.exitNet-0.40)<1e-8);
+    db.prepare("UPDATE paper SET payout=10 WHERE ticker='AN'").run();
+    assert.equal(exitTrialResults(db)[0].heldNet,null);
+    db.prepare("UPDATE paper SET payout=0 WHERE ticker='LOT'").run();
+    assert.ok(Math.abs(exitTrialResults(db)[0].heldNet-0.58)<1e-8);
+  } finally {
+    db.close();
+    fs.rmSync(dir,{recursive:true,force:true});
+  }
+});
 test('auction cash reserves open cost, releases final payout and excludes parallel single-share tests', () => {
   const db = new DatabaseSync(':memory:');
   try {

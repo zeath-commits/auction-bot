@@ -58,6 +58,8 @@ export function openLedger(directory) {
       closeAt INTEGER,ahead REAL,checked INTEGER,volume REAL,result TEXT);
     CREATE TABLE IF NOT EXISTS auction_premium_signals(ticker TEXT PRIMARY KEY,event TEXT,at INTEGER,
       bid INTEGER,estimated REAL,strike REAL,result TEXT);
+    CREATE TABLE IF NOT EXISTS auction_exit_trials(id TEXT PRIMARY KEY,strategy TEXT,registered INTEGER,
+      holdings TEXT,soldAt INTEGER,proceeds REAL,evidence TEXT);
   `);
   return db;
 }

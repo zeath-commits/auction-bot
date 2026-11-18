@@ -14,6 +14,7 @@ import {
   auctionPortfolio,
   auctionHoldings,
   auctionStudyHoldings,
+  exitTrialResults,
   observeAuctionExits
 } from './auction-portfolio.mjs';
 import { observeNBA } from './nba-paper.mjs';
@@ -535,6 +536,7 @@ const server = http.createServer((req, res) => {
           catalogComparison: { observedAt: catalogObservedAt, source: catalogSource, cases: catalogCases },
           auctionHoldings: auctionHoldings(db),
           auctionStudyHoldings: auctionStudyHoldings(db),
+          auctionExitTrials: exitTrialResults(db),
           auctionExits,
           weatherStatus,
           sothebysCoverage: db

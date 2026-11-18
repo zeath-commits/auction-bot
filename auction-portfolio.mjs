@@ -77,6 +77,49 @@ export function exitQuote(position, first, second) {
       quantity === position.quantity ? gross - fees - position.cost : null
   };
 }
+
+export function registerExitTrials(db, holdings, now) {
+  const save=db.prepare('INSERT OR IGNORE INTO auction_exit_trials(id,strategy,registered,holdings) VALUES(?,?,?,?)');
+  for (const p of holdings.filter(p=>p.strategy==='art_range_bids'))
+    save.run(p.ticker,p.strategy,now,JSON.stringify([p]));
+  const paired=holdings.filter(p=>p.strategy==='art_record_pair');
+  const annual=paired.filter(p=>p.side==='yes');
+  const lots=paired.filter(p=>p.side==='no');
+  if (annual.length===1 && lots.length && annual[0].quantity===lots.reduce((n,p)=>n+p.quantity,0))
+    save.run(annual[0].ticker,'art_record_pair',now,JSON.stringify(paired));
+}
+
+export function checkExitTrials(db, positions, first, second, tickers) {
+  const asOf = r => Date.parse(r.httpDate)-1000*Number(r.cacheAge??0);
+  if (!(asOf(second)>asOf(first)) || ![first,second].every(r=>
+    asOf(r)>=r.receivedAt-3500 && asOf(r)<=r.receivedAt+1000)) return;
+  for (const trial of db.prepare('SELECT * FROM auction_exit_trials WHERE soldAt IS NULL AND registered<=?').all(first.requestedAt)) {
+    const held=JSON.parse(trial.holdings);
+    // A single paired book request must cover all frozen legs while they are still open.
+    if (!held.every(h=>tickers.includes(h.ticker) && positions.some(p=>p.strategy===h.strategy &&
+      p.ticker===h.ticker && p.side===h.side && p.quantity>=h.quantity))) continue;
+    const legs=held.map(h=>exitQuote(h,first.body.orderbooks.find(b=>b.ticker===h.ticker),
+      second.body.orderbooks.find(b=>b.ticker===h.ticker)));
+    if (!legs.every(l=>l.unpriced===0)) continue;
+    const proceeds=legs.reduce((n,l)=>n+l.proceeds,0);
+    const cost=held.reduce((n,h)=>n+h.cost,0);
+    if (Math.round((proceeds-cost)*1e6)<=0) continue;
+    db.prepare('UPDATE auction_exit_trials SET soldAt=?,proceeds=?,evidence=? WHERE id=? AND soldAt IS NULL')
+      .run(second.receivedAt,proceeds,JSON.stringify({first:first.receivedAt,second:second.receivedAt,legs}),trial.id);
+  }
+}
+
+export function exitTrialResults(db) {
+  const settled=db.prepare('SELECT payout/quantity AS value FROM paper WHERE ticker=? AND side=? AND strategy=? AND payout IS NOT NULL AND quantity>0 LIMIT 1');
+  return db.prepare('SELECT * FROM auction_exit_trials ORDER BY registered,id').all().map(trial=>{
+    const held=JSON.parse(trial.holdings),cost=held.reduce((n,h)=>n+h.cost,0);
+    const payouts=held.map(h=>settled.get(h.ticker,h.side,h.strategy)?.value);
+    const heldNet=payouts.every(p=>p!=null) ? held.reduce((n,h,i)=>n+h.quantity*payouts[i],-cost) : null;
+    return {id:trial.id,strategy:trial.strategy,registered:trial.registered,cost,soldAt:trial.soldAt,
+      exitNet:trial.proceeds==null?null:trial.proceeds-cost,heldNet};
+  });
+}
+
 export async function observeAuctionExits({ db, config, status, stop }) {
   db.exec(
     'CREATE TABLE IF NOT EXISTS auction_exit_marks(ticker TEXT,side TEXT,at INTEGER,quantity INTEGER,cost REAL,detail TEXT,PRIMARY KEY(ticker,side,at))'
@@ -91,6 +134,7 @@ export async function observeAuctionExits({ db, config, status, stop }) {
   while (!stop()) {
     const positions = holdings(),
       rows = [];
+    registerExitTrials(db,positions,Date.now());
     try {
       if (positions.length) {
         const [fee, exchange] = await Promise.all([
@@ -136,9 +180,8 @@ export async function observeAuctionExits({ db, config, status, stop }) {
             throw Error('Quote check exceeded time window');
           const first = new Map(a.body.orderbooks.map((x) => [x.ticker, x])),
             second = new Map(b.body.orderbooks.map((x) => [x.ticker, x]));
-          for (const p of positions.filter((p) => active.includes(p.ticker))) {
-            if (!checkMarketActive(listed.get(p.ticker), b.receivedAt))
-              continue;
+          const stillOpen=active.filter(t=>checkMarketActive(listed.get(t),b.receivedAt));
+          for (const p of positions.filter((p) => stillOpen.includes(p.ticker))) {
             const exit = exitQuote(
               p,
               first.get(p.ticker),
@@ -146,6 +189,7 @@ export async function observeAuctionExits({ db, config, status, stop }) {
             );
             rows.push({ ...p, firstAt: a.receivedAt, at: b.receivedAt, exit });
           }
+          checkExitTrials(db,holdings(),a,b,stillOpen);
         }
       }
       const current = holdings();
