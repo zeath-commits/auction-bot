@@ -9,6 +9,11 @@ import { observeLateAuctions } from './late-auction.mjs';
 import { openSoldLimits } from './sold-limits.mjs';
 import { Transport } from './transport.mjs';
 import { observeWeather } from './weather-paper.mjs';
+import {
+  auctionPortfolio,
+  auctionHoldings,
+  observeAuctionExits
+} from './auction-portfolio.mjs';
 import { observeNBA } from './nba-paper.mjs';
 import { observeUS } from './us-bitcoin-paper.mjs';
 import { observeSothebysBids } from './sothebys-bids.mjs';
@@ -38,6 +43,7 @@ const lateAuctionStatus = { at: null };
 const usBitcoinStatus = { at: null };
 const sothebysStatus = {};
 const nbaStatus = {};
+const auctionExits = {};
 const weatherStatus = {};
 const pairStatus = Object.fromEntries(
   Object.entries(pairSeries).map(([k, label]) => [k, { label, at: null }])
@@ -67,29 +73,50 @@ function botReceipts() {
       )
       .map((r) => [r.clientOrderId, r])
   );
-  return rows
-    .filter(
-      (r) =>
-        r.mode === 'live' &&
-        r.type === 'receipt' &&
-        !r.hypothetical &&
-        intents.has(r.clientOrderId) &&
-        r.orderId &&
-        Number.isFinite(r.costCents) &&
-        r.filled > 0
-    )
-    .map((r) => {
-      const order = intents.get(r.clientOrderId);
-      return {
-        ticker: order?.ticker,
-        side: order?.side,
-        quantity: r.filled,
-        cost: r.costCents / 100,
-        at: r.recordedAt,
-        source: 'Bot execution receipt',
-        net: r.realizedProfit ?? null
-      };
+  const fills = rows.filter(
+    (r) =>
+      r.mode === 'live' &&
+      r.type === 'receipt' &&
+      !r.hypothetical &&
+      intents.has(r.clientOrderId) &&
+      typeof r.orderId === 'string' &&
+      r.orderId &&
+      Number.isFinite(r.costCents) &&
+      r.costCents >= 0 &&
+      Number.isFinite(r.filled) &&
+      r.filled > 0
+  );
+  const grouped = Map.groupBy(fills, (r) => r.orderId);
+  const clientGroups = Map.groupBy(fills, (r) => r.clientOrderId);
+  const history = [];
+  let conflicts = 0;
+  for (const group of grouped.values()) {
+    const r = group[0],
+      order = intents.get(r.clientOrderId);
+    if (
+      group.some(
+        (x) =>
+          x.clientOrderId !== r.clientOrderId ||
+          x.costCents !== r.costCents ||
+          x.filled !== r.filled ||
+          (x.realizedProfit ?? null) !== (r.realizedProfit ?? null)
+      ) ||
+      clientGroups.get(r.clientOrderId).some((x) => x.orderId !== r.orderId)
+    ) {
+      conflicts++;
+      continue;
+    }
+    history.push({
+      ticker: order.ticker,
+      side: order.side,
+      quantity: r.filled,
+      cost: r.costCents / 100,
+      at: r.recordedAt,
+      source: 'Bot execution receipt',
+      net: r.realizedProfit ?? null
     });
+  }
+  return { history, conflicts };
 }
 function importAuction() {
   const archived = path.join(ROOT, 'research.json');
@@ -469,6 +496,9 @@ const server = http.createServer((req, res) => {
           sothebysStatus,
           soldLimits: soldLimits.summary(),
           nbaStatus,
+          auctionPortfolio: auctionPortfolio(db),
+          auctionHoldings: auctionHoldings(db),
+          auctionExits,
           weatherStatus,
           sothebysCoverage: db
             .prepare(
@@ -507,7 +537,7 @@ const server = http.createServer((req, res) => {
             .get()
         };
       } else {
-        body = { mode: 'paper', history: botReceipts() };
+        body = { mode: 'paper', ...botReceipts() };
       }
       res
         .writeHead(200, { 'Content-Type': 'application/json' })
@@ -542,6 +572,14 @@ server.listen(port, host, () => {
     stop: () => stopping || exists(path.join(ROOT, 'STOP'))
   }).catch((e) => {
     weatherStatus.error = e.message;
+  });
+  observeAuctionExits({
+    db,
+    config,
+    status: auctionExits,
+    stop: () => stopping || exists(path.join(ROOT, 'STOP'))
+  }).catch((e) => {
+    auctionExits.error = e.message;
   });
   observeNBA({
     db,

@@ -80,10 +80,14 @@ function paper(d) {
   metrics([
     ['Paper entries', rows.length],
     ['Awaiting settlement', rows.length - settled.length],
-    [
-      'Settled paper net',
-      settled.length ? money(settled.reduce((s, r) => s + r.net, 0)) : '—'
-    ],
+    ...(selected === 'all'
+      ? [['Distinct markets', new Set(rows.map((r) => r.ticker)).size]]
+      : [
+          [
+            'Settled paper net',
+            settled.length ? money(settled.reduce((s, r) => s + r.net, 0)) : '—'
+          ]
+        ]),
     ['BTC windows sampled', d.windows.n],
     [
       'BTC windows showing 1,000+ at entry',
@@ -94,6 +98,71 @@ function paper(d) {
       ).size
     ]
   ]);
+  if (
+    ['all', 'sale_depth', 'late_auction', 'sothebys_sold'].includes(selected)
+  ) {
+    const p = d.auctionPortfolio,
+      marks = d.auctionExits;
+    const exits = d.auctionHoldings.map((h) =>
+      marks.rows?.find(
+        (r) =>
+          r.ticker === h.ticker &&
+          r.side === h.side &&
+          r.quantity === h.quantity &&
+          r.cost === h.cost &&
+          Date.now() - r.at < 90000
+      )
+    );
+    const liquidationNet =
+      exits.length && exits.every((r) => r && r.exit.netIfFullySold != null)
+        ? exits.reduce((n, r) => n + r.exit.netIfFullySold, 0)
+        : null;
+    view.append(el('h2', '$1,000 auction paper portfolio'));
+    metrics([
+      ['Available paper cash', money(p.cash)],
+      ['Open cost incl. fees', money(p.openCost)],
+      ['Settled auction net', money(p.settledNet)],
+      ['Open net if all sold now', money(liquidationNet)],
+      [
+        'Open net if all pay $1',
+        p.openQuantity ? money(p.openQuantity - p.openCost) : '—'
+      ]
+    ]);
+    if (d.auctionHoldings.length) {
+      const rows = d.auctionHoldings.map((h, i) => {
+        const q = exits[i];
+        const fresh = Boolean(q);
+        return [
+          h.ticker,
+          h.side.toUpperCase(),
+          h.quantity,
+          money(h.cost),
+          fresh ? q.exit.quantity : null,
+          fresh ? money(q.exit.proceeds) : null,
+          fresh ? money(q.exit.netIfFullySold) : null,
+          fresh ? time(q.at) : null
+        ];
+      });
+      table(
+        'Open auction positions',
+        [
+          'Market',
+          'Side',
+          'Held',
+          'Entry cost',
+          'Shares with bids',
+          'Sale proceeds after fees',
+          'Net if fully sold',
+          'Book checked'
+        ],
+        rows
+      );
+      note(
+        'Sale proceeds use whole shares bid at the same price on two checks one second apart. Open holdings are carried at cost until settlement.'
+      );
+    }
+    if (marks.error) note('Auction exit check · ' + marks.error);
+  }
   table(
     'Strategies',
     ['Strategy', 'Entries', 'Settled', 'Paper net'],
@@ -677,6 +746,11 @@ function history(d) {
   );
 }
 function real(a) {
+  if (a.conflicts)
+    note(
+      a.conflicts +
+        ' exchange order records have conflicting receipts. Their amounts require reconciliation.'
+    );
   note(
     'The monitor runs in paper mode. This ledger reads confirmed exchange receipts for orders submitted by this bot.'
   );

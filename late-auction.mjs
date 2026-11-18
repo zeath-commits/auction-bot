@@ -11,7 +11,7 @@ import { verifyTerms } from './paper-unsold.mjs';
 import { addPaper } from './strategy-monitor.mjs';
 
 const scale = 1000000;
-const portfolio = 1000;
+import {auctionPortfolio} from './auction-portfolio.mjs';
 const afterSale = 'late_auction',
   duringSale = 'sale_depth';
 export function auctionPhase(auction, now, tailHours) {
@@ -94,12 +94,7 @@ export async function auditArtCoverage(io, auctions) {
   return summary;
 }
 export function auctionDepthCash(db) {
-  const { spent } = db
-    .prepare(
-      "SELECT COALESCE(SUM(price*quantity+fees-COALESCE(payout,0)),0) AS spent FROM paper WHERE strategy IN ('sale_depth','late_auction','sothebys_sold')"
-    )
-    .get();
-  return portfolio - spent;
+  return auctionPortfolio(db).cash;
 }
 function charge(price, quantity) {
   return (

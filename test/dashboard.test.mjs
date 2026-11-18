@@ -22,6 +22,7 @@ test(
         'transport.mjs',
         'strategy-monitor.mjs',
         'auction-pairs.mjs',
+        'auction-portfolio.mjs',
         'late-auction.mjs',
         'us-bitcoin-paper.mjs',
         'bitcoin-reference.mjs',
@@ -72,6 +73,15 @@ test(
         [
           intent,
           receipt,
+          { ...receipt, recordedAt: 'later' },
+          { ...intent, clientOrderId: 'conflict' },
+          { ...receipt, clientOrderId: 'conflict', orderId: 'exchange-c' },
+          {
+            ...receipt,
+            clientOrderId: 'conflict',
+            orderId: 'exchange-c',
+            filled: 3
+          },
           { ...receipt, clientOrderId: 'orphan' },
           { ...receipt, mode: 'paper' },
           { ...receipt, filled: 0 },
@@ -107,6 +117,7 @@ test(
         await fetch(base + '/api/account', { headers })
       ).json();
       assert.equal(account.mode, 'paper');
+      assert.equal(account.conflicts, 1);
       assert.deepEqual(
         account.history.map((r) => [r.ticker, r.quantity, r.cost]),
         [['BOT-TEST', 2, 1.05]]
