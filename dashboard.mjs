@@ -214,6 +214,7 @@ function launchWorker(args) {
 }
 const runningReplays = new Set();
 let latestGlobalStudy = null;
+let desktopAuctionStudy = null;
 function nightlyReplay() {
   if (stopping || exists(path.join(ROOT, 'STOP'))) return;
   const fmt = new Intl.DateTimeFormat('en-CA', {
@@ -236,9 +237,9 @@ function nightlyReplay() {
   }
   const from = midnight(day),
     to = midnight(today);
-  function launch(script, done) {
+  function launch(script, done, args = [from, to]) {
     if (runningReplays.has(script)) return;
-    const child = spawn(process.execPath, [script, from, to], {
+    const child = spawn(process.execPath, [script, ...args], {
       cwd: ROOT,
       windowsHide: true,
       stdio: 'inherit'
@@ -251,6 +252,44 @@ function nightlyReplay() {
       if (code === 0) done?.();
     });
   }
+  const auctionArchive = path.join(runtime, 'auction-desktop-replay.json');
+  function readDesktopAuction() {
+    if (!exists(auctionArchive)) return null;
+    const d = json(auctionArchive),
+      m = d.models.find((x) => x.max === 5 && x.delay === 30 && !x.book);
+    if (!m) return null;
+    desktopAuctionStudy = {
+      market: 'Fine art',
+      test:
+        'November 17 alerts · checked ' +
+        d.at.slice(0, 16).replace('T', ' ') +
+        ' UTC',
+      finding:
+        m.entries.length +
+        ' thresholds on ' +
+        m.lots +
+        ' artworks had a qualifying buyer 30 seconds or more after the alert signal. Modeled ' +
+        m.quantity +
+        ' contracts at $' +
+        m.cost.toFixed(2) +
+        ' including fees. ' +
+        d.checked.length +
+        ' thresholds finalized, ' +
+        d.pending.length +
+        ' pending. ' +
+        (m.net == null
+          ? 'Payouts for selected trades are pending.'
+          : 'Modeled net after settlement $' + m.net.toFixed(2) + '.')
+    };
+    return d;
+  }
+  const auction = readDesktopAuction();
+  if (
+    !auction ||
+    (auction.pending.length &&
+      Date.now() - Date.parse(auction.at) >= 6 * 3600000)
+  )
+    launch('auction-tape-replay.mjs', readDesktopAuction, ['--desktop']);
   if (!replay().some((r) => r.day === day)) launch('btc-replay.mjs');
   const first = Date.parse(from) / 1000,
     end = Date.parse(to) / 1000,
@@ -427,6 +466,7 @@ const server = http.createServer((req, res) => {
           tenSecondValidation:
             json(path.join(ROOT, 'research.json')).tenSecondValidation ?? [],
           research: [
+            ...(desktopAuctionStudy ? [desktopAuctionStudy] : []),
             ...(latestGlobalStudy ? [latestGlobalStudy] : []),
             ...json(path.join(ROOT, 'research.json')).studies
           ],

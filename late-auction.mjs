@@ -12,7 +12,14 @@ import { addPaper } from './strategy-monitor.mjs';
 
 const scale = 1000000;
 const portfolio = 1000;
-const strategy = 'late_auction';
+const afterSale = 'late_auction',
+  duringSale = 'sale_depth';
+export function auctionPhase(auction, now, tailHours) {
+  if (now < Date.parse(auction.startAt)) return null;
+  return now < Date.parse(auction.deadline) + tailHours * 3600000
+    ? duringSale
+    : afterSale;
+}
 export async function auditArtCoverage(io, auctions) {
   const known = new Map(
     auctions.flatMap((a) => a.targets).map((t) => [t.event, t])
@@ -144,7 +151,10 @@ async function books(io, markets) {
   return result;
 }
 
-async function scan({ db, io, auctions, config, stop, status }) {
+export async function scanAuctionDepth(
+  { db, io, auctions, config, stop, status },
+  strategy
+) {
   const open = new Set();
   let cursor = '';
   const seen = new Set();
@@ -170,16 +180,20 @@ async function scan({ db, io, auctions, config, stop, status }) {
   };
   const already = db.prepare('SELECT 1 FROM paper WHERE id=?');
   for (const auction of auctions) {
-    if (
-      Date.now() <
-      Date.parse(auction.deadline) + config.offerTailHours * 3600000
-    )
+    if (auctionPhase(auction, Date.now(), config.offerTailHours) !== strategy)
       continue;
     const targets = auction.targets.filter((t) =>
       t.markets.some((m) => open.has(m.ticker))
     );
     if (!targets.length) continue;
-    const src = await catalogue(io, auction);
+    let src;
+    try {
+      src = await catalogue(io, auction);
+    } catch (e) {
+      totals.sourceErrors++;
+      totals.lastSourceError = e.message;
+      continue;
+    }
     for (const target of targets) {
       if (stop()) return;
       let sig;
@@ -198,6 +212,17 @@ async function scan({ db, io, auctions, config, stop, status }) {
         });
         continue;
       }
+      if (strategy === duringSale)
+        db.prepare(
+          'INSERT OR IGNORE INTO auction_source_signals(id,event,kind,amount,source,seenAt) VALUES(?,?,?,?,?,?)'
+        ).run(
+          [target.event, sig.kind, sig.amount].join('/'),
+          target.event,
+          sig.kind,
+          sig.amount,
+          sig.url,
+          new Date().toISOString()
+        );
       const current = async () =>
         checkEvent(
           (
@@ -219,7 +244,7 @@ async function scan({ db, io, auctions, config, stop, status }) {
       });
       totals.quoted += offers.length;
       const pending = offers.filter(
-        (m) => !already.get(strategy + '/' + m.ticker)
+        (m) => !already.get(afterSale + '/' + m.ticker)
       );
       if (!pending.length) continue;
       // Trade-date status and rule verification apply to the entire batch.
@@ -255,15 +280,16 @@ async function scan({ db, io, auctions, config, stop, status }) {
             config.maxSourceAgeMs
         )
           continue;
-        const id = strategy + '/' + m.ticker,
+        // Keep one entry per ticker as a sale moves from one watch period to the next.
+        const id = afterSale + '/' + m.ticker,
           side = offerSide(confirmed, m.floor_strike);
         db.exec('BEGIN IMMEDIATE');
         try {
           const { spent } = db
             .prepare(
-              'SELECT COALESCE(SUM(price*quantity+fees-COALESCE(payout,0)),0) AS spent FROM paper WHERE strategy=?'
+              'SELECT COALESCE(SUM(price*quantity+fees-COALESCE(payout,0)),0) AS spent FROM paper WHERE strategy IN (?,?)'
             )
-            .get(strategy);
+            .get(duringSale, afterSale);
           const q = persistentOffer(
             first.get(m.ticker).body,
             read.body,
@@ -313,7 +339,47 @@ export async function observeLateAuctions(opts) {
   opts.db.exec(
     'CREATE TABLE IF NOT EXISTS late_evidence(id TEXT PRIMARY KEY, detail TEXT NOT NULL); CREATE TABLE IF NOT EXISTS late_scans(at TEXT PRIMARY KEY, books INTEGER, quoted INTEGER, source_errors INTEGER, error TEXT)'
   );
+  opts.db.exec(
+    'CREATE TABLE IF NOT EXISTS auction_source_signals(id TEXT PRIMARY KEY,event TEXT,kind TEXT,amount REAL,source TEXT,seenAt TEXT)'
+  );
   const io = new Transport(opts.config);
+  await Promise.all([watchDuringSales(opts, io), watchAfterSales(opts, io)]);
+}
+
+async function watchDuringSales(opts, io) {
+  while (!opts.stop()) {
+    const now = Date.now();
+    const active = opts.auctions.filter(
+      (a) => auctionPhase(a, now, opts.config.offerTailHours) === duringSale
+    );
+    const cycle = { active: active.length, error: null };
+    if (active.length) {
+      try {
+        await scanAuctionDepth(
+          { ...opts, auctions: active, io, status: cycle },
+          duringSale
+        );
+      } catch (e) {
+        cycle.error = e.message;
+      }
+    }
+    opts.status.saleDepth = { ...cycle, at: new Date().toISOString() };
+    const next = Math.min(
+      ...opts.auctions
+        .map((a) => Date.parse(a.startAt) - now)
+        .filter((ms) => ms > 0)
+    );
+    await sleep(
+      active.length
+        ? cycle.error
+          ? 30000
+          : opts.config.pollIntervalMs
+        : Math.min(60000, next)
+    );
+  }
+}
+
+async function watchAfterSales(opts, io) {
   let coverageDue = 0;
   while (!opts.stop()) {
     const cycle = {};
@@ -331,7 +397,7 @@ export async function observeLateAuctions(opts) {
       }
     }
     try {
-      await scan({ ...opts, io, status: cycle });
+      await scanAuctionDepth({ ...opts, io, status: cycle }, afterSale);
       cycle.error = null;
     } catch (e) {
       cycle.error = e.message;

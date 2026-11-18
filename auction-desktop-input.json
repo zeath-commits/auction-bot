@@ -1,0 +1,101 @@
+{
+  "description": "Public signal timestamps recorded in the November 17 desktop sale alerts. seenAt is when the result was seen by the alert process. OS delivery and reaction times were not recorded. Frozen contract rules are in watchlist.json.",
+  "lots": [
+    {
+      "event": "KXART-DAV26",
+      "seenAt": "2026-11-17T22:08:10.113Z",
+      "price": 12200000,
+      "source": "https://www.phillips.com/auctions/auction/NY010726"
+    },
+    {
+      "event": "KXART-MODTETE17NOV26",
+      "seenAt": "2026-11-17T22:01:44.496Z",
+      "price": 44630000,
+      "source": "https://www.phillips.com/auctions/auction/NY010726"
+    },
+    {
+      "event": "KXART-PHI11NOV26",
+      "seenAt": "2026-11-17T22:06:36.827Z",
+      "price": 2702000,
+      "source": "https://www.phillips.com/auctions/auction/NY010726"
+    },
+    {
+      "event": "KXART-PHI19NOV26",
+      "seenAt": "2026-11-17T22:14:57.934Z",
+      "price": 645000,
+      "source": "https://www.phillips.com/auctions/auction/NY010726"
+    },
+    {
+      "event": "KXART-PHI22NOV26",
+      "seenAt": "2026-11-17T22:20:52.874Z",
+      "price": 645000,
+      "source": "https://www.phillips.com/auctions/auction/NY010726"
+    },
+    {
+      "event": "KXART-PHI2NOV26",
+      "seenAt": "2026-11-17T21:41:55.394Z",
+      "price": 335400,
+      "source": "https://www.phillips.com/auctions/auction/NY010726"
+    },
+    {
+      "event": "KXART-PHI6NOV26",
+      "seenAt": "2026-11-17T21:48:00.436Z",
+      "price": 4410000,
+      "source": "https://www.phillips.com/auctions/auction/NY010726"
+    },
+    {
+      "event": "KXART-CHR12A17NOV26",
+      "seenAt": "2026-11-18T00:08:42.426Z",
+      "price": 85780000,
+      "source": "https://www.christies.com/en/lot/lot-6614733?ldp_breadcrumb=back"
+    },
+    {
+      "event": "KXART-CHR45A17NOV26",
+      "seenAt": "2026-11-18T01:13:49.839Z",
+      "price": 2048000,
+      "source": "https://www.christies.com/en/lot/lot-6614766?ldp_breadcrumb=back"
+    },
+    {
+      "event": "KXART-CHR59A17NOV26",
+      "seenAt": "2026-11-18T01:45:41.400Z",
+      "price": 3780000,
+      "source": "https://www.christies.com/en/lot/lot-6614780?ldp_breadcrumb=back"
+    },
+    {
+      "event": "KXART-CHR7A17NOV26",
+      "seenAt": "2026-11-18T00:00:17.708Z",
+      "price": 5732000,
+      "source": "https://www.christies.com/en/lot/lot-6614728?ldp_breadcrumb=back"
+    },
+    {
+      "event": "KXART-CHR8A17NOV26",
+      "seenAt": "2026-11-18T00:00:17.708Z",
+      "price": 25980000,
+      "source": "https://www.christies.com/en/lot/lot-6614729?ldp_breadcrumb=back"
+    },
+    {
+      "event": "KXART-KLILIT18NOV26",
+      "seenAt": "2026-11-18T00:28:12.230Z",
+      "price": 82330000,
+      "source": "https://www.christies.com/en/lot/lot-6614741?ldp_breadcrumb=back"
+    },
+    {
+      "event": "KXART-KLILITR18NOV26",
+      "seenAt": "2026-11-18T00:28:12.230Z",
+      "price": 82330000,
+      "source": "https://www.christies.com/en/lot/lot-6614741?ldp_breadcrumb=back"
+    },
+    {
+      "event": "KXART-KOCHMON20NOV26",
+      "seenAt": "2026-11-18T00:14:22.864Z",
+      "price": 25980000,
+      "source": "https://www.christies.com/en/lot/lot-6614736?ldp_breadcrumb=back"
+    },
+    {
+      "event": "KXART-PICBAI18NOV26",
+      "seenAt": "2026-11-18T00:42:45.096Z",
+      "price": 31155000,
+      "source": "https://www.christies.com/en/lot/lot-6614747?ldp_breadcrumb=back"
+    }
+  ]
+}

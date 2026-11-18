@@ -141,6 +141,21 @@ function paper(d) {
       );
   if (d.lateAuctionStatus?.at) {
     const late = d.lateAuctionStatus;
+    if (late.saleDepth?.active) {
+      const sale = late.saleDepth;
+      note(
+        'Auction result watch · ' +
+          (sale.error ??
+            sale.active +
+              ' sale windows · ' +
+              sale.books +
+              ' books checked · ' +
+              sale.newEntries +
+              ' new paper entries') +
+          ' · ' +
+          time(sale.at)
+      );
+    }
     note(
       'Post-auction books · ' +
         (late.error ??
@@ -175,6 +190,7 @@ function paper(d) {
     [
       'all',
       'late_auction',
+      'sale_depth',
       'live_bid',
       'unsold',
       'published_sale',
@@ -254,13 +270,14 @@ function paper(d) {
         '. Paper entry requires two checks in the first 30 seconds and a total cost of $10–$13.'
     );
   }
-  if (selected === 'all' || selected === 'late_auction') {
+  if (['all', 'late_auction', 'sale_depth'].includes(selected)) {
     const positions = rows.filter(
-      (r) => r.strategy === 'late_auction' && r.payout == null
+      (r) =>
+        ['late_auction', 'sale_depth'].includes(r.strategy) && r.payout == null
     );
     if (positions.length)
       table(
-        'Open post-auction paper positions',
+        'Open auction positions sized from available offers',
         [
           'Market',
           'Side',
@@ -286,6 +303,7 @@ function paper(d) {
       'unsold',
       'live_bid',
       'late_auction',
+      'sale_depth',
       'auction_pair'
     ].includes(selected)
   ) {

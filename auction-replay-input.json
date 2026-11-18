@@ -1,0 +1,1199 @@
+{
+  "description": "Frozen November 16 Sotheby’s sale signals. Books from the two original public-result scanner logs only. Whole displayed contracts through 95 cents, book response within two seconds, verified source received no more than 15 seconds earlier. sampled lists thresholds with any qualifying book response, including empty books. An intervening book without a verified eligible offer invalidates the preceding quote. The archive retains these invalidations through 30 seconds.",
+  "lots": [
+    {
+      "sale": "N12505",
+      "event": "KXART-SOT516NOV26",
+      "lot": "5",
+      "artist": "Mark Rothko",
+      "title": "Untitled",
+      "source": "https://www.sothebys.com/en/buy/auction/2026/vision-the-extraordinary-collection-of-theodore-and-ruth-baum-evening-auction/mark-rothko-untitled",
+      "seenAt": "2026-11-16T23:37:51.645Z",
+      "price": 17705000,
+      "contracts": [
+        {
+          "ticker": "KXART-SOT516NOV26-18000000",
+          "threshold": 18000000,
+          "rulesHash": "2e74d9a69c1df6570c88c1e728adb119cd549e72089229de0bed17faea706975"
+        },
+        {
+          "ticker": "KXART-SOT516NOV26-7000000",
+          "threshold": 7000000,
+          "rulesHash": "8235ebf1f10582be19ec0394a5b47d21a792962616e222c118a3af83e4467d66"
+        },
+        {
+          "ticker": "KXART-SOT516NOV26-8000000",
+          "threshold": 8000000,
+          "rulesHash": "35d28122a2d99c413059613d25db747fb117cc73c97f0feb96cfb68c630c8359"
+        },
+        {
+          "ticker": "KXART-SOT516NOV26-9000000",
+          "threshold": 9000000,
+          "rulesHash": "5f84c585c11c02ca9b7b71ff09917cac4c50f2f3322223370366090637caa409"
+        },
+        {
+          "ticker": "KXART-SOT516NOV26-10000000",
+          "threshold": 10000000,
+          "rulesHash": "d316bd4164446bbd37bf608f6b5b1f1edbb355f531719823a2230bcbfcf3dcd3"
+        },
+        {
+          "ticker": "KXART-SOT516NOV26-12000000",
+          "threshold": 12000000,
+          "rulesHash": "741ef6cf094f3ad31a964c7627aa8ba9a469aa04549592c4cfc54d3157f9dc49"
+        },
+        {
+          "ticker": "KXART-SOT516NOV26-13000000",
+          "threshold": 13000000,
+          "rulesHash": "e32ef791fc04d6c36316673e8207f77ee3fb693f6d4c108fc7519efa23ac25e9"
+        },
+        {
+          "ticker": "KXART-SOT516NOV26-14000000",
+          "threshold": 14000000,
+          "rulesHash": "273acab62fe223ea5b63fc7fbb90451f7039ca626e439677206c691785270604"
+        },
+        {
+          "ticker": "KXART-SOT516NOV26-15000000",
+          "threshold": 15000000,
+          "rulesHash": "8dce4584a881a6d4b93b61e3e2ebe5b7024a3644a997cdfc9adbbe507b2921f2"
+        },
+        {
+          "ticker": "KXART-SOT516NOV26-16000000",
+          "threshold": 16000000,
+          "rulesHash": "2ed8f0c48713738664ed5785e4231d0a15c96ca661d2cc4e8506be308b055d2e"
+        },
+        {
+          "ticker": "KXART-SOT516NOV26-17000000",
+          "threshold": 17000000,
+          "rulesHash": "f6fe6c875bbe3afd9afc40aa5ebfb26f2b9fc56b73b40adc86f519cda6596727"
+        },
+        {
+          "ticker": "KXART-SOT516NOV26-19000000",
+          "threshold": 19000000,
+          "rulesHash": "61044d148a80865c56442e3c54d2a6ddc6d4405a92a10a59d5a33308424eb216"
+        }
+      ],
+      "sampled": [
+        "KXART-SOT516NOV26-18000000"
+      ],
+      "books": [
+        {
+          "ticker": "KXART-SOT516NOV26-18000000",
+          "at": "2026-11-16T23:37:51.819Z",
+          "levels": [
+            [
+              0.87,
+              51
+            ],
+            [
+              0.88,
+              41
+            ],
+            [
+              0.89,
+              52
+            ],
+            [
+              0.91,
+              1
+            ],
+            [
+              0.92,
+              1
+            ],
+            [
+              0.93,
+              20
+            ],
+            [
+              0.94,
+              1
+            ],
+            [
+              0.95,
+              8
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "sale": "N12505",
+      "event": "KXART-SOT1216NOV26",
+      "lot": "12",
+      "artist": "Ed Ruscha",
+      "title": "Dimple",
+      "source": "https://www.sothebys.com/en/buy/auction/2026/vision-the-extraordinary-collection-of-theodore-and-ruth-baum-evening-auction/edward-ruscha-dimple",
+      "seenAt": "2026-11-16T23:55:54.557Z",
+      "price": 11605000,
+      "contracts": [
+        {
+          "ticker": "KXART-SOT1216NOV26-12500000",
+          "threshold": 12500000,
+          "rulesHash": "908949e294b2ee6c69b8991a8acfbc476fe56986588dab40f0a81f9b09dd5d84"
+        },
+        {
+          "ticker": "KXART-SOT1216NOV26-4000000",
+          "threshold": 4000000,
+          "rulesHash": "926730df04e294d723d8f947b6f9a5f7056eaa0e0742b36c0c4d497c0881d28e"
+        },
+        {
+          "ticker": "KXART-SOT1216NOV26-6000000",
+          "threshold": 6000000,
+          "rulesHash": "390fb9f7d11100c1dbc8f58e4c5972ef0da9e83db7d730b6db327e9c5254f685"
+        },
+        {
+          "ticker": "KXART-SOT1216NOV26-8000000",
+          "threshold": 8000000,
+          "rulesHash": "04339bfeee2da2471c9efdfd906ff1ce432140cd5ca4fcb353e3d2b77f4effc1"
+        },
+        {
+          "ticker": "KXART-SOT1216NOV26-10000000",
+          "threshold": 10000000,
+          "rulesHash": "b2da31bd9d40cc3861f6a884470c5be5bc80b807b8e2dfb576485470a8434c59"
+        },
+        {
+          "ticker": "KXART-SOT1216NOV26-15000000",
+          "threshold": 15000000,
+          "rulesHash": "614e62f910df349a4624c7ea6366d01d326ad5a96af3060bbb88d434f7b63dc4"
+        },
+        {
+          "ticker": "KXART-SOT1216NOV26-16000000",
+          "threshold": 16000000,
+          "rulesHash": "281f75de7846830fd790c3d6fa8dbd5098e601226dbc3b69f6bdf5efbc426547"
+        },
+        {
+          "ticker": "KXART-SOT1216NOV26-18000000",
+          "threshold": 18000000,
+          "rulesHash": "588173bf5b47029e7f1c83a5fcae0d0d4303327e09507ca2d76bca80d0841a25"
+        },
+        {
+          "ticker": "KXART-SOT1216NOV26-20000000",
+          "threshold": 20000000,
+          "rulesHash": "cc3584c7780d534ff8841351035edc2985d88fe0a76862c3c187a525b38d7fab"
+        },
+        {
+          "ticker": "KXART-SOT1216NOV26-22000000",
+          "threshold": 22000000,
+          "rulesHash": "a356aa8f3d48f14e3f1e3c102c6f1831ad7e61fd3ac46a108fe304b4ab761d15"
+        }
+      ],
+      "sampled": [
+        "KXART-SOT1216NOV26-12500000"
+      ],
+      "books": [
+        {
+          "ticker": "KXART-SOT1216NOV26-12500000",
+          "at": "2026-11-16T23:55:54.830Z",
+          "levels": [
+            [
+              0.92,
+              1
+            ],
+            [
+              0.94,
+              54
+            ],
+            [
+              0.95,
+              1
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "sale": "N12505",
+      "event": "KXART-SOT1616NOV26",
+      "lot": "16",
+      "artist": "Lucio Fontana",
+      "title": "Concetto spaziale, Attese",
+      "source": "https://www.sothebys.com/en/buy/auction/2026/vision-the-extraordinary-collection-of-theodore-and-ruth-baum-evening-auction/lucio-fontana-concetto-spaziale-attese",
+      "seenAt": "2026-11-16T23:58:06.053Z",
+      "price": 5244000,
+      "contracts": [
+        {
+          "ticker": "KXART-SOT1616NOV26-4000000",
+          "threshold": 4000000,
+          "rulesHash": "955bc2c5299f558314ce47162807a99a83eaeaf77572eb5800b64ee19b1a3cd9"
+        },
+        {
+          "ticker": "KXART-SOT1616NOV26-5000000",
+          "threshold": 5000000,
+          "rulesHash": "c1756eb3dff101f7ded890a6cbbf4d312b4d62449aef944e2a491a073cbf9da6"
+        },
+        {
+          "ticker": "KXART-SOT1616NOV26-6000000",
+          "threshold": 6000000,
+          "rulesHash": "6ba441b24869dcde2c0be58a5cbd8c76f9d23358c929014410d18f5918303e3a"
+        },
+        {
+          "ticker": "KXART-SOT1616NOV26-7000000",
+          "threshold": 7000000,
+          "rulesHash": "22133018a15e9f3317f9a3854d4de450199b6cf34cbe9ec167fe41f2247169e5"
+        },
+        {
+          "ticker": "KXART-SOT1616NOV26-8000000",
+          "threshold": 8000000,
+          "rulesHash": "e176ab8acf87a24915bf164575820b08993509ded82b6a9d6e18f6307e4c916e"
+        },
+        {
+          "ticker": "KXART-SOT1616NOV26-9000000",
+          "threshold": 9000000,
+          "rulesHash": "bd8638a600d2eaad41aac2902d1f1c76c32fa99f298c9997f2744272ec62bf9e"
+        },
+        {
+          "ticker": "KXART-SOT1616NOV26-10000000",
+          "threshold": 10000000,
+          "rulesHash": "969e437d98b08532b6165cc5b0898045136084da4e351ab2df17d224f3e5705b"
+        }
+      ],
+      "sampled": [],
+      "books": []
+    },
+    {
+      "sale": "N12365",
+      "event": "KXART-SOT4A16NOV26",
+      "lot": "4A",
+      "artist": "Roy Lichtenstein",
+      "title": "Reflections on “Painter and Model”",
+      "source": "https://www.sothebys.com/en/buy/auction/2026/the-now-contemporary-evening-auction-2/reflections-on-painter-and-model",
+      "seenAt": "2026-11-17T00:20:48.642Z",
+      "price": 24680000,
+      "contracts": [
+        {
+          "ticker": "KXART-SOT4A16NOV26-20000000",
+          "threshold": 20000000,
+          "rulesHash": "f37d0d6a7d0008bda1c76ddaa5f7153b0a496e3626eea275987df62d5adf3835"
+        },
+        {
+          "ticker": "KXART-SOT4A16NOV26-22000000",
+          "threshold": 22000000,
+          "rulesHash": "21dc4d0b4677c7686de4c52f62ede785e109f5e476a566ebf6a6a163d92b4260"
+        },
+        {
+          "ticker": "KXART-SOT4A16NOV26-24000000",
+          "threshold": 24000000,
+          "rulesHash": "27a6fcdd350dfb2a1d93cb137b965924f4c5012e37ae949ce7e3a111a7c31a06"
+        },
+        {
+          "ticker": "KXART-SOT4A16NOV26-26000000",
+          "threshold": 26000000,
+          "rulesHash": "b5db469f828c080ad243b2b21021f8db5932fce30ebda3fb16108db568cd1c7f"
+        },
+        {
+          "ticker": "KXART-SOT4A16NOV26-28000000",
+          "threshold": 28000000,
+          "rulesHash": "2b511f01d30aab81eeee0c0a6ee0e866a08cd03420817de0b9b7f1e250a03a15"
+        },
+        {
+          "ticker": "KXART-SOT4A16NOV26-30000000",
+          "threshold": 30000000,
+          "rulesHash": "c23c21fb4788a975dd4b1d75d8dae30be00204f3aead775b012e3da429bb43d7"
+        },
+        {
+          "ticker": "KXART-SOT4A16NOV26-32000000",
+          "threshold": 32000000,
+          "rulesHash": "1135d40bd18258cc097a608c998672e1a7ef032dc24c272e9bd85a9855a85cf4"
+        },
+        {
+          "ticker": "KXART-SOT4A16NOV26-34000000",
+          "threshold": 34000000,
+          "rulesHash": "9d893ec2c55ace8ee20b26d4eca29624a5256ff7dea8b3e19c05fb1c8f7628b8"
+        },
+        {
+          "ticker": "KXART-SOT4A16NOV26-36000000",
+          "threshold": 36000000,
+          "rulesHash": "46a35d075143dbb1c2258f41b019dab648c28fd5a073319bdb68ce32871fd573"
+        }
+      ],
+      "sampled": [
+        "KXART-SOT4A16NOV26-20000000",
+        "KXART-SOT4A16NOV26-22000000",
+        "KXART-SOT4A16NOV26-24000000",
+        "KXART-SOT4A16NOV26-26000000",
+        "KXART-SOT4A16NOV26-28000000",
+        "KXART-SOT4A16NOV26-30000000",
+        "KXART-SOT4A16NOV26-32000000",
+        "KXART-SOT4A16NOV26-34000000",
+        "KXART-SOT4A16NOV26-36000000"
+      ],
+      "books": [
+        {
+          "ticker": "KXART-SOT4A16NOV26-30000000",
+          "at": "2026-11-17T00:52:46.500Z",
+          "levels": [
+            [
+              0.95,
+              1
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "sale": "N12365",
+      "event": "KXART-SOT10116NOV26",
+      "lot": "101",
+      "artist": "Andy Warhol",
+      "title": "Flowers",
+      "source": "https://www.sothebys.com/en/buy/auction/2026/the-now-contemporary-evening-auction-2/flowers",
+      "seenAt": "2026-11-17T00:35:08.736Z",
+      "price": 6098000,
+      "contracts": [
+        {
+          "ticker": "KXART-SOT10116NOV26-2500000",
+          "threshold": 2500000,
+          "rulesHash": "e24c54fc25169ee47dbf4d2db193a38e72639ea92d97b10ff891f63be21acf18"
+        },
+        {
+          "ticker": "KXART-SOT10116NOV26-3000000",
+          "threshold": 3000000,
+          "rulesHash": "41cb53927a642374e3f4ffb28a2c677788588bf3e7e7259b84584257ab54a937"
+        },
+        {
+          "ticker": "KXART-SOT10116NOV26-3500000",
+          "threshold": 3500000,
+          "rulesHash": "85cdb260e743b3c52b029a86813a7a4cce18b7caabb0458bcb83afcec114b5a2"
+        },
+        {
+          "ticker": "KXART-SOT10116NOV26-4000000",
+          "threshold": 4000000,
+          "rulesHash": "f3ba96e1eb1261a9714a5d2bb84ad0f7b61bebd0e3f14ba6d521fb8fe30927a1"
+        },
+        {
+          "ticker": "KXART-SOT10116NOV26-4500000",
+          "threshold": 4500000,
+          "rulesHash": "d1c329d77110c12e50eab8ec72442637bd98c55504ecdb3df814f0d099637b52"
+        },
+        {
+          "ticker": "KXART-SOT10116NOV26-5000000",
+          "threshold": 5000000,
+          "rulesHash": "0ce9bc46e0f2fe1ca782cd444f2d88a9a8d5178ce0b5646709ca0d9e661cbc5a"
+        },
+        {
+          "ticker": "KXART-SOT10116NOV26-5500000",
+          "threshold": 5500000,
+          "rulesHash": "f4adfbdd5144fa5737667a066427d62e07c4ac78c054010f4548b20535614824"
+        },
+        {
+          "ticker": "KXART-SOT10116NOV26-6000000",
+          "threshold": 6000000,
+          "rulesHash": "a3b8f49e723d4a6a211e7b5b9d47ae714c912d39b25ad5c82ef19760355c9d36"
+        },
+        {
+          "ticker": "KXART-SOT10116NOV26-6500000",
+          "threshold": 6500000,
+          "rulesHash": "4a85c2ce12853336f09cd38fcbfb934c4718c592f60f1dcd03dd62a99075027a"
+        }
+      ],
+      "sampled": [
+        "KXART-SOT10116NOV26-2500000",
+        "KXART-SOT10116NOV26-3000000",
+        "KXART-SOT10116NOV26-3500000",
+        "KXART-SOT10116NOV26-4000000",
+        "KXART-SOT10116NOV26-4500000",
+        "KXART-SOT10116NOV26-5000000",
+        "KXART-SOT10116NOV26-5500000",
+        "KXART-SOT10116NOV26-6000000",
+        "KXART-SOT10116NOV26-6500000"
+      ],
+      "books": [
+        {
+          "ticker": "KXART-SOT10116NOV26-6000000",
+          "at": "2026-11-17T00:35:10.348Z",
+          "levels": [
+            [
+              0.84,
+              1
+            ],
+            [
+              0.95,
+              34
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "sale": "N12365",
+      "event": "KXART-SOT5A16NOV26",
+      "lot": "5A",
+      "artist": "Matthew Wong",
+      "title": "Untitled",
+      "source": "https://www.sothebys.com/en/buy/auction/2026/the-now-contemporary-evening-auction-2/untitled-3",
+      "seenAt": "2026-11-17T00:41:30.496Z",
+      "price": 4762000,
+      "contracts": [
+        {
+          "ticker": "KXART-SOT5A16NOV26-3000000",
+          "threshold": 3000000,
+          "rulesHash": "f43c9669c9bc367166e169ccddf78ee71ca489b0479c82d0783090b59e4255b7"
+        },
+        {
+          "ticker": "KXART-SOT5A16NOV26-3500000",
+          "threshold": 3500000,
+          "rulesHash": "0f1c16e1537caa8b6452078ac01797138e2ae28d692081a95f62456c90161702"
+        },
+        {
+          "ticker": "KXART-SOT5A16NOV26-4000000",
+          "threshold": 4000000,
+          "rulesHash": "88f9d5cedcdc410991dcb17f39fcc48f409718e7bc2d40a966660fd9a0bb6470"
+        },
+        {
+          "ticker": "KXART-SOT5A16NOV26-4500000",
+          "threshold": 4500000,
+          "rulesHash": "1c79205316f4177340610cc6cf9117730ea989a03de0b1609398ccc79f95aef9"
+        },
+        {
+          "ticker": "KXART-SOT5A16NOV26-5000000",
+          "threshold": 5000000,
+          "rulesHash": "b1d6e5f0135b3c41d27d651b114b66797a795bfeafadc52b8c94756184b1ed51"
+        },
+        {
+          "ticker": "KXART-SOT5A16NOV26-5500000",
+          "threshold": 5500000,
+          "rulesHash": "69c508e244498904d2fe9cc48b79c224a8f5e55ddb9989ddd115b6e483eed270"
+        },
+        {
+          "ticker": "KXART-SOT5A16NOV26-6000000",
+          "threshold": 6000000,
+          "rulesHash": "533eeefb9e9a290237df504f3fda3261dd59f0bfd032e8b714bde34bf3d0b689"
+        },
+        {
+          "ticker": "KXART-SOT5A16NOV26-6500000",
+          "threshold": 6500000,
+          "rulesHash": "8b48079b49937102ea49d1e8c360da2d525dc2e0858c609d491e3b8e9679ff69"
+        },
+        {
+          "ticker": "KXART-SOT5A16NOV26-7000000",
+          "threshold": 7000000,
+          "rulesHash": "8a62dffef4cab10f407ae513904392f95c32d216060100c721267c59d451a048"
+        },
+        {
+          "ticker": "KXART-SOT5A16NOV26-7500000",
+          "threshold": 7500000,
+          "rulesHash": "f2cb3d6375a99b7b09afc3f8107ae07e79fa0299129850faa386675229543770"
+        }
+      ],
+      "sampled": [
+        "KXART-SOT5A16NOV26-3000000",
+        "KXART-SOT5A16NOV26-3500000",
+        "KXART-SOT5A16NOV26-4000000",
+        "KXART-SOT5A16NOV26-4500000",
+        "KXART-SOT5A16NOV26-5000000",
+        "KXART-SOT5A16NOV26-5500000",
+        "KXART-SOT5A16NOV26-6000000",
+        "KXART-SOT5A16NOV26-6500000",
+        "KXART-SOT5A16NOV26-7000000",
+        "KXART-SOT5A16NOV26-7500000"
+      ],
+      "books": [
+        {
+          "ticker": "KXART-SOT5A16NOV26-4500000",
+          "at": "2026-11-17T00:41:31.262Z",
+          "levels": [
+            [
+              0.88,
+              2
+            ],
+            [
+              0.89,
+              20
+            ]
+          ]
+        },
+        {
+          "ticker": "KXART-SOT5A16NOV26-5000000",
+          "at": "2026-11-17T00:41:31.462Z",
+          "levels": [
+            [
+              0.92,
+              1
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "sale": "N12365",
+      "event": "KXART-SOT6A16NOV26",
+      "lot": "6A",
+      "artist": "Cecily Brown",
+      "title": "Untitled (Shipwreck)",
+      "source": "https://www.sothebys.com/en/buy/auction/2026/the-now-contemporary-evening-auction-2/cecily-brown-untitled-shipwreck",
+      "seenAt": "2026-11-17T00:43:21.074Z",
+      "price": 8562000,
+      "contracts": [
+        {
+          "ticker": "KXART-SOT6A16NOV26-7000000",
+          "threshold": 7000000,
+          "rulesHash": "bffe38f002687ca9efcc300f792ea8486373122b8582db634a00ef6ca7c00cf5"
+        },
+        {
+          "ticker": "KXART-SOT6A16NOV26-8500000",
+          "threshold": 8500000,
+          "rulesHash": "a7d58cdadb202c0473c6c3a1b4c54f25f1caf6af337cf9c022ae948c6fe8956b"
+        },
+        {
+          "ticker": "KXART-SOT6A16NOV26-10000000",
+          "threshold": 10000000,
+          "rulesHash": "38d619611327cf239c5e33a61f944e0ee320c787c79acb68cd743b04f24272fb"
+        },
+        {
+          "ticker": "KXART-SOT6A16NOV26-12500000",
+          "threshold": 12500000,
+          "rulesHash": "25be31df1bba60faa1bc4f6f77e226560c2c29b595d39f8f6937164b4b17ff65"
+        },
+        {
+          "ticker": "KXART-SOT6A16NOV26-15000000",
+          "threshold": 15000000,
+          "rulesHash": "14e753c3dffb5d64c880141ba37256b1afbdf37976af9a06deb0c5c8ead08d2b"
+        },
+        {
+          "ticker": "KXART-SOT6A16NOV26-17000000",
+          "threshold": 17000000,
+          "rulesHash": "ffe3921e8c052ab6c51f5ea2b3cf20bc3ad10cc9065f3134012ef985f4251733"
+        }
+      ],
+      "sampled": [
+        "KXART-SOT6A16NOV26-10000000",
+        "KXART-SOT6A16NOV26-12500000",
+        "KXART-SOT6A16NOV26-15000000",
+        "KXART-SOT6A16NOV26-17000000",
+        "KXART-SOT6A16NOV26-7000000",
+        "KXART-SOT6A16NOV26-8500000"
+      ],
+      "books": [
+        {
+          "ticker": "KXART-SOT6A16NOV26-8500000",
+          "at": "2026-11-17T00:43:21.460Z",
+          "levels": [
+            [
+              0.91,
+              1
+            ],
+            [
+              0.92,
+              1
+            ]
+          ]
+        },
+        {
+          "ticker": "KXART-SOT6A16NOV26-8500000",
+          "at": "2026-11-17T00:43:44.974Z",
+          "levels": [
+            [
+              0.91,
+              1
+            ],
+            [
+              0.92,
+              1
+            ]
+          ]
+        },
+        {
+          "ticker": "KXART-SOT6A16NOV26-8500000",
+          "at": "2026-11-17T00:44:08.432Z",
+          "levels": [
+            [
+              0.91,
+              1
+            ],
+            [
+              0.92,
+              1
+            ]
+          ]
+        },
+        {
+          "ticker": "KXART-SOT6A16NOV26-8500000",
+          "at": "2026-11-17T00:44:31.942Z",
+          "levels": [
+            [
+              0.91,
+              1
+            ],
+            [
+              0.92,
+              1
+            ]
+          ]
+        },
+        {
+          "ticker": "KXART-SOT6A16NOV26-8500000",
+          "at": "2026-11-17T00:44:55.462Z",
+          "levels": [
+            [
+              0.91,
+              1
+            ],
+            [
+              0.92,
+              1
+            ]
+          ]
+        },
+        {
+          "ticker": "KXART-SOT6A16NOV26-8500000",
+          "at": "2026-11-17T00:45:18.841Z",
+          "levels": [
+            [
+              0.91,
+              1
+            ],
+            [
+              0.92,
+              1
+            ]
+          ]
+        },
+        {
+          "ticker": "KXART-SOT6A16NOV26-8500000",
+          "at": "2026-11-17T00:45:42.257Z",
+          "levels": [
+            [
+              0.91,
+              1
+            ],
+            [
+              0.92,
+              1
+            ]
+          ]
+        },
+        {
+          "ticker": "KXART-SOT6A16NOV26-8500000",
+          "at": "2026-11-17T00:46:05.853Z",
+          "levels": [
+            [
+              0.91,
+              1
+            ],
+            [
+              0.92,
+              1
+            ]
+          ]
+        },
+        {
+          "ticker": "KXART-SOT6A16NOV26-8500000",
+          "at": "2026-11-17T00:46:29.355Z",
+          "levels": [
+            [
+              0.91,
+              1
+            ],
+            [
+              0.92,
+              1
+            ]
+          ]
+        },
+        {
+          "ticker": "KXART-SOT6A16NOV26-8500000",
+          "at": "2026-11-17T00:46:52.894Z",
+          "levels": [
+            [
+              0.91,
+              1
+            ],
+            [
+              0.92,
+              1
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "sale": "N12365",
+      "event": "KXART-SOT10616NOV26",
+      "lot": "106",
+      "artist": "Brice Marden",
+      "title": "Suzhou, Before and After",
+      "source": "https://www.sothebys.com/en/buy/auction/2026/the-now-contemporary-evening-auction-2/brice-marden-suzhou-before-and-after",
+      "seenAt": "2026-11-17T00:47:38.375Z",
+      "price": 6830000,
+      "contracts": [
+        {
+          "ticker": "KXART-SOT10616NOV26-6000000",
+          "threshold": 6000000,
+          "rulesHash": "0694a01f5f2cffb876f0bc9b31bd220f3a062f096d25dfa7268342aa7a297090"
+        },
+        {
+          "ticker": "KXART-SOT10616NOV26-7000000",
+          "threshold": 7000000,
+          "rulesHash": "0295fcf3d5d39de70e741221f3fb2dd16cce48904309be1262b529e32bfb0bb9"
+        },
+        {
+          "ticker": "KXART-SOT10616NOV26-8000000",
+          "threshold": 8000000,
+          "rulesHash": "b948fe083cca5155b87645d30113c63623bb7f30e9f8e2a958704a978e491131"
+        },
+        {
+          "ticker": "KXART-SOT10616NOV26-10000000",
+          "threshold": 10000000,
+          "rulesHash": "71d12bff6b21bfa67c21f6d22fb2bd6c82cd4f9b91e36eb400eb6e4d609f97b1"
+        },
+        {
+          "ticker": "KXART-SOT10616NOV26-12000000",
+          "threshold": 12000000,
+          "rulesHash": "15cbb87345040ed0f7df7ba70fc5be09d683f1cb27822e0a644dc975504d8568"
+        },
+        {
+          "ticker": "KXART-SOT10616NOV26-14000000",
+          "threshold": 14000000,
+          "rulesHash": "5c7d4be8665e7722013b3426eba2b3d48c1405cca9e09e420c38ebe4796f9e51"
+        }
+      ],
+      "sampled": [
+        "KXART-SOT10616NOV26-10000000",
+        "KXART-SOT10616NOV26-12000000",
+        "KXART-SOT10616NOV26-14000000",
+        "KXART-SOT10616NOV26-6000000",
+        "KXART-SOT10616NOV26-7000000",
+        "KXART-SOT10616NOV26-8000000"
+      ],
+      "books": [
+        {
+          "ticker": "KXART-SOT10616NOV26-14000000",
+          "at": "2026-11-17T00:51:10.946Z",
+          "levels": [
+            [
+              0.95,
+              4
+            ]
+          ]
+        },
+        {
+          "ticker": "KXART-SOT10616NOV26-7000000",
+          "at": "2026-11-17T00:56:55.461Z",
+          "levels": [
+            [
+              0.95,
+              23
+            ]
+          ]
+        },
+        {
+          "ticker": "KXART-SOT10616NOV26-6000000",
+          "at": "2026-11-17T01:22:30.432Z",
+          "levels": [
+            [
+              0.95,
+              101
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "sale": "N12365",
+      "event": "KXART-SOT11216NOV26",
+      "lot": "112",
+      "artist": "Andy Warhol",
+      "title": "Flowers",
+      "source": "https://www.sothebys.com/en/buy/auction/2026/the-now-contemporary-evening-auction-2/andy-warhol-flowers",
+      "seenAt": "2026-11-17T01:08:18.483Z",
+      "price": 18217500,
+      "contracts": [
+        {
+          "ticker": "KXART-SOT11216NOV26-10000000",
+          "threshold": 10000000,
+          "rulesHash": "41af6f511dcebe6c28c53822bc1fdab6e10e6c9ee83b46154e9ec52cd07faae5"
+        },
+        {
+          "ticker": "KXART-SOT11216NOV26-12000000",
+          "threshold": 12000000,
+          "rulesHash": "05d6a4265a7d3c0590b16df06f2b7c51566417e758cf45ef57839ccb407b4289"
+        },
+        {
+          "ticker": "KXART-SOT11216NOV26-15000000",
+          "threshold": 15000000,
+          "rulesHash": "c85f5f99db84a979fb9011c7848f43c884552db237051ae83bdf12698510e375"
+        },
+        {
+          "ticker": "KXART-SOT11216NOV26-17000000",
+          "threshold": 17000000,
+          "rulesHash": "af15193aaafc5ebce47aeacb24818cf80599f269cc718a2597f6d7c9ae0c6fa2"
+        },
+        {
+          "ticker": "KXART-SOT11216NOV26-19000000",
+          "threshold": 19000000,
+          "rulesHash": "dd45307156aba7656a55cff065aa118db23fd2feb15184a064521f4ad2c3944c"
+        },
+        {
+          "ticker": "KXART-SOT11216NOV26-21000000",
+          "threshold": 21000000,
+          "rulesHash": "1e5e40a47b30f347eb07f49e160969422718da3feed2eda01448d2b353e56386"
+        }
+      ],
+      "sampled": [
+        "KXART-SOT11216NOV26-10000000",
+        "KXART-SOT11216NOV26-12000000",
+        "KXART-SOT11216NOV26-15000000",
+        "KXART-SOT11216NOV26-17000000",
+        "KXART-SOT11216NOV26-19000000",
+        "KXART-SOT11216NOV26-21000000"
+      ],
+      "books": []
+    },
+    {
+      "sale": "N12365",
+      "event": "KXART-SOT11816NOV26",
+      "lot": "118",
+      "artist": "Yoshitomo Nara",
+      "title": "Candy Blue Night",
+      "source": "https://www.sothebys.com/en/buy/auction/2026/the-now-contemporary-evening-auction-2/candy-blue-night",
+      "seenAt": "2026-11-17T01:16:29.476Z",
+      "price": 5732000,
+      "contracts": [
+        {
+          "ticker": "KXART-SOT11816NOV26-5000000",
+          "threshold": 5000000,
+          "rulesHash": "80ca46572580593c27ad5f262806a81f19e15c7fea6826fd9bbd635df0946140"
+        },
+        {
+          "ticker": "KXART-SOT11816NOV26-6000000",
+          "threshold": 6000000,
+          "rulesHash": "544a6e89349af3ac0785ce6e47a914b20f23c2a9e13e8d549fb18f0321aedf0f"
+        },
+        {
+          "ticker": "KXART-SOT11816NOV26-7000000",
+          "threshold": 7000000,
+          "rulesHash": "06c4326834f0c48dd36607333f944c5772ac0769c8c08ece3aeea66ad1b06efc"
+        },
+        {
+          "ticker": "KXART-SOT11816NOV26-8000000",
+          "threshold": 8000000,
+          "rulesHash": "cf91e805a08b00ff326f6805a58e55fa7758c34e00e999e27da63cac8fa8551c"
+        },
+        {
+          "ticker": "KXART-SOT11816NOV26-9000000",
+          "threshold": 9000000,
+          "rulesHash": "ea449bec44b76812e205def711c49bacd1dec709d63a124faf798bc754cd6ea6"
+        },
+        {
+          "ticker": "KXART-SOT11816NOV26-10000000",
+          "threshold": 10000000,
+          "rulesHash": "8a165ae361589dee18d0f985a1060a9d8d9397278ff3317e656a9c6d91eef507"
+        },
+        {
+          "ticker": "KXART-SOT11816NOV26-11000000",
+          "threshold": 11000000,
+          "rulesHash": "26d8f6479cc21b5bf30df2c0d868fd27314f56dd4c25926743ecb4110d41ee6f"
+        }
+      ],
+      "sampled": [
+        "KXART-SOT11816NOV26-10000000",
+        "KXART-SOT11816NOV26-11000000",
+        "KXART-SOT11816NOV26-5000000",
+        "KXART-SOT11816NOV26-6000000",
+        "KXART-SOT11816NOV26-7000000",
+        "KXART-SOT11816NOV26-8000000",
+        "KXART-SOT11816NOV26-9000000"
+      ],
+      "books": [
+        {
+          "ticker": "KXART-SOT11816NOV26-5000000",
+          "at": "2026-11-17T01:16:29.545Z",
+          "levels": [
+            [
+              0.95,
+              20
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "sale": "N12365",
+      "event": "KXART-SOT12016NOV26",
+      "lot": "120",
+      "artist": "Mark Bradford",
+      "title": "If Caught Outside",
+      "source": "https://www.sothebys.com/en/buy/auction/2026/the-now-contemporary-evening-auction-2/if-caught-outside",
+      "seenAt": "2026-11-17T01:22:26.254Z",
+      "price": 3536000,
+      "contracts": [
+        {
+          "ticker": "KXART-SOT12016NOV26-2500000",
+          "threshold": 2500000,
+          "rulesHash": "f877a5009d2a447723937b97a796977dc1b1f86befaa9f73ca09759ee6903f5f"
+        },
+        {
+          "ticker": "KXART-SOT12016NOV26-3000000",
+          "threshold": 3000000,
+          "rulesHash": "531166aa430af3277bd9d4980df442f85c5cedbe07c74d8334f53c18816a79ce"
+        },
+        {
+          "ticker": "KXART-SOT12016NOV26-3500000",
+          "threshold": 3500000,
+          "rulesHash": "e8dcfb49202720260a399405e79bc7ec92f57f9458d6b546f39859999dbd45ad"
+        },
+        {
+          "ticker": "KXART-SOT12016NOV26-4000000",
+          "threshold": 4000000,
+          "rulesHash": "1bae6619cc523e22e45bfc2af26d43a19fc31fcad6beaead45fedc29c405d73c"
+        },
+        {
+          "ticker": "KXART-SOT12016NOV26-4500000",
+          "threshold": 4500000,
+          "rulesHash": "38c698e9240d5eeebffd991e9a9185f1cf32689b9d0dc157cd090105bbdafd4a"
+        },
+        {
+          "ticker": "KXART-SOT12016NOV26-5000000",
+          "threshold": 5000000,
+          "rulesHash": "e0dfceac2542e2e14733a55c02b96a1fbf926e73b304c1f6c50672e546ba2933"
+        },
+        {
+          "ticker": "KXART-SOT12016NOV26-5500000",
+          "threshold": 5500000,
+          "rulesHash": "9c5c42295b22a045f9f33c6d44f52856410ae96cb83cadc76b7b83e94aad1aba"
+        },
+        {
+          "ticker": "KXART-SOT12016NOV26-6000000",
+          "threshold": 6000000,
+          "rulesHash": "ea8f1987c8f8fc73687dca233f10c5ba4ff93ee4bcd3fe9c8d470c56d1c1e0cb"
+        }
+      ],
+      "sampled": [
+        "KXART-SOT12016NOV26-2500000",
+        "KXART-SOT12016NOV26-3000000",
+        "KXART-SOT12016NOV26-3500000",
+        "KXART-SOT12016NOV26-4000000",
+        "KXART-SOT12016NOV26-4500000",
+        "KXART-SOT12016NOV26-5000000",
+        "KXART-SOT12016NOV26-5500000",
+        "KXART-SOT12016NOV26-6000000"
+      ],
+      "books": []
+    },
+    {
+      "sale": "N12365",
+      "event": "KXART-SOT12316NOV26",
+      "lot": "123",
+      "artist": "Francis Bacon",
+      "title": "Self-Portrait",
+      "source": "https://www.sothebys.com/en/buy/auction/2026/the-now-contemporary-evening-auction-2/francis-bacon-self-portrait",
+      "seenAt": "2026-11-17T01:24:26.197Z",
+      "price": 13500000,
+      "contracts": [
+        {
+          "ticker": "KXART-SOT12316NOV26-10000000",
+          "threshold": 10000000,
+          "rulesHash": "9c28b0cd1bf64b718c8ed36b5a0a15fb8830a24808076a82ceffdb6ee9be21a6"
+        },
+        {
+          "ticker": "KXART-SOT12316NOV26-12500000",
+          "threshold": 12500000,
+          "rulesHash": "8a13eb1f2d5efd05dea018373a109ffc3bddd21edfe5ff130c7986d063027b1c"
+        },
+        {
+          "ticker": "KXART-SOT12316NOV26-15000000",
+          "threshold": 15000000,
+          "rulesHash": "78f3c73c081757d0eb7c88beca9751076249c2a16b83c2bb937b8c3859004303"
+        },
+        {
+          "ticker": "KXART-SOT12316NOV26-17000000",
+          "threshold": 17000000,
+          "rulesHash": "7fc65668bab323ca5c764603108802a6762bce30adf479e8cb1f5761678115cb"
+        },
+        {
+          "ticker": "KXART-SOT12316NOV26-19000000",
+          "threshold": 19000000,
+          "rulesHash": "685d5f40e5ef432485285db6b1f76ff3d1580f1b987862999df7cbaa23bfeea8"
+        }
+      ],
+      "sampled": [
+        "KXART-SOT12316NOV26-10000000",
+        "KXART-SOT12316NOV26-12500000",
+        "KXART-SOT12316NOV26-15000000",
+        "KXART-SOT12316NOV26-17000000",
+        "KXART-SOT12316NOV26-19000000"
+      ],
+      "books": [
+        {
+          "ticker": "KXART-SOT12316NOV26-12500000",
+          "at": "2026-11-17T01:24:26.593Z",
+          "levels": [
+            [
+              0.95,
+              2
+            ]
+          ]
+        },
+        {
+          "ticker": "KXART-SOT12316NOV26-17000000",
+          "at": "2026-11-17T01:35:52.920Z",
+          "levels": [
+            [
+              0.94,
+              140
+            ]
+          ]
+        },
+        {
+          "ticker": "KXART-SOT12316NOV26-15000000",
+          "at": "2026-11-17T01:39:41.460Z",
+          "levels": [
+            [
+              0.95,
+              29
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "sale": "N12365",
+      "event": "KXART-SOT12116NOV26",
+      "lot": "121",
+      "artist": "Yayoi Kusama",
+      "title": "Infinity Nets (OZEH)",
+      "source": "https://www.sothebys.com/en/buy/auction/2026/the-now-contemporary-evening-auction-2/infinity-nets-ozeh",
+      "seenAt": "2026-11-17T01:24:26.197Z",
+      "price": 3070000,
+      "contracts": [
+        {
+          "ticker": "KXART-SOT12116NOV26-2000000",
+          "threshold": 2000000,
+          "rulesHash": "f672c79eacfc3e6141ff48374174a463d6340845bac18ccd739f921d007a1abf"
+        },
+        {
+          "ticker": "KXART-SOT12116NOV26-2500000",
+          "threshold": 2500000,
+          "rulesHash": "71763f22ade5c60227e3c460edcb1f1a23deba175f47a0e42b2c988ff3ecd5d5"
+        },
+        {
+          "ticker": "KXART-SOT12116NOV26-3000000",
+          "threshold": 3000000,
+          "rulesHash": "b5e758970b070b5a54c37f2eb9a60395ac9378c2917755d609a258a3bd80cffc"
+        },
+        {
+          "ticker": "KXART-SOT12116NOV26-3500000",
+          "threshold": 3500000,
+          "rulesHash": "bf6c23cef7d8fff773954c0a9b3ab421f10f042753804c8b8188081c6fc42e9d"
+        }
+      ],
+      "sampled": [
+        "KXART-SOT12116NOV26-2000000",
+        "KXART-SOT12116NOV26-2500000",
+        "KXART-SOT12116NOV26-3000000",
+        "KXART-SOT12116NOV26-3500000"
+      ],
+      "books": []
+    },
+    {
+      "sale": "N12365",
+      "event": "KXART-SOT13016NOV26",
+      "lot": "130",
+      "artist": "Ed Ruscha",
+      "title": "Light Leaks",
+      "source": "https://www.sothebys.com/en/buy/auction/2026/the-now-contemporary-evening-auction-2/ed-ruscha-light-leaks",
+      "seenAt": "2026-11-17T01:32:36.290Z",
+      "price": 5000000,
+      "contracts": [
+        {
+          "ticker": "KXART-SOT13016NOV26-2500000",
+          "threshold": 2500000,
+          "rulesHash": "119c75f6a83950007253b6fd938df70a12e9186c9ff4f48687468b989c1b4804"
+        },
+        {
+          "ticker": "KXART-SOT13016NOV26-3000000",
+          "threshold": 3000000,
+          "rulesHash": "26409313d5d5193423b3924973f12b0ac8b66f855ef59c29dc76559dc5fb9eb2"
+        },
+        {
+          "ticker": "KXART-SOT13016NOV26-3500000",
+          "threshold": 3500000,
+          "rulesHash": "5acc6fac2e5ab94ee19a955de88d2665b0b288fdc90aeca32f9abe14804fefad"
+        },
+        {
+          "ticker": "KXART-SOT13016NOV26-3750000",
+          "threshold": 3750000,
+          "rulesHash": "bc70d19425078f9036f492108a1c210d1c49947f447e9d32b04c14344ef58430"
+        },
+        {
+          "ticker": "KXART-SOT13016NOV26-4000000",
+          "threshold": 4000000,
+          "rulesHash": "ad13ab8da684ade15ab6c9933a54cdef9590a3cdd860069d45b47f8a10d64543"
+        },
+        {
+          "ticker": "KXART-SOT13016NOV26-4250000",
+          "threshold": 4250000,
+          "rulesHash": "59f78cca3256bac2d54dfcbcae4cd91180b68bd9c9a46c6fddeed213fc3d40e7"
+        }
+      ],
+      "sampled": [
+        "KXART-SOT13016NOV26-2500000",
+        "KXART-SOT13016NOV26-3000000",
+        "KXART-SOT13016NOV26-3500000",
+        "KXART-SOT13016NOV26-3750000",
+        "KXART-SOT13016NOV26-4000000",
+        "KXART-SOT13016NOV26-4250000"
+      ],
+      "books": [
+        {
+          "ticker": "KXART-SOT13016NOV26-4250000",
+          "at": "2026-11-17T01:32:39.855Z",
+          "levels": [
+            [
+              0.91,
+              21
+            ],
+            [
+              0.94,
+              33
+            ]
+          ]
+        },
+        {
+          "ticker": "KXART-SOT13016NOV26-3500000",
+          "at": "2026-11-17T01:35:55.052Z",
+          "levels": [
+            [
+              0.91,
+              130
+            ]
+          ]
+        },
+        {
+          "ticker": "KXART-SOT13016NOV26-3750000",
+          "at": "2026-11-17T01:35:55.264Z",
+          "levels": [
+            [
+              0.93,
+              87
+            ]
+          ]
+        },
+        {
+          "ticker": "KXART-SOT13016NOV26-4000000",
+          "at": "2026-11-17T01:35:55.515Z",
+          "levels": [
+            [
+              0.93,
+              1
+            ],
+            [
+              0.94,
+              33
+            ]
+          ]
+        },
+        {
+          "ticker": "KXART-SOT13016NOV26-4250000",
+          "at": "2026-11-17T01:35:55.744Z",
+          "levels": [
+            [
+              0.95,
+              34
+            ]
+          ]
+        }
+      ]
+    }
+  ]
+}

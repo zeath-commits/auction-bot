@@ -36,6 +36,16 @@
   ],
   "studies": [
     {
+      "market": "Sotheby's auction results",
+      "test": "November 16 · 14 artworks across two sales",
+      "finding": "All 105 thresholds settled on the side implied by the published sale prices. Buyers took that side at 95¢ or less on 25 thresholds after the result was seen. On three thresholds a buyer traded at the exact price seen in an archived book 1–30 seconds earlier. Capping entries at five shares per threshold and the smaller of observed and traded size gave seven shares, $6.46 modeled cost and $0.54 modeled net. Archive coverage was incomplete."
+    },
+    {
+      "market": "Christie’s and Phillips auction alerts",
+      "test": "November 17 · timing of public buys after recorded desktop signals",
+      "finding": "By November 18 at 1:32 p.m. Eastern, 20 thresholds on eight artworks had a buyer on the indicated side at 95¢ or less at least 30 seconds after a signal. The first eligible buy arrived at least an hour later on seven thresholds. Desktop delivery times and displayed size at those later trades are unknown."
+    },
+    {
       "market": "Polymarket international BTC 5m",
       "test": "Earlier week, same 98¢ or 99¢ closing-buy rule, Nov 4–10 ET",
       "finding": "85 of 86 qualifying buys won across 2,016 windows. Modeled net was $0.24 after fees at one share each. On Nov 8, a 47.48-share Down buy at 98¢ had a block timestamp nine seconds before noon ET. Up won. Across both weeks, 164 of 165 buys won and modeled net was $1.38. None of the first qualifying buys reached 1,000 shares."

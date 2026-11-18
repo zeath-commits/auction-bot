@@ -9,6 +9,7 @@ export const strategies = {
   cross_us_btc: 'Bitcoin · Kalshi and Polymarket US pair',
   cross_us_middle: 'Bitcoin · wide opening-price gap',
   late_auction: 'Auction · offers after the sale',
+  sale_depth: 'Auction · available quantity after confirmed results',
   auction_pair: 'Auction · paired thresholds',
   crypto_pair: 'Crypto · paired thresholds',
   btc60: 'Bitcoin · final minute',
