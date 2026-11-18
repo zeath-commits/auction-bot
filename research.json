@@ -36,6 +36,11 @@
   ],
   "studies": [
     {
+      "market": "Bitcoin at 98–99¢ in the final ten seconds",
+      "test": "Across 736 finalized 15-minute markets closing November 11 through 5:45 p.m. Eastern November 18, took the first non-block buyer execution in the final ten seconds at the required size, including fractional-cent prices. Modeled standard taker fees rounded up to a cent per purchase.",
+      "finding": "At 100 contracts, 16 markets qualified and all won, giving $23.39 modeled net. At 1,000 contracts, 14 markets qualified and all won. Eight of these markets had a qualifying 1,000-contract purchase at exactly 98¢ or 99¢. Using $1,000 starting cash and crediting payouts at exchange settlement, the larger model spent $984.17–$990.70 per entry and ended at $1,183.34 before operating costs. A single lost entry would exceed all 14 gains combined. A separate forward paper strategy now records one contract and visible depth when two fresh order books agree on an offer in that final window."
+    },
+    {
       "market": "Bitcoin final-minute favorites observed in paper trading",
       "test": "Reconciled the first two 98–99¢ entries recorded by the live paper monitor with Kalshi settlement and the complete non-block public trade record for each final minute. Counted same-side buyer executions of at least one contract.",
       "finding": "On November 18, the 5:00 p.m. Eastern NO entry at 98.7¢ earned 1.21¢ after modeled fees. The 5:45 p.m. YES entry at 98.4¢, recorded with 46.63 seconds left, lost 98.52¢. Kalshi’s final average was $62,431.08 against $62,433.25 required. After that paper entry, buyers traded 4,330.22 YES contracts at exactly 98.4¢, including 25 contracts 0.52 seconds later. Neither market had a qualifying purchase of the recorded side at 98–99¢ in the final ten seconds. Two paper entries produced a combined loss of $0.9731. Public trading volume establishes that other buyers traded at the observed price."
