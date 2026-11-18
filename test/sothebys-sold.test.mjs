@@ -16,6 +16,8 @@ test('artwork-page confirmation uses independent books and shares inventory with
     const next={...q,generation:4000,at:5500,bookAsOf:5000,sourceAt:5100};
     const prior=new Map([['T',q]]);
     assert.equal(recordSoldBooks(db,[{...next,bookAsOf:q.bookAsOf}],prior,30000).contracts,0);
+    const catalogPrior=new Map([['T',{...q,sourceKind:'catalog'}]]);
+    assert.equal(recordSoldBooks(db,[{...next,sourceKind:'catalog',bookAsOf:q.bookAsOf}],catalogPrior,30000).contracts,0);
     assert.equal(recordSoldBooks(db,[next],prior,30000).contracts,4);
     assert.equal(recordSoldBooks(db,[{...next,at:6000,sourceKind:'catalog'}],new Map([['T',{...q,sourceKind:'catalog'}]]),30000).contracts,0);
     assert.equal(JSON.parse(db.prepare('SELECT detail FROM sothebys_sold_entries').get().detail).sourceKind,'lot');
@@ -55,6 +57,7 @@ test('sold-price study shares cash across auctions and takes cheapest confirmed 
       amount: 5000,
       at: 5000,
       generation: 4000,
+      bookAsOf: 4900,
       sourceAt: 4800,
       closeAt: 20000,
       url: 'https://www.sothebys.com/',
@@ -69,7 +72,7 @@ test('sold-price study shares cash across auctions and takes cheapest confirmed 
       sample('CHEAP', '0.5000', 'NO')
     ];
     const prior = new Map(
-      quotes.map((q) => [q.ticker, { ...q, at: 2000, generation: 1000 }])
+      quotes.map((q) => [q.ticker, { ...q, at: 2000, generation: 1000, sourceAt: 1900, bookAsOf: 1900 }])
     );
     assert.equal(recordSoldBooks(db, quotes, new Map(), 30000).contracts, 0);
     assert.equal(recordSoldBooks(db, quotes, prior, 30000).contracts, 3);
@@ -82,7 +85,7 @@ test('sold-price study shares cash across auctions and takes cheapest confirmed 
     assert.ok(Math.abs(auctionDepthCash(db) - 0.4475) < 1e-7);
     assert.equal(recordSoldBooks(db, quotes, prior, 30000).contracts, 0);
     db.prepare("UPDATE paper SET payout=998 WHERE id='earlier'").run();
-    const next = quotes.map((q) => ({ ...q, at: 8000, generation: 7000 }));
+    const next = quotes.map((q) => ({ ...q, at: 8000, generation: 7000, sourceAt: 7800, bookAsOf: 7900 }));
     assert.equal(
       recordSoldBooks(
         db,
@@ -95,7 +98,7 @@ test('sold-price study shares cash across auctions and takes cheapest confirmed 
     assert.equal(
       recordSoldBooks(
         db,
-        next.map((q) => ({ ...q, at: 11000, generation: 10000, amount: 6000 })),
+        next.map((q) => ({ ...q, at: 11000, generation: 10000, bookAsOf: 10900, amount: 6000 })),
         new Map(next.map((q) => [q.ticker, q])),
         30000
       ).contracts,
@@ -162,6 +165,7 @@ test('closed USD result exactly on threshold uses NO and ignores unsold and stal
           return {
             requestedAt: now,
             receivedAt: now + 50,
+            httpDate: new Date(now).toUTCString(),
             body: {
               orderbooks: [
                 {
@@ -201,6 +205,8 @@ test('two auction price caps persist separate budgets and settle their own share
         amount: 5000,
         at: base,
         generation: base - 200,
+        bookAsOf: base - 100,
+        sourceAt: base - 150,
         closeAt: base + 10000,
         url: 'catalog',
         book: {
@@ -213,7 +219,7 @@ test('two auction price caps persist separate budgets and settle their own share
         }
       };
     const previous = new Map([
-      ['T', { ...q, at: base - 2500, generation: base - 3000 }]
+      ['T', { ...q, at: base - 2500, generation: base - 3000, bookAsOf: base - 2600, sourceAt: base - 2650 }]
     ]);
     limits.record([q], previous, 30000);
     const [low, high] = limits.summary();

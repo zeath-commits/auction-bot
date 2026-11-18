@@ -14,7 +14,7 @@ export function initSoldStudy(db) {
   );
 }
 
-// Use the result shown with buyer's premium on two distinct catalog generations.
+// Confirm both the published price and the offers on separate reads of the same source.
 export function recordSoldBooks(
   db,
   quotes,
@@ -39,8 +39,10 @@ export function recordSoldBooks(
         q.amount <= 0 ||
         p.amount !== q.amount ||
         p.side !== q.side ||
-        (q.sourceKind === 'lot' && !(p.sourceKind === 'lot' &&
-          q.bookAsOf > p.bookAsOf && q.bookAsOf >= p.sourceAt)) ||
+        p.sourceKind !== q.sourceKind ||
+        !Number.isFinite(p.bookAsOf) ||
+        !Number.isFinite(q.bookAsOf) ||
+        !(q.bookAsOf > p.bookAsOf && q.bookAsOf >= p.sourceAt) ||
         !(q.generation - p.generation >= 2000) ||
         q.at - p.at < 1000 ||
         q.at - p.at > maxGapMs
@@ -179,6 +181,9 @@ export async function scanSold({
       )
         throw Error('Incomplete sold-price order books');
       if (
+        read.requestedAt >= source.at &&
+        bookAsOf >= read.receivedAt - 3500 &&
+        bookAsOf <= read.receivedAt + 1000 &&
         read.receivedAt - source.at <= 5000 &&
         read.receivedAt - read.requestedAt <= 2000 &&
         Date.now() < deadline &&
@@ -186,8 +191,6 @@ export async function scanSold({
       ) {
         for (const { m, side, lot, target } of eligible) {
           if (!checkMarketActive(m, Date.now())) continue;
-          if (source.kind==='lot' && !(read.requestedAt>=source.at &&
-            bookAsOf>=read.receivedAt-3500 && bookAsOf<=read.receivedAt+1000)) continue;
           quotes.push({
             ticker: m.ticker,
             event: lot.event,
