@@ -48,6 +48,11 @@
   ],
   "studies": [
     {
+      "market": "NHL game winners after the reported final score",
+      "test": "Compared NHL game reports, ESPN final plays and Kalshi settlements. Started 30 seconds after the later of the ESPN final play or the end of the minute printed on the NHL report. Counted non-block trades for up to five minutes after that reference or until market close. The historical timestamps describe the game and do not establish when a trader received the result.",
+      "finding": "In 20 completed games from November 15–18, seven markets were still open during the test. Only Dallas–Vegas had buyers take winning contracts through 99¢. One buyer took 5.92 Dallas YES at 98¢. The overtime goal and a video review share an ESPN timestamp. In a separate November 8–14 sample, 43 of 49 games passed score and timing checks. Of the 23 markets still open, zero had buyers take winning contracts through 99¢. Sellers traded 74,539.26 winner YES contracts at 99¢. Seventeen games had enough seller volume for five shares assuming an empty queue, seven behind 1,000 shares and three behind 10,000. For the seven, the median interval from modeled arrival to official settlement was 2.62 minutes. Actual queue position and fills are unknown."
+    },
+    {
       "market": "Discounted offers 15 minutes after Artnet-settled auction results",
       "test": "Checked 224 thresholds across 29 artworks from November 16–17. Starting 15 minutes after the saved house result, required two consecutive one-minute exchange bars whose highest indicated-side offer was 95¢ or less. Checked up to 65 minutes after publication, picked the first qualifying decision per event, and broke simultaneous ties by lowest limit then ticker. Bars give prices without quantity.",
       "finding": "Nine events qualified at 93–95¢ and all nine sides ultimately paid $1. Eight still showed the selected price or better throughout the following minute. The ninth had no next-minute quote. None had a public buyer execution at the limit or better from one second after the decision through the following minute. These prices justify watching confirmed depth beyond the initial announcement. Available shares and potential returns remain unverified."
