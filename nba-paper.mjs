@@ -1,6 +1,7 @@
 import { setTimeout as sleep } from 'node:timers/promises';
 import { Transport } from './transport.mjs';
 import { addPaper } from './strategy-monitor.mjs';
+import {initNBAFinalQueue} from './nba-final-queue.mjs';
 
 const league = 'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/';
 const aliases = {
@@ -185,6 +186,8 @@ export async function observeNBA({ db, config, stop, status }) {
     maxHttpAgeSeconds: 1,
     requestTimeoutMs: 3000
   });
+  const postgame=initNBAFinalQueue(db,io,{stop,teams,event:eventTicker,routes:nbaRoutes,
+    summary:id=>espn('summary?event='+id),day:g=>dates(g.date).board.replace(/^(\d{4})(\d{2})(\d{2})$/,'$1-$2-$3')});
   let events = new Map(),
     refresh = 0,
     multiplier = null;
@@ -330,8 +333,10 @@ export async function observeNBA({ db, config, stop, status }) {
       );
       const checks = await Promise.allSettled(targets.map(check));
       const failed = checks.find((r) => r.status === 'rejected');
+      try{status.postgame=await postgame(boards.flatMap(b=>b.events));}
+      catch(e){status.postgame={...status.postgame,error:e.message};}
       if (failed) throw failed.reason;
-      delay = near.length ? 2500 : status.live ? 12000 : 60000;
+      delay = near.length || status.postgame?.pending ? 2500 : status.live ? 12000 : 60000;
       status.error = null;
     } catch (e) {
       status.error = e.message;

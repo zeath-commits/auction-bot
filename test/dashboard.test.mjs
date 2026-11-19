@@ -35,6 +35,7 @@ test(
         'sale-timing.mjs',
         'auction-quote-timing.mjs',
         'nba-paper.mjs',
+        'nba-final-queue.mjs',
         'art-record-pair.mjs',
         'art-range-bids.mjs',
         'esports-paper.mjs',

@@ -377,6 +377,10 @@ function paper(d) {
         ' · checked ' +
         time(n.at)
     );
+    if (n.postgame) {
+      const p=n.postgame;
+      note('NBA final-score study · '+(p.error??(p.confirmed+' agreed final scores · '+p.missedFinal+' monitored games expired before confirmation · '+p.trials+' simulated 99¢ bids · '+p.reviewed+' checked against public trades · '+p.reachedFive+' with enough selling for five contracts · '+p.adverseFive+' of those settled against the bid.')));
+    }
     if (selected === 'nba_best_route' && n.arrivals) {
       const a = n.arrivals;
       note('One paper contract on the cheaper confirmed offer to back the leader. Leader YES wins ties in price. Opponent NO requires matching game and exceptional settlement rules.');

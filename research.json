@@ -36,6 +36,11 @@
   ],
   "studies": [
     {
+      "market": "NBA 99¢ bids after the final score",
+      "test": "Examined 122 games from November 1–17, 2026. Excluded 39 with incomplete or inconsistent timing or scores. For the remaining 83, NBA.com, ESPN and Kalshi agreed on the winner. Counted public trades on both team contracts from 30 seconds after the archived final play until five minutes after it or the market close, whichever came first.",
+      "finding": "76 games still had an open market. In 75 of them, sellers traded winning contracts at 99¢ against resting buyers, totaling 1,332,515.22 contracts across 5,838 trades. No buyer crossed an offer in the window. On winner YES alone, 50 games had enough sales for five contracts behind 1,000 already waiting. Only 15 had enough behind 10,000. Historical data does not establish when the score became available or how many bids were ahead. The live paper study timestamps dual-source confirmation and records visible queues before measuring subsequent sales."
+    },
+    {
       "market": "NBA five-point leads with 35–50 seconds left",
       "test": "Matched the exact ESPN play and its archived win probability to both Kalshi team contracts. Used five whole contracts per purchase, fees rounded up to a cent, and non-block taker executions five to fifteen seconds after the play, before the next recorded play. Excluded two play timestamps more than a day after the scheduled start. There were 29 usable windows. Historical play timestamps do not establish when a live reader received the score or probability.",
       "finding": "Backing the leader returned 27 wins in 28 entries and a $0.71 modeled loss. Requiring a two-percentage-point margin between ESPN’s probability and the fee-inclusive purchase price selected no leaders. Applying the same rule to actual trailing-team purchases selected 25 entries, one win and a $0.73 loss on $5.73 of cost. The upset was Chicago at Golden State on March 10, 2026: with 47.5 seconds and a 115–110 lead, Golden State committed a shooting foul that gave Chicago three free throws. In the two regular-season archives, the leader won three of four games where the selected play was its shooting foul; in other play types leaders still lost three times. The live paper monitor now saves the play type, the team responsible and the exact-play probability when available."
