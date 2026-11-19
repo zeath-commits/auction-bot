@@ -48,6 +48,11 @@
   ],
   "studies": [
     {
+      "market": "How much BTC distance was enough to justify a 98¢ bid?",
+      "test": "Measured both the chart reading and its five-second trend forecast against the strike with 45 seconds remaining across 5,316 settled markets. For November 4–17, checked public seller volume strictly below trial bids after a one-second arrival delay. Each comparison started with $1,000 and sized to 100 contracts per signal. The model charged standard taker fees as a cost sensitivity.",
+      "finding": "At a 98¢ bid, a fixed $55 buffer had three winning and one losing modeled purchase for a $92.55 loss. A 0.05% buffer had 14 winners and two losses for a $170.20 loss. At 0.10%, 0.125% and 0.15%, the same three purchases qualified and modeled a $5.59 gain in each case. At a 99.8¢ bid, the 0.15% buffer modeled $1.86 over both weeks. Historical book availability and the bot’s place in the queue were unknown. The forward paper rule continues to use 0.15%."
+    },
+    {
       "market": "Did the 64¢ Monet offer reappear after publication?",
       "test": "For each of five November 18 Sotheby’s results, selected the cheapest offer through 95¢ on the published-result side in the first complete book within three seconds. Checked the exact price in the first independently timed follow-up book within 15 seconds, then counted same-price public purchases one to six seconds later.",
       "finding": "Only Monet qualified. The book showed 21 YES at 64¢ at 1.574 seconds after the catalogue result and 23 at 11.011 seconds. Four purchases took 23 YES at 64¢ at 14.098 seconds. No eligible book measured the first one-to-three-second gap after the initial quote. The two book observations and later volume supported an illustration of 21 contracts, costing $13.78 with estimated fees and earning $7.22 if filled and settled YES. Both house reads used the same catalogue version. This retrospective example generated no bot fill. Forward sampling on the Artnet-settled lots records seven timed snapshots through 15 seconds, including empty books and missed observations."
