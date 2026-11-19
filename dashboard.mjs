@@ -20,6 +20,7 @@ import {
 import { observeNBA } from './nba-paper.mjs';
 import { observeRecordPair } from './art-record-pair.mjs';
 import { observeRangeBids, observeRangeResults } from './art-range-bids.mjs';
+import {observeWithdrawalReports} from './withdrawal-reports.mjs';
 import { observeCS2 } from './esports-paper.mjs';
 import { observeUS } from './us-bitcoin-paper.mjs';
 import { observeSothebysBids } from './sothebys-bids.mjs';
@@ -55,6 +56,7 @@ const sothebysStatus = {};
 const nbaStatus = {};
 const recordPairStatus = {};
 const rangeBidStatus = {};
+const withdrawalStatus = {};
 const cs2Status = {};
 const auctionExits = {};
 const weatherStatus = {};
@@ -524,6 +526,11 @@ const server = http.createServer((req, res) => {
           auctionStatus,
           pairStatus,
           lateAuctionStatus,
+          withdrawalStatus,
+          withdrawalQuotes:db.prepare('SELECT ticker,kind,at,detail FROM auction_withdrawal_quotes ORDER BY at DESC,ticker LIMIT 100').all().map(r=>{
+            const {source,levels}=JSON.parse(r.detail);
+            return {ticker:r.ticker,kind:r.kind,at:r.at,source,levels};
+          }),
           usBitcoinStatus,
           sothebysStatus,
           soldLimits: soldLimits.summary(),
@@ -680,6 +687,8 @@ server.listen(port, host, () => {
     }
   }
   importSafe();
+  observeWithdrawalReports({db,config,auctions:calendars.flatMap(c=>c.auctions),status:withdrawalStatus,
+    stop:()=>stopping||exists(path.join(ROOT,'STOP'))}).catch(e=>{withdrawalStatus.error=e.message;});
   observeRangeResults({db,config,status:rangeBidStatus,
     stop:() => stopping || exists(path.join(ROOT,'STOP'))
   }).catch(e => {rangeBidStatus.resolutionError=e.message;});

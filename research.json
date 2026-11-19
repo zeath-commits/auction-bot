@@ -48,6 +48,11 @@
   ],
   "studies": [
     {
+      "market": "Public withdrawal reports for Warhol and Kahlo at Christie’s",
+      "test": "Matched two November 17 reports naming the works to eleven Artnet-settled Kalshi thresholds. HENI published the Warhol withdrawal at 6:51 p.m. Eastern. For Kahlo, the conservative test used El Economista’s later 12:13 a.m. Eastern edit. Checked actual NO purchases from an hour later until the exchange close.",
+      "finding": "All eleven thresholds paid NO across two artworks at one sale. On Warhol, buyers purchased 24.50 NO at 95¢ or less, including a purchase at 87¢. On Kahlo, buyers purchased 3,815.16 NO at 98–99¢. Requiring two consecutive completed minutes with a qualifying quote before a subsequent whole-contract purchase left only Warhol Above $22M. The 95¢ scenario modeled one contract and 4¢ net after fees. The separate 99¢ scenario modeled 100 contracts and 93¢ net. Historical quotes omit size. The forward dashboard records quantities on two books for exact lot matches in HENI’s withdrawal list."
+    },
+    {
       "market": "BTC 15-minute contracts with ten seconds remaining",
       "test": "Compared the latest chart reading and its five-second trend with the strike across 5,316 settled markets, September 23 through November 17 Eastern. Allowed two seconds of chart delay. For signals clearing 0.15%, checked seller trades strictly after a further second for a bid to arrive.",
       "finding": "The side ahead reversed 78 times. The largest lead that reversed was 0.037%. All 1,478 signals clearing both checks settled on the predicted side. Sellers traded below 99.8¢ in ten of those markets, all of which had also qualified at 45 seconds. At 100 contracts per market and 99.8¢ per contract, that models $2 gross across eight weeks. One market traded exactly at 99¢ and none traded below it. Queue position, actual fills, fees and operating costs determine the achievable return."

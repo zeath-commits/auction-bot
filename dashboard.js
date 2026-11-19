@@ -217,8 +217,20 @@ function paper(d) {
     table('Completed Bitcoin windows', ['Discovered', 'Chart requested', 'Ready with 10s left', 'Ready before close', 'Margin reached', 'Correct direction / settled'],
       [[c.closed, c.attempted, c.atTen, c.beforeClose, c.wide, c.correct + ' / ' + c.settled]]);
   }
-  if (selected==='art_withdrawn')
+  if (selected==='art_withdrawn'){
     note('Artnet marked Haberdashery withdrawn from the named sale. The paper position follows the no-eligible-price provision. Kalshi confirms its payout at settlement.');
+    const s=d.withdrawalStatus;
+    if(s){
+      table('HENI withdrawal reports for monitored lots',['Last scan','Watched lots','Publisher listings','Matching lots','Matches with open markets'],
+        [[s.at?time(s.at):'Pending',s.targets??'—',s.listed??'—',s.matched??'—',s.open??'—']]);
+      note('Checks the publisher’s highest-value withdrawals every two minutes by exact auction-house lot URL. Two fresh Kalshi books measure the NO quantity at each price. The publication list has limited coverage.');
+      if(s.error)note(s.error);
+    }
+    const labels={first:'First observation',through99:'Through 99¢',through95:'Through 95¢'};
+    table('Available NO contracts after a public withdrawal report',['Threshold','Observation','Observed','Price and whole contracts'],
+      (d.withdrawalQuotes??[]).map(r=>[r.ticker,labels[r.kind],time(r.at),r.levels.map(l=>money(l.price)+' × '+l.quantity).join(', ')||'No offer through 99¢']),
+      'Waiting for an exact lot match with an open market.');
+  }
   if (['all','art_record_pair','art_range_bids','art_withdrawn'].includes(selected)) {
     const trials=(d.auctionExitTrials ?? []).filter(t=>selected==='all'||selected===t.strategy);
     if (trials.length) {

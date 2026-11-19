@@ -25,6 +25,7 @@ test(
         'auction-portfolio.mjs',
         'late-auction.mjs',
         'catalog-results.mjs',
+        'withdrawal-reports.mjs',
         'us-bitcoin-paper.mjs',
         'bitcoin-reference.mjs',
         'btc-maker-study.mjs',
