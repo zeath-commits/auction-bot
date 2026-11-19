@@ -48,6 +48,16 @@
   ],
   "studies": [
     {
+      "market": "Discounted offers 15 minutes after Artnet-settled auction results",
+      "test": "Checked 224 thresholds across 29 artworks from November 16–17. Starting 15 minutes after the saved house result, required two consecutive one-minute exchange bars whose highest indicated-side offer was 95¢ or less. Checked up to 65 minutes after publication, picked the first qualifying decision per event, and broke simultaneous ties by lowest limit then ticker. Bars give prices without quantity.",
+      "finding": "Nine events qualified at 93–95¢ and all nine sides ultimately paid $1. Eight still showed the selected price or better throughout the following minute. The ninth had no next-minute quote. None had a public buyer execution at the limit or better from one second after the decision through the following minute. These prices justify watching confirmed depth beyond the initial announcement. Available shares and potential returns remain unverified."
+    },
+    {
+      "market": "Late 99¢ Van Gogh offers after Sotheby's published $190.43M",
+      "test": "For five November 18 lots covering 45 thresholds, began 15 minutes after both house sources agreed and scanned until 10:14 p.m. Eastern. Checked 9,551 lot snapshots and public non-block buyer executions. Separately screened two independent books for up to five at 99¢, then checked for public purchases one to six seconds later. The sample covers result-side whole-contract book levels.",
+      "finding": "Through 98¢, no lot had a whole contract offered on the result side or a public buyer execution. At 99¢, buyers took 169.85 contracts across eight trades on Van Gogh above $180M YES and above $200M NO. Neither threshold's first repeated offer had a qualifying trade in the following five-second window. Among 170 repeated quote observations, one later window had a public purchase of one contract. The current pilot price ceiling is 95¢. No live or simulated profit was booked from this replay."
+    },
+    {
       "market": "Buying two sale-price thresholds on one artwork",
       "test": "Paired YES on a lower threshold with NO on a higher threshold for the same lot under matching rules. One of those contracts pays $1 at any sale price under ordinary binary settlement. Compared the cost of buying both using whole-contract offers observed together. Repeated observations of the same book are counted separately.",
       "finding": "Across five Sotheby's lots on November 18, 2,449 timestamped snapshots covered 180 distinct threshold pairs. Both legs had a recorded offer in 55,960 comparisons. Zero cost less than $1 before fees. The cheapest was $1.02 including the one-pair fee reserve. At 10:30 p.m. Eastern, three checks of all 123 pairs on nine Thursday lots found a lowest cost of $1.08 including the reserve, on Nicolas Party's Landscape. These samples leave gaps between observations."
