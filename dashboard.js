@@ -107,6 +107,12 @@ function paper(d) {
     note('One paper contract in the final minute. The best offer must be from 98¢ through 99¢, including fractional cents, with at least one full contract on both checks. This test can overlap the exact-cent strategy.');
   if (selected === 'btc_band10')
     note('One paper contract per market. Both order-book requests must start in the last ten seconds, with distinct, fresh timestamps and a best offer from 98¢ through 99¢ on the same side that holds or improves.');
+  if (selected==='btc_cushion45' && d.btcEarlyCushion) {
+    const c=d.btcEarlyCushion;
+    table('BTC cushion with 42–45 seconds left',['Sampled','Cleared 0.15%','Settled after clearing','Correct','Fresh book pairs checked','100 offered twice ≤99¢','100 offered twice ≤99.8¢'],
+      [[c.sampled,c.passed,c.settled,c.correct,c.checked,c.at99,c.at998]]);
+    note('During the 1–10 seconds after the first signal, the paper test rechecks the cushion. Both books must show 100 whole contracts within the limit. The model uses the more expensive of the two quotes, including fees, against a $1,000 simulated balance.');
+  }
   if (['btc_band10','btc_band1000','btc999','btc_chart10'].includes(selected) && d.btcCushion) {
     const c=d.btcCushion;
     table('First BTC reading with 6–10 seconds left', ['Closes sampled','Fresh chart','Cleared 0.15%','Settled YES or NO after clearing','Correct after clearing'],

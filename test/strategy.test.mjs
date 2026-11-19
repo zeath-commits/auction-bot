@@ -243,6 +243,32 @@ test('1,000-contract closing test matches depth by price, charges fees and reser
   }
 });
 
+test('early BTC signal needs a later fresh chart and 100 shares under the same limit on both books', async()=>{
+  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'btc-early-')),db=openLedger(dir);
+  try{
+    const close=Math.floor(Date.now()/1000)*1000-1000;
+    const market={ticker:'KXBTC15M-EARLY',status:'active',close_time:new Date(close).toISOString(),
+      floor_strike:100,strike_type:'greater_or_equal',rules_primary:'Average of BRTI'};
+    const book=(secs,size)=>{const t=close-secs*1000;return {requestedAt:t,receivedAt:t+20,httpDate:new Date(t).toUTCString(),
+      body:{orderbook_fp:{yes_dollars:[],no_dollars:[['0.0100',size],['0.0020','75'],['0.0010','300']]}}};};
+    const paper=()=>paperRows(db).filter(r=>r.strategy==='btc_cushion45');
+    recordWithMargin(db,market,book(46,'30'),book(44,'30'),1);
+    assert.equal(db.prepare('SELECT passed FROM btc_early_signals').get().passed,1);
+    recordWithMargin(db,market,book(44,'30'),book(42,'30'),1);
+    recordWithMargin(db,market,book(41,'30'),book(39,'30'),1,'no');
+    recordWithMargin(db,market,book(41,'10'),book(39,'40'),1);
+    assert.equal(paper().length,0);
+    const cheaper=book(38,'35');
+    cheaper.body.orderbook_fp.no_dollars=[['0.0110','35'],['0.0030','75']];
+    recordWithMargin(db,market,cheaper,book(36,'30'),1);
+    recordWithMargin(db,market,book(37,'35'),book(35,'30'),1);
+    assert.equal(paper().length,1);assert.equal(paper()[0].depth,105);assert.equal(paper()[0].quantity,100);
+    assert.ok(Math.abs(paper()[0].price-(30*.99+70*.998)/100)<1e-9);assert.equal(paper()[0].fees,.04);
+    await settle(db,{get:async()=>({body:{market:{...market,status:'finalized',result:'no'}}})});
+    assert.equal(paper()[0].payout,0);assert.equal(db.prepare('SELECT result FROM btc_early_signals').get().result,'no');
+  }finally{db.close();fs.rmSync(dir,{recursive:true,force:true});}
+});
+
 test('99.9-cent closing test requires fresh repeated depth and available paper cash', async () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'btc-large-favorite-'));
   const db = openLedger(dir);
