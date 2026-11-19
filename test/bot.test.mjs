@@ -45,9 +45,14 @@ test('dated auction sweep sizes repeated depth within cash and skips other sessi
   const monet=sweepQuote(make('21.00'),make('23.00'),'YES',{},config,500);
   assert.equal(monet.quantity,7);assert.equal(monet.reserveCents,467);
   const full=datedSweepConfig(validateConfig({...config,datedAuctionSizing:'available_cash'}));
-  const expensive={orderbook_fp:{no_dollars:[['0.0300','20.00']]}};
-  assert.equal(sweepQuote(expensive,expensive,'YES',{},full,2500).quantity,20);
-  assert.equal(sweepQuote(expensive,expensive,'YES',{},config,2500),null);
+  for(const side of ['YES','NO']){
+    const key=side==='YES'?'no_dollars':'yes_dollars';
+    const mixed={orderbook_fp:{[key]:[['0.0490','30.00'],['0.0500','20.00']]}};
+    const quote=sweepQuote(mixed,mixed,side,{},full,5000);
+    assert.equal(quote.quantity,20);assert.equal(quote.limitCents,95);
+  }
+  assert.equal(datedSweepConfig({...full,maxPriceCents:99}).maxPriceCents,95);
+  assert.equal(datedSweepConfig({...full,maxPriceCents:90}).maxPriceCents,90);
   assert.equal(config.maxPriceCents,95);
 });
 

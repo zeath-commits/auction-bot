@@ -14,8 +14,9 @@ export function sessionWatchlist(calendar, date) {
 }
 
 export function datedSweepConfig(config) {
-  if(config.datedAuctionSizing!=='available_cash')return config;
-  return {...config,maxPriceCents:99,minConditionalProfitCents:1};
+  const maxPriceCents=Math.min(config.maxPriceCents,95);
+  if(config.datedAuctionSizing!=='available_cash')return {...config,maxPriceCents};
+  return {...config,maxPriceCents,minConditionalProfitCents:1};
 }
 
 // Charge every unit the IOC limit and reserve rounding on every possible fill.
