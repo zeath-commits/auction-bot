@@ -45,6 +45,14 @@ export function initNBAFinalQueue(db,io,helpers){
   const finish=db.prepare('UPDATE nba_final_receipts SET decision=? WHERE game=? AND decision IS NULL');
   const sawLive=db.prepare('INSERT OR IGNORE INTO nba_final_live_games(game,firstLive) VALUES(?,?)');
   const expire=db.prepare('UPDATE nba_final_live_games SET expired=? WHERE game=? AND expired IS NULL');
+  // Keep both types of seller volume in hundredths until whole shares are counted.
+  const evaluated=`SELECT ticker,side,arrival,ahead,atLimit,belowLimit,result,
+    MIN(5,CAST((ROUND(belowLimit*100)+MAX(0,ROUND(atLimit*100)-ROUND(ahead*100)))/100 AS INTEGER)) AS supported
+    FROM nba_final_queue`;
+  const evidence=db.prepare(`SELECT COUNT(*) trials,COUNT(result) reviewed,
+    COUNT(CASE WHEN supported=5 THEN 1 END) reachedFive,
+    COUNT(CASE WHEN result<>side AND supported=5 THEN 1 END) adverseFive FROM (${evaluated})`);
+  const recent=db.prepare(`SELECT * FROM (${evaluated}) ORDER BY arrival DESC LIMIT 12`);
   const lastCheck=new Map();
   async function check(game,day,readOfficial){
     const now=Date.now(),old=lookup.get(game.id);
@@ -133,10 +141,7 @@ export function initNBAFinalQueue(db,io,helpers){
     for(const game of games)if(game.status?.type?.state==='in')sawLive.run(game.id,now);
     const outcomes=await Promise.allSettled(eligible.map(g=>check(g,helpers.day(g),readOfficial)));
     await review();
-    const evidence=db.prepare(`SELECT COUNT(*) trials,COUNT(result) reviewed,
-      COUNT(CASE WHEN atLimit>=ahead+5 OR belowLimit>=5 THEN 1 END) reachedFive,
-      COUNT(CASE WHEN result<>side AND (atLimit>=ahead+5 OR belowLimit>=5) THEN 1 END) adverseFive FROM nba_final_queue`).get();
-    return {...evidence,confirmed:db.prepare('SELECT COUNT(*) n FROM nba_final_receipts').get().n,
+    return {...evidence.get(),recent:recent.all(),confirmed:db.prepare('SELECT COUNT(*) n FROM nba_final_receipts').get().n,
       missedFinal:db.prepare('SELECT COUNT(expired) n FROM nba_final_live_games').get().n,
       pending:db.prepare('SELECT COUNT(*) n FROM nba_final_receipts WHERE decision IS NULL AND at>=?').get(now-300000).n,
       error:outcomes.find(r=>r.status==='rejected')?.reason?.message??null};

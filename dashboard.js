@@ -504,6 +504,9 @@ function paper(d) {
     if (n.postgame) {
       const p=n.postgame;
       note('NBA final-score study · '+(p.error??(p.confirmed+' agreed final scores · '+p.missedFinal+' monitored games expired before confirmation · '+p.trials+' simulated 99¢ bids · '+p.reviewed+' checked against public trades · '+p.reachedFive+' with enough selling for five contracts · '+p.adverseFive+' of those settled against the bid.')));
+      table('99¢ bids after confirmed NBA finals',['Market','Side','Shares ahead','Sales at 99¢','Sales below 99¢','Modeled shares of five'],
+        (p.recent??[]).map(r=>[r.ticker,r.side.toUpperCase(),r.ahead,r.atLimit??'Pending',r.belowLimit??'Pending',r.supported??'Pending']),
+        'Waiting for a final score and two open order books.');
     }
     if (selected === 'nba_best_route' && n.arrivals) {
       const a = n.arrivals;

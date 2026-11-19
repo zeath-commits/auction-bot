@@ -53,6 +53,12 @@ test('postgame observer waits for corroboration and ranks repeated queues on the
     }};
     const reviewed=await initNBAFinalQueue(db,settled,helpers)([]);
     assert.equal(reviewed.reviewed,1);assert.equal(reviewed.reachedFive,1);assert.equal(reviewed.adverseFive,0);
+    // A partial fill from each price band can jointly support five whole shares.
+    db.prepare('UPDATE nba_final_queue SET atLimit=?,belowLimit=? WHERE game=?').run(48.05,2.45,game.id);
+    const combined=await scan([]);
+    assert.equal(combined.reachedFive,1);assert.equal(combined.recent[0].supported,5);
+    db.prepare('UPDATE nba_final_queue SET belowLimit=? WHERE game=?').run(2.44,game.id);
+    assert.equal((await scan([])).recent[0].supported,4);
     const missed={...game,id:'late'};
     const delayed={...summary,header:{...summary.header,id:'late'},plays:[{...summary.plays[0],wallclock:new Date(now-360000).toISOString()}]};
     const lateScan=initNBAFinalQueue(db,io,{...helpers,summary:async()=>delayed});

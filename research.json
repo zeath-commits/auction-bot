@@ -48,6 +48,21 @@
   ],
   "studies": [
     {
+      "market": "NBA 99¢ bids behind observed final-score queues on November 18",
+      "test": "For all six recorded final-score queue trials from the first nine completed games, checked the winner YES and opponent NO books, then public sales through the earlier of the confirmed close or the study deadline. Each simulated bid arrived 33–35 seconds after the monitor first received matching final scores from NBA.com and ESPN.",
+      "finding": "The smaller observed queue ranged from 203,394.39 to 1,584,996.89 contracts. None of the twelve routes had enough subsequent sales to reach a five-contract bid behind the displayed quantity. On Memphis YES, the measured queue was 1,184,133.03 contracts and subsequent sellers traded 3,351.51 at 99¢. Earlier sellers traded 23,495.82 Philadelphia YES during the delay before the paper bid. The queue at the earlier time and the identities of cancelled bids are unknown."
+    },
+    {
+      "market": "NBA halftime totals and spreads after the first half ended",
+      "test": "For the first nine final NBA games on November 18, checked four markets per game covering first-half and second-quarter totals and spreads. Verified the quarter scores against NBA.com and ESPN, then selected the nearest strike at least 4.5 points from the outcome, using ticker order to break ties. Counted executions from 30 seconds after ESPN's archived second-quarter end through the next five minutes. All 36 selected markets remained open for the full interval.",
+      "finding": "All 36 selected sides paid $1. There were zero buyer executions through 99¢. Sellers traded 6,048.68 contracts at exactly 99¢ across 20 markets. Two had enough selling for five contracts behind 1,000 shares and none behind 10,000. Median time from modeled arrival to settlement was 29.4 minutes. Earlier feed availability, queue position and account fills are unknown."
+    },
+    {
+      "market": "Halftime bids on the November 16–17 NBA schedule",
+      "test": "Applied the same 4.5-point margin and five-minute public-trade window to an earlier schedule. Required the NBA quarter scores and ESPN period-end plays to agree before evaluating first-half and second-quarter totals and spreads.",
+      "finding": "Twelve games passed and one was excluded. All 48 selected sides paid $1. Buyers took zero contracts through 99¢, and sellers traded 22,614.82 at 99¢. Six markets had enough volume for five shares behind 1,000, and none behind 10,000. In the excluded Phoenix–Denver game, ESPN period-end plays implied Phoenix won the second quarter by eight. The official quarter score was 36–29, a seven-point margin. Kalshi settled Phoenix above 7.5 points NO. Two losing YES contracts traded at 1¢ each in the replay window."
+    },
+    {
       "market": "NHL game winners after the reported final score",
       "test": "Compared NHL game reports, ESPN final plays and Kalshi settlements. Started 30 seconds after the later of the ESPN final play or the end of the minute printed on the NHL report. Counted non-block trades for up to five minutes after that reference or until market close. The historical timestamps describe the game and do not establish when a trader received the result.",
       "finding": "In 20 completed games from November 15–18, seven markets were still open during the test. Only Dallas–Vegas had buyers take winning contracts through 99¢. One buyer took 5.92 Dallas YES at 98¢. The overtime goal and a video review share an ESPN timestamp. In a separate November 8–14 sample, 43 of 49 games passed score and timing checks. Of the 23 markets still open, zero had buyers take winning contracts through 99¢. Sellers traded 74,539.26 winner YES contracts at 99¢. Seventeen games had enough seller volume for five shares assuming an empty queue, seven behind 1,000 shares and three behind 10,000. For the seven, the median interval from modeled arrival to official settlement was 2.62 minutes. Actual queue position and fills are unknown."
