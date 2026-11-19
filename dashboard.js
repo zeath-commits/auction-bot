@@ -127,6 +127,16 @@ function paper(d) {
   }
   if (selected === 'btc_underdog')
     note('One paper contract per market at the first 1¢ or 2¢ ask in the final minute that holds or improves on a second book check. Net includes modeled taker fees.');
+  if (selected==='sale_depth' && d.paperSweeps) {
+    const s=d.paperSweeps;
+    const dates=s.running.length?s.running:s.sessions;
+    if(dates.length)note((s.running.length?'Running dated paper worker for ':'Scheduled dated paper sessions for ')+dates.join(', ')+'.');
+    table('Dated auction worker at configured limits',['Session','Paper attempts','Shares requested','Attempts reviewed','Shares supported by trades','Supported shares settled','Modeled net on settled shares'],
+      s.observations.map(r=>[r.session,r.attempts,r.requested,r.reviewed,r.supported,r.settledShares,r.settledShares?money(r.modeledNet):'—']),
+      'Waiting for the first paper order that passes the session limits.');
+    note('Public buyers must trade at the limit price or better one to six seconds after the paper intent. Modeled net uses that limit, the corresponding fee reserve and the official settlement value.');
+    if(d.lateAuctionStatus?.sweepReviewError)note(d.lateAuctionStatus.sweepReviewError);
+  }
   if (['sothebys_sold','sale_depth'].includes(selected)){
     table('Resting auction bids at 95¢ after publication',['Threshold','Side','Shares queued at 95¢ or better','Shares sold at 95¢','Shares sold below 95¢'],
       (d.auctionResting??[]).filter(r=>selected==='sothebys_sold'?r.source?.includes('sothebys.com'):!r.source?.includes('sothebys.com'))

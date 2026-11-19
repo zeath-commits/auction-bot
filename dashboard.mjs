@@ -29,6 +29,7 @@ import { observeUS } from './us-bitcoin-paper.mjs';
 import { observeSothebysBids } from './sothebys-bids.mjs';
 import { initRestingStudy, restingBalance, reviewRestingBid, settleRestingBid, reviewAuctionEntry } from './auction-resting.mjs';
 import {initEntryDepth,checkEntryDepth} from './auction-entry-depth.mjs';
+import {paperSweepAudit} from './auction-sweep-paper.mjs';
 import {
   addPaper,
   observe,
@@ -43,6 +44,7 @@ initRestingStudy(db);
 initWithdrawalBids(db);
 initDiscountBids(db);
 initEntryDepth(db);
+const sweepAudit=paperSweepAudit(db);
 const soldLimits = openSoldLimits(runtime);
 const config = JSON.parse(
   fs.readFileSync(
@@ -260,6 +262,13 @@ const calendars = ['watchlist.json', 'paper-calendar.json'].map((file) => ({
   extra: file === 'paper-calendar.json',
   auctions: json(path.join(ROOT, file)).auctions
 }));
+const easternDate=new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'});
+const sweepSessions=new Map();
+for(const auction of calendars.filter(c=>c.extra).flatMap(c=>c.auctions)){
+  const date=easternDate.format(Date.parse(auction.startAt));
+  const deadline=Date.parse(auction.deadline)+config.offerTailHours*3600000;
+  sweepSessions.set(date,Math.max(sweepSessions.get(date)??0,deadline));
+}
 const catalogCases = catalogObservations.map(observation => ({
   ...observation, checkedAt: null, counts: null, error: null
 }));
@@ -458,6 +467,14 @@ function runAuctions() {
         launchWorker([...args, ...(extra ? ['--paper-calendar'] : [])]);
     };
     if (hasOffers) start('--watch-offers', ['--paper', '--watch-offers']);
+    if(extra){
+      const sessions=new Set(auctions.filter(a=>now>=Date.parse(a.startAt)-60000 &&
+        now<Date.parse(a.deadline)+config.offerTailHours*3600000).map(a=>easternDate.format(Date.parse(a.startAt))));
+      for(const session of sessions){
+        const arg='--sweep-date='+session;
+        if(![...children].some(c=>c.spawnargs.includes(arg)))launchWorker(['--paper',arg]);
+      }
+    }
     if (hasBids) start('--paper-bids', ['--paper-bids']);
     offers ||= hasOffers;
     bids ||= hasBids;
@@ -533,6 +550,8 @@ const server = http.createServer((req, res) => {
           auctionStatus,
           pairStatus,
           lateAuctionStatus,
+          paperSweeps:{sessions:[...sweepSessions].filter(([,end])=>end>Date.now()).map(([date])=>date),
+            running:[...children].filter(c=>c.spawnargs.includes('--paper')).flatMap(c=>c.spawnargs.filter(a=>a.startsWith('--sweep-date=')).map(a=>a.slice('--sweep-date='.length))),observations:sweepAudit.summary()},
           withdrawalStatus,
           withdrawalBidStatus,
           withdrawalAccounts:withdrawalAccounts(db),
@@ -816,6 +835,11 @@ server.listen(port, host, () => {
     catch(e){lateAuctionStatus.discountError=e.message;}
     try {await reviewAuctionEntry(db,soldIO,Date.now());delete sothebysStatus.entryTapeError;}
     catch(e){sothebysStatus.entryTapeError=e.message;}
+    try {
+      for(const session of sweepSessions.keys())sweepAudit.ingest(session,records(path.join(runtime,'paper-sweep-'+session,'orders.jsonl')));
+      await sweepAudit.review(soldIO,Date.now());
+      delete lateAuctionStatus.sweepReviewError;
+    } catch(e){lateAuctionStatus.sweepReviewError=e.message;}
     finally{reviewingResting=false;}
   };
   reviewResting();

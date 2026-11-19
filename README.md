@@ -79,7 +79,7 @@ On the paper dashboard, select **Sotheby’s · published sale price and availab
 
 ### Connect your Kalshi account
 
-For the November 19 auctions, run `node bot.mjs --sweep-date=2026-11-19 --preflight` to check the selected Eastern date, lot identities and contract rules using public data. `node bot.mjs --paper --sweep-date=2026-11-19` rehearses the same quote and order-sizing path. The paper dashboard and all BTC studies run independently.
+For the November 19 auctions, run `node bot.mjs --sweep-date=2026-11-19 --preflight` to check the selected Eastern date, lot identities and contract rules using public data. During a scheduled session the dashboard starts the dated paper worker automatically. To run it standalone, use `node bot.mjs --paper --sweep-date=2026-11-19`. **Auction · available quantity after confirmed results** in the paper view shows its requested quantities and later public purchases. A fill estimate requires public buyers at or below the limit one to six seconds after an intent. Settled estimates use the exchange payout, limit price and fee reserve. BTC runs independently.
 
 The dated worker checks for a published sale price including premium or an explicit unsold result under the reviewed terms. Within each artwork it visits thresholds with cheaper displayed offers first, rechecks the result and both books, then sizes each immediate-or-cancel order to the whole contracts still visible at qualifying prices. The worker uses the smaller of available account cash, the remaining journal budget and the per-order cost limit. Each threshold can receive another order after its cooldown. Multiple thresholds on one artwork share settlement risk. The house can revise its report and the Artnet value determines the contract outcome.
 

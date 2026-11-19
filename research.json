@@ -48,6 +48,11 @@
   ],
   "studies": [
     {
+      "market": "Auction orders at the current $1 per-order and $5 total pilot limits",
+      "test": "Replayed the dated worker’s quantity calculation on saved order books. Checked for same-side public purchases at the limit or better one to six seconds after a second quote. November 16 and 17 archives recorded local receipt times. The historical checks cannot establish the exact order arrival or queue position.",
+      "finding": "On November 17, 2,729 archived checks covered 119 thresholds for 15 artworks at Phillips and Christie’s. Two offers were at or below 95¢. Both outcomes won, but neither offer had a second saved quote. After the Avery Singer YES quote at 95¢, a buyer paid 94¢ for one contract 1.752 seconds later. In the separate November 18 Monet example, the $1 cap allowed one of the 21 contracts at 64¢, with a 67¢ reservation including a fee allowance. Four later public trades bought 23 at 64¢. The dashboard rehearses the dated worker, compares its actual paper timestamps with public purchases and grades supported shares at official settlement."
+    },
+    {
       "market": "How much BTC distance was enough to justify a 98¢ bid?",
       "test": "Measured both the chart reading and its five-second trend forecast against the strike with 45 seconds remaining across 5,316 settled markets. For November 4–17, checked public seller volume strictly below trial bids after a one-second arrival delay. Each comparison started with $1,000 and sized to 100 contracts per signal. The model charged standard taker fees as a cost sensitivity.",
       "finding": "At a 98¢ bid, a fixed $55 buffer had three winning and one losing modeled purchase for a $92.55 loss. A 0.05% buffer had 14 winners and two losses for a $170.20 loss. At 0.10%, 0.125% and 0.15%, the same three purchases qualified and modeled a $5.59 gain in each case. At a 99.8¢ bid, the 0.15% buffer modeled $1.86 over both weeks. Historical book availability and the bot’s place in the queue were unknown. The forward paper rule continues to use 0.15%."
