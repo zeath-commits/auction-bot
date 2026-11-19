@@ -614,6 +614,15 @@ const server = http.createServer((req, res) => {
             COUNT(CASE WHEN b.volume>=100 AND s.result=b.side THEN 1 END) wins,
             COUNT(CASE WHEN b.volume>=100 AND s.result IN ('yes','no') THEN 1 END) graded
             FROM btc_endpoint_bids b LEFT JOIN btc_early_signals s USING(ticker)`).get(),
+          btcBidDurations:db.prepare(`WITH observations AS (
+            SELECT json_extract(v.value,'$.timer') AS timer,json_extract(v.value,'$.price') AS price,
+              json_extract(v.value,'$.shares') AS shares,d.maxGap,b.side,s.result
+            FROM btc_bid_duration d JOIN btc_endpoint_bids b USING(ticker)
+            LEFT JOIN btc_early_signals s USING(ticker), json_each(d.compared) v)
+            SELECT timer,price,COUNT(*) AS reviewed,COUNT(CASE WHEN shares>0 THEN 1 END) AS crossed,
+              COUNT(CASE WHEN shares>0 AND result IN ('yes','no') THEN 1 END) AS graded,
+              COUNT(CASE WHEN shares>0 AND result=side THEN 1 END) AS wins,
+              SUM(shares) AS shares,MAX(maxGap) AS maxGap FROM observations GROUP BY timer,price ORDER BY price,timer`).all(),
           btc999Coverage: db.prepare(`SELECT count(DISTINCT ticker) AS windows,
             count(DISTINCT CASE WHEN fresh=1 THEN ticker END) AS freshWindows,
             count(DISTINCT CASE WHEN fresh=1 AND json_extract(firstQuote,'$.size')>=100 THEN ticker END) AS offered,

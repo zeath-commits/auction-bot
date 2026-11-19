@@ -1,4 +1,5 @@
-import {windowTrades} from './public-trades.mjs';
+import {measureSales,windowTrades} from './public-trades.mjs';
+import {marginAllows} from './bitcoin-reference.mjs';
 import { askLevels, MICRO } from './core.mjs';
 
 // Observe an existing 99.9-cent bid, then measure how much traded against
@@ -38,19 +39,50 @@ export function observeEndpointBid(db,market,first,second,margin){
   if(a==null||b==null)return;
   const at=second.receivedAt;
   const proof=({body,httpDate,cacheAge,requestedAt,receivedAt})=>({body,httpDate,cacheAge,requestedAt,receivedAt});
-  db.prepare('INSERT OR IGNORE INTO btc_endpoint_bids(ticker,side,arrival,untilAt,ahead,proof) VALUES(?,?,?,?,?,?)')
-    .run(market.ticker,side,at+1000,at+10000,Math.max(a,b),JSON.stringify({margin,first:proof(first),second:proof(second)}));
+  db.exec('SAVEPOINT btc_resting_bid');
+  try{
+    const inserted=db.prepare('INSERT OR IGNORE INTO btc_endpoint_bids(ticker,side,arrival,untilAt,ahead,proof) VALUES(?,?,?,?,?,?)')
+      .run(market.ticker,side,at+1000,at+10000,Math.max(a,b),JSON.stringify({margin,first:proof(first),second:proof(second)}));
+    if(inserted.changes)db.prepare('INSERT INTO btc_bid_duration(ticker,closeAt,lastSeen) VALUES(?,?,?)')
+      .run(market.ticker,margin.closeMs,at);
+    db.exec('RELEASE btc_resting_bid');
+  }catch(e){db.exec('ROLLBACK TO btc_resting_bid; RELEASE btc_resting_bid');throw e;}
+}
+
+export function recheckEndpointBid(db,market,book,margin){
+  const t=db.prepare(`SELECT d.closeAt,d.lastSeen,b.side FROM btc_bid_duration d JOIN btc_endpoint_bids b USING(ticker)
+    WHERE ticker=? AND cancelAt IS NULL AND compared IS NULL AND lastSeen<? AND closeAt>?`).get(market.ticker,book.receivedAt,book.receivedAt);
+  if(!t)return;
+  const pass=marginAllows(margin,t.side,t.closeAt,market.floor_strike,book.requestedAt,book.receivedAt);
+  db.prepare(`UPDATE btc_bid_duration SET checks=checks+1,lastSeen=?,maxGap=MAX(maxGap,?),cancelAt=?,cancelProof=?
+    WHERE ticker=? AND lastSeen=?`).run(book.receivedAt,book.receivedAt-t.lastSeen,pass?null:Math.min(book.receivedAt+1000,t.closeAt),
+    pass?null:JSON.stringify({observed:book.receivedAt,requested:book.requestedAt,margin}),market.ticker,t.lastSeen);
 }
 
 export async function reviewEndpointBid(db,io,now){
-  const trial=db.prepare(`SELECT * FROM btc_endpoint_bids WHERE volume IS NULL AND untilAt<=?
+  const trial=db.prepare(`SELECT b.*,d.closeAt,d.cancelAt,d.lastSeen,d.maxGap FROM btc_endpoint_bids b LEFT JOIN btc_bid_duration d USING(ticker)
+    WHERE (volume IS NULL OR (d.closeAt IS NOT NULL AND d.compared IS NULL)) AND COALESCE(d.closeAt,untilAt)<=?
     AND COALESCE(checked,0)<? ORDER BY COALESCE(checked,0),untilAt LIMIT 1`).get(now-60000,now-60000);
   if(!trial)return;
   db.prepare('UPDATE btc_endpoint_bids SET checked=? WHERE ticker=?').run(now,trial.ticker);
   const aggressor=trial.side==='yes'?'no':'yes';
-  const sales=(await windowTrades(io,trial,trial.side,aggressor)).filter(t=>t.price<0.998);
-  db.prepare('UPDATE btc_endpoint_bids SET volume=?,sales=? WHERE ticker=?')
-    .run(sales.reduce((n,t)=>n+Math.round(t.qty*100),0)/100,JSON.stringify(sales),trial.ticker);
+  const untilAt=trial.closeAt??trial.untilAt;
+  const sales=(await windowTrades(io,{...trial,untilAt},trial.side,aggressor)).filter(t=>t.price<0.998);
+  const early=sales.filter(t=>Date.parse(t.at)<trial.untilAt);
+  db.exec('BEGIN IMMEDIATE');
+  try{
+    db.prepare('UPDATE btc_endpoint_bids SET volume=?,sales=? WHERE ticker=?')
+      .run(measureSales(early,.998,trial.untilAt).volume,JSON.stringify(early),trial.ticker);
+    if(trial.closeAt!=null){
+      const compared=[];
+      for(const [timer,end] of [['nineSeconds',trial.untilAt],['untilClose',untilAt],['cancelOnMargin',trial.cancelAt??untilAt]]){
+        for(const price of [.98,.998])compared.push({timer,price,...measureSales(sales,price,end)});
+      }
+      const gap=trial.cancelAt==null?Math.max(trial.maxGap,untilAt-trial.lastSeen):trial.maxGap;
+      db.prepare('UPDATE btc_bid_duration SET maxGap=?,compared=?,sales=? WHERE ticker=?').run(gap,JSON.stringify(compared),JSON.stringify(sales),trial.ticker);
+    }
+    db.exec('COMMIT');
+  }catch(e){db.exec('ROLLBACK');throw e;}
 }
 
 export async function reviewMakerQueue(db, io, now) {

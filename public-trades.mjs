@@ -1,3 +1,10 @@
+// Caller supplies seller-initiated executions strictly after simulated order arrival.
+export function measureSales(sales,limitDollars,until){
+  const qualifying=sales.filter(t=>Date.parse(t.at)<until && t.price<limitDollars);
+  const volume=qualifying.reduce((n,t)=>n+Math.round(t.qty*100),0)/100;
+  return {volume,shares:Math.min(100,Math.floor(volume))};
+}
+
 export async function windowTrades(io,trial,side,taker){
   const cutoff=Date.parse((await io.get('/historical/cutoff')).body.trades_created_ts);
   if(!Number.isFinite(cutoff))throw Error('Missing trade archive cutoff');

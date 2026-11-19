@@ -96,15 +96,24 @@ test('the early trend registers a passive bid before seller volume is known',asy
     recordBtc(db,{...m,ticker:ticker+'-ASK'},read(close-47000,[['0.002','1']]),read(close-45000),1,margin);
     recordBtc(db,{...m,ticker:ticker+'-ASK'},read(close-47000),read(close-45000),1,margin);
     assert.equal(db.prepare('SELECT COUNT(*) n FROM btc_endpoint_bids').get().n,1);
+    // A failed chart read triggers a delayed cancellation for this comparison only.
+    recordBtc(db,m,read(close-42000),read(close-40000),1,null);
+    const cancel=db.prepare('SELECT cancelAt FROM btc_bid_duration WHERE ticker=?').get(ticker).cancelAt;
+    assert.equal(cancel,close-38950);
     const sale=(id,price,at,side='yes')=>({ticker,trade_id:id,no_price_dollars:price,count_fp:'101.50',is_block_trade:false,
       created_time:new Date(at).toISOString(),taker_outcome_side:side,taker_book_side:side==='yes'?'bid':'ask'});
     const sales=[sale('valid','.997',trial.arrival+10),sale('equal','.998',trial.arrival+20),
       sale('late','.996',trial.untilAt),sale('early','.994',trial.arrival),sale('wrong-side','.994',trial.arrival+10,'no')];
+    sales.push(sale('after-cancel','.97',cancel+10));
     const io={get:async route=>({body:route==='/historical/cutoff'?{trades_created_ts:new Date(trial.arrival+1).toISOString()}:{trades:sales}})};
     await reviewEndpointBid(db,io,close+90000);
     const result=db.prepare('SELECT volume,sales FROM btc_endpoint_bids').get();
-    assert.equal(result.volume,101.5);
-    assert.deepEqual(JSON.parse(result.sales).map(t=>t.id),['valid']);
+    assert.equal(result.volume,203);
+    assert.deepEqual(JSON.parse(result.sales).map(t=>t.id),['valid','after-cancel']);
+    const compared=JSON.parse(db.prepare('SELECT compared FROM btc_bid_duration').get().compared);
+    assert.deepEqual(compared.map(r=>[r.timer,r.price,r.volume]),[
+      ['nineSeconds',.98,101.5],['nineSeconds',.998,203],['untilClose',.98,101.5],['untilClose',.998,304.5],
+      ['cancelOnMargin',.98,0],['cancelOnMargin',.998,101.5]]);
   }finally{db.close();fs.rmSync(directory,{recursive:true,force:true});}
 });
 

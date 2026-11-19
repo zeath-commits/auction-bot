@@ -106,6 +106,11 @@ function paper(d) {
     table('Resting 99.8¢ bid after a chart trend signal',['Eligible windows','Reviewed','100+ sold below 99.8¢','Graded after 100+ sold','Correct after 100+ sold'],
       [[b.trials,b.reviewed,b.through,b.graded,b.wins]]);
     note('At the first reading with 42–45 seconds left, the latest chart price and five-second trend forecast must both clear the strike by 0.15%. Two books must show no offer at 99.8¢ or less. After a one-second arrival allowance, the monitor counts sellers who traded below 99.8¢ in the next nine seconds. These observations measure potential fills.');
+    const names={nineSeconds:'Nine seconds',untilClose:'Until close',cancelOnMargin:'Cancel on lost cushion'};
+    table('Bid prices and cancellation timing for the same signals',['Bid','Duration','Reviewed','With potential fills','Potential shares','Graded','Correct','Longest monitoring gap'],
+      (d.btcBidDurations??[]).map(r=>[money(r.price),names[r.timer],r.reviewed,r.crossed,r.shares,r.graded,r.wins,(r.maxGap/1000).toFixed(1)+'s']),
+      'Waiting for eligible bids to reach settlement.');
+    note('Each comparison allows up to 100 whole shares per signal. A cancellation takes effect one second after the first observed failed or stale reading. During a monitoring gap, the modeled bid stays open.');
     if(d.status?.endpointBidError)note(d.status.endpointBidError);
   }
   if(selected==='btc_endpoint10' && d.btcEndpoint){

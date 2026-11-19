@@ -5,7 +5,7 @@ import { setTimeout as sleep } from 'node:timers/promises';
 import { Transport } from './transport.mjs';
 import { askLevels, MICRO, overlappingAskLevels } from './core.mjs';
 import { chartProjection, referencePrices, readClosingMargin, currentMargin, marginAllows } from './bitcoin-reference.mjs';
-import { observeMakerQueue, reviewMakerQueue, observeEndpointBid, reviewEndpointBid } from './btc-maker-study.mjs';
+import { observeMakerQueue, reviewMakerQueue, observeEndpointBid, recheckEndpointBid, reviewEndpointBid } from './btc-maker-study.mjs';
 
 export const strategies = {
   cs2_reference: 'CS2 · Kalshi offer below Polymarket US bid',
@@ -76,6 +76,8 @@ export function openLedger(directory) {
     CREATE TABLE IF NOT EXISTS btc_chart_audits(ticker TEXT PRIMARY KEY,checked INTEGER,detail TEXT);
     CREATE TABLE IF NOT EXISTS btc_endpoint_bids(ticker TEXT PRIMARY KEY,side TEXT,arrival INTEGER,untilAt INTEGER,
       ahead REAL,proof TEXT,checked INTEGER,volume REAL,sales TEXT);
+    CREATE TABLE IF NOT EXISTS btc_bid_duration(ticker TEXT PRIMARY KEY,closeAt INTEGER,lastSeen INTEGER,checks INTEGER DEFAULT 0,
+      maxGap INTEGER DEFAULT 0,cancelAt INTEGER,cancelProof TEXT,compared TEXT,sales TEXT);
     CREATE TABLE IF NOT EXISTS btc_band_depth(ticker TEXT,at INTEGER,fresh INTEGER,side TEXT,
       depth INTEGER,detail TEXT NOT NULL,PRIMARY KEY(ticker,at));
     CREATE TABLE IF NOT EXISTS auction_premium_signals(ticker TEXT PRIMARY KEY,event TEXT,at INTEGER,
@@ -267,6 +269,7 @@ export function recordBtc(db, market, first, second, multiplier, margin = null) 
   const signalTable=secondsLeft>=6 && secondsLeft<=10 ? 'btc_cushion_signals'
     : secondsLeft>=42 && secondsLeft<=45 ? 'btc_early_signals' : null;
   const endpointMargin=margin?.endpoint>0?{...margin,projected:margin.endpoint}:null;
+  if(secondsLeft<45)recheckEndpointBid(db,market,second,endpointMargin);
   function freezeSignal(table,reading){
     const strike=market.floor_strike;
     const usable=currentMargin(reading,close,strike,second.requestedAt,observed);
