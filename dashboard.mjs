@@ -5,6 +5,7 @@ import { timingSafeEqual, createHash } from 'node:crypto';
 import { spawn } from 'node:child_process';
 import { ROOT } from './bot.mjs';
 import { observePairs, pairSeries } from './auction-pairs.mjs';
+import { observeTotalPairs } from './nba-total-pairs.mjs';
 import { observeLateAuctions } from './late-auction.mjs';
 import { catalogObservations, catalogObservedAt, catalogSource, summarizeSettlement } from './catalog-results.mjs';
 import { openSoldLimits } from './sold-limits.mjs';
@@ -63,6 +64,7 @@ const weatherStatus = {};
 const pairStatus = Object.fromEntries(
   Object.entries(pairSeries).map(([k, label]) => [k, { label, at: null }])
 );
+pairStatus.KXNBATOTAL = { label: 'NBA full-game totals', at: null };
 let stopping = false;
 const exists = fs.existsSync;
 function json(file) {
@@ -753,7 +755,7 @@ server.listen(port, host, () => {
     lateAuctionStatus.error = e.message;
   });
   for (const [series, state] of Object.entries(pairStatus))
-    observePairs({
+    (series === 'KXNBATOTAL' ? observeTotalPairs : observePairs)({
       series,
       db,
       config,

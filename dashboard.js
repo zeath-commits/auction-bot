@@ -481,7 +481,14 @@ function paper(d) {
     }
   }
   for (const pair of Object.values(d.pairStatus ?? {}))
-    if (pair.at)
+    if (pair.at && pair.coverage) {
+      const c = pair.coverage;
+      note(pair.label + ' · ' + pair.comparisons + ' threshold pairs in the latest scan. ' +
+        (c.scans || 0) + ' game scans, ' + (c.signals || 0) + ' with a two-leg price below $1 after estimated fees, ' +
+        (c.confirmed || 0) + ' paper entries confirmed on a second book.' +
+        (c.lowestBeforeFees == null ? '' : ' Lowest combined ask before fees: $' + c.lowestBeforeFees.toFixed(3) + '.') +
+        (pair.error ? ' Coverage error: ' + pair.error : '') + ' · ' + time(pair.at));
+    } else if (pair.at)
       note(
         pair.label +
           ' pairs · ' +

@@ -40,6 +40,7 @@ test(
         'nba-paper.mjs',
         'nba-final-queue.mjs',
         'nba-total-queue.mjs',
+        'nba-total-pairs.mjs',
         'art-record-pair.mjs',
         'art-range-bids.mjs',
         'esports-paper.mjs',
