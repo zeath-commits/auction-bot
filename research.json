@@ -1,6 +1,18 @@
 {
   "paper": [
     {
+      "id": "art_withdrawn/KXART-PHI17NOV26-250000/0.95",
+      "strategy": "art_withdrawn",
+      "ticker": "KXART-PHI17NOV26-250000",
+      "at": "2026-11-19T00:29:16.896Z",
+      "side": "no",
+      "quantity": 58,
+      "price": 0.95,
+      "fees": 0.20,
+      "depth": 58,
+      "closeAt": 1795100400000
+    },
+    {
       "id": "earthquake-nov17-no68-paper-v1",
       "strategy": "quake",
       "ticker": "KXBIGGESTQUAKE-17NOV26-6.8",
@@ -35,6 +47,16 @@
     }
   ],
   "studies": [
+    {
+      "market": "Van Gogh 95¢ resting NO after the published $190.43M price",
+      "test": "The bot recorded Sotheby’s catalog and individual lot page agreeing on $190.43M. On Above $260M, two books had no immediately available NO offer at 95¢ or less and no visible NO bids at 95¢ or better. The prospective one-hour queue study recorded hypothetical arrival at 6:26:40.775 p.m. Eastern on November 18.",
+      "finding": "Three minutes and three seconds later, four non-block trades at the same timestamp sold 312.75 NO contracts to resting buyers at 94¢. A resting 95¢ bid would have offered a better price to sellers. The bot had no order in the queue, and the threshold remained unsettled at review. The same observation now covers published Phillips and Christie’s results on mapped Artnet-verified thresholds."
+    },
+    {
+      "market": "Withdrawn Phillips lot after Artnet published its status",
+      "test": "Artnet's public Phillips catalog listed Derek Fordjour's Haberdashery, lot 17, as withdrawn. On November 18 at 7:29 p.m. Eastern, checked the unchanged Kalshi rules, all ten active strikes and three separate order books. The paper test used a 95¢ maximum NO price, the smallest whole-contract depth at the same price on all three reads, and a $1,000 budget across the ten strikes.",
+      "finding": "Only Above $250K qualified, with 58 NO at 95¢. Modeled cost was $55.30 with fees. A NO settlement would return $58 and earn $2.70, and YES would lose $55.30. All ten strikes were still open at entry. None of the five paintings with matched Sotheby’s prices had even one contract on the indicated side at 99¢ or less across all three reads. The paper entry tracks the withdrawn-lot hypothesis separately from bought-in lots."
+    },
     {
       "market": "BTC cushion with 45 seconds to close",
       "test": "Evaluated 1,992 settled quarter-hour contracts in October 21–27 and November 4–17, 2026 Eastern. At 45 seconds to close, held the latest proxy chart observation flat for the remaining part of the settlement average. Used only completed one-second candles from before a simulated request two seconds earlier. Required both spot and projection to clear the strike by 0.15%. Checked public purchases on the selected side from 44 to 35 seconds before close.",

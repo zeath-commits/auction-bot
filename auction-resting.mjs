@@ -60,7 +60,7 @@ async function auctionTrades(io,trial,side,taker,route='/markets/trades') {
   return trades;
 }
 
-const includedStrategies = "('sothebys_sold','late_auction','sale_depth')";
+const includedStrategies = "('sothebys_sold','late_auction','sale_depth','art_withdrawn')";
 export async function reviewAuctionEntry(db,io,now) {
   // Hold the window open for 30 seconds and allow a minute for exchange publication.
   const pending=db.prepare(`SELECT p.ticker,p.at FROM paper p LEFT JOIN auction_entry_tape a
@@ -76,7 +76,7 @@ export async function reviewAuctionEntry(db,io,now) {
   const {side,strategy}=rows[0], levels=new Map();
   for(const row of rows) {
     if(row.side!==side || row.strategy!==strategy || !['yes','no'].includes(side)) throw Error('Ambiguous auction entry');
-    const booked=row.strategy==='sothebys_sold' ? [row] : JSON.parse(row.detail)?.levels;
+    const booked=['sothebys_sold','art_withdrawn'].includes(row.strategy) ? [row] : JSON.parse(row.detail)?.levels;
     if(!booked?.length || booked.reduce((s,l)=>s+l.quantity,0)!==row.quantity) throw Error('Auction entry lacks original price levels');
     for(const {price,quantity} of booked) {
       if(!(price>0 && price<1 && Number.isSafeInteger(quantity) && quantity>0)) throw Error('Invalid paper price level');

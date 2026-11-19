@@ -28,7 +28,7 @@ export function auctionHoldings(db) {
 }
 export function auctionStudyHoldings(db) {
   return db.prepare(`SELECT strategy,ticker,side,SUM(quantity) AS quantity,SUM(price*quantity+fees) AS cost
-    FROM paper WHERE payout IS NULL AND strategy IN ('art_record_pair','art_range_bids')
+    FROM paper WHERE payout IS NULL AND strategy IN ('art_record_pair','art_range_bids','art_withdrawn')
     GROUP BY strategy,ticker,side ORDER BY strategy,ticker,side`).all();
 }
 function bids(book, side) {
@@ -58,7 +58,7 @@ export function exitQuote(position, first, second) {
     );
     if (n <= 0) continue;
     const price = p / MICRO;
-    const precision = position.strategy === 'art_record_pair' || position.strategy === 'art_range_bids' ? 100 : 10000;
+    const precision = ['art_record_pair','art_range_bids','art_withdrawn'].includes(position.strategy) ? 100 : 10000;
     const fee = Math.ceil(0.07 * n * price * (1 - price) * precision - 1e-9) / precision;
     if (n * price <= fee) continue;
     levels.push({ price, quantity: n, fee });
@@ -82,6 +82,8 @@ export function registerExitTrials(db, holdings, now) {
   const save=db.prepare('INSERT OR IGNORE INTO auction_exit_trials(id,strategy,registered,holdings) VALUES(?,?,?,?)');
   for (const p of holdings.filter(p=>p.strategy==='art_range_bids'))
     save.run(p.ticker,p.strategy,now,JSON.stringify([p]));
+  for (const p of holdings.filter(p=>p.strategy==='art_withdrawn'))
+    save.run(p.strategy+'/'+p.ticker,p.strategy,now,JSON.stringify([p]));
   const paired=holdings.filter(p=>p.strategy==='art_record_pair');
   const annual=paired.filter(p=>p.side==='yes');
   const lots=paired.filter(p=>p.side==='no');

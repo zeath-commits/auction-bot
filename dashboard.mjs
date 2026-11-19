@@ -525,7 +525,7 @@ const server = http.createServer((req, res) => {
           usBitcoinStatus,
           sothebysStatus,
           soldLimits: soldLimits.summary(),
-          auctionResting:db.prepare('SELECT ticker,side,arrival,untilAt,ahead,atLimit,belowLimit FROM auction_resting_trials ORDER BY arrival,ticker').all(),
+          auctionResting:db.prepare('SELECT ticker,side,source,arrival,untilAt,ahead,atLimit,belowLimit FROM auction_resting_trials ORDER BY arrival,ticker').all(),
           auctionEntryTape:db.prepare('SELECT detail FROM auction_entry_tape WHERE detail IS NOT NULL ORDER BY at DESC,ticker').all().map(r=>JSON.parse(r.detail)),
           nbaStatus,
           recordPairStatus,

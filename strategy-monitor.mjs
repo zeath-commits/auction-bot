@@ -26,6 +26,7 @@ export const strategies = {
   auction_pair: 'Auction · paired thresholds',
   art_record_pair: 'Auction · Van Gogh annual record and individual lot',
   art_published_record: 'Auction · annual record after a confirmed sale',
+  art_withdrawn: 'Auction · publicly withdrawn lot',
   art_range_bids: 'Auction · Polymarket range bids vs. Kalshi thresholds',
   crypto_pair: 'Crypto · paired thresholds',
   index_pair: 'Stock indices · paired thresholds',

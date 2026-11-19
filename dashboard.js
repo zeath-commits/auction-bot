@@ -103,6 +103,14 @@ function paper(d) {
   }
   if (selected === 'btc_underdog')
     note('One paper contract per market at the first 1¢ or 2¢ ask in the final minute that holds or improves on a second book check. Net includes modeled taker fees.');
+  if (['sothebys_sold','sale_depth'].includes(selected)){
+    table('Resting auction bids at 95¢ after publication',['Threshold','Side','Shares queued at 95¢ or better','Shares sold at 95¢','Shares sold below 95¢'],
+      (d.auctionResting??[]).filter(r=>selected==='sothebys_sold'?r.source?.includes('sothebys.com'):!r.source?.includes('sothebys.com'))
+        .map(r=>[r.ticker,r.side,r.ahead,r.atLimit??'Pending',r.belowLimit??'Pending']),
+      'Waiting for a confirmed sale price and two books with no offer at or below 95¢.');
+    note('Each threshold is observed once. The model allows one second for a bid to arrive, then counts sales for up to one hour. The ledger credits no fills for these observations.');
+    if(d.sothebysStatus?.restingError)note(d.sothebysStatus.restingError);
+  }
   if (selected === 'btc_band60')
     note('One paper contract in the final minute. The best offer must be from 98¢ through 99¢, including fractional cents, with at least one full contract on both checks. This test can overlap the exact-cent strategy.');
   if (selected === 'btc_band10')
@@ -173,7 +181,9 @@ function paper(d) {
     table('Completed Bitcoin windows', ['Discovered', 'Chart requested', 'Ready with 10s left', 'Ready before close', 'Margin reached', 'Correct direction / settled'],
       [[c.closed, c.attempted, c.atTen, c.beforeClose, c.wide, c.correct + ' / ' + c.settled]]);
   }
-  if (['all','art_record_pair','art_range_bids'].includes(selected)) {
+  if (selected==='art_withdrawn')
+    note('Artnet marked Haberdashery withdrawn from the named sale. The paper position follows the no-eligible-price provision. Kalshi confirms its payout at settlement.');
+  if (['all','art_record_pair','art_range_bids','art_withdrawn'].includes(selected)) {
     const trials=(d.auctionExitTrials ?? []).filter(t=>selected==='all'||selected===t.strategy);
     if (trials.length) {
       table('First profitable paper exit versus holding', ['Position','Registered','Entry cost','First full exit','Exit net','Net at settlement'],
@@ -199,10 +209,8 @@ function paper(d) {
     }
   }
   if (
-    ['all', 'sale_depth', 'late_auction', 'sothebys_sold'].includes(selected)
+    ['all', 'sale_depth', 'late_auction', 'sothebys_sold','art_withdrawn'].includes(selected)
   ) {
-    const p = d.auctionPortfolio,
-      marks = d.auctionExits;
     const entryTape = (d.auctionEntryTape ?? []).filter(r=>selected==='all' || selected===r.strategy);
     if (entryTape.length) {
       table('Public purchases after paper entries',['Threshold','Paper entry','Side','Price','Paper shares','Public shares at price','Whole shares overlapping'],
@@ -210,6 +218,9 @@ function paper(d) {
       note('Counts same-side buyer executions from one second to 30 seconds after the paper observation. A later entry or market close ends the window early. Public trades do not establish a bot fill.');
     }
     if(d.sothebysStatus?.entryTapeError) note(d.sothebysStatus.entryTapeError);
+  }
+  if (['all', 'sale_depth', 'late_auction', 'sothebys_sold'].includes(selected)) {
+    const p = d.auctionPortfolio, marks = d.auctionExits;
     const exits = d.auctionHoldings.map((h) =>
       marks.rows?.find(
         (r) =>
@@ -467,11 +478,6 @@ function paper(d) {
       table('Paper entries by result source',['Result source','Contracts','Entry cost with fees'],
         (d.soldPageEntries ?? []).map(r=>[r.source==='lot'?'Artwork page':'Auction catalog',r.shares,money(r.cost)]),
         'Waiting for a confirmed result and available contracts.');
-      table('Resting bids at 95¢ after publication',['Threshold','Side','Shares queued at 95¢ or better','Subsequent volume at 95¢','Subsequent volume below 95¢'],
-        (d.auctionResting??[]).map(r=>[r.ticker,r.side,r.ahead,r.atLimit??'Pending',r.belowLimit??'Pending']),
-        'Waiting for a confirmed sold price and two books with no offer through 95¢.');
-      note('One observation per threshold. Counts opposing taker volume for up to one hour after a one-second arrival allowance. No fills are credited.');
-      if(d.sothebysStatus?.restingError)note(d.sothebysStatus.restingError);
     }
     if (
       ['sothebys_live_bid', 'sothebys_bid_high', 'sothebys_bid_premium', 'sothebys_sold'].includes(

@@ -9,6 +9,7 @@ import {
 import { catalogue, evidence, offerSide } from './watch-offers.mjs';
 import { verifyTerms } from './paper-unsold.mjs';
 import { addPaper } from './strategy-monitor.mjs';
+import { initRestingStudy, observeRestingBid } from './auction-resting.mjs';
 
 const scale = 1000000;
 import {auctionPortfolio} from './auction-portfolio.mjs';
@@ -172,8 +173,10 @@ export async function scanAuctionDepth(
   { db, io, auctions, config, stop, status },
   strategy
 ) {
-  if (strategy === duringSale)
+  if (strategy === duringSale) {
+    initRestingStudy(db);
     db.exec('CREATE TABLE IF NOT EXISTS auction_first_sale_books(signal TEXT,ticker TEXT,requested INTEGER,received INTEGER,httpDate TEXT,cacheAge TEXT,book TEXT,PRIMARY KEY(signal,ticker))');
+  }
   const open = new Set();
   let cursor = '';
   const seen = new Set();
@@ -313,7 +316,19 @@ export async function scanAuctionDepth(
         }
         return depth > prior.quantity;
       });
-      if (!pending.length) continue;
+      const pendingBuys=new Set(pending.map(m=>m.ticker));
+      const resting=new Set();
+      let publishedAt;
+      if(strategy===duringSale && sig.kind==='published_sale'){
+        const history=db.prepare('SELECT kind,amount,seenAt FROM auction_source_signals WHERE event=?').all(target.event);
+        if(history.length===1 && history[0].kind===sig.kind && history[0].amount===sig.amount)publishedAt=Date.parse(history[0].seenAt);
+        const recorded=db.prepare('SELECT 1 FROM auction_resting_trials WHERE ticker=?');
+        for(const m of markets){
+          const side=offerSide(sig,m.floor_strike);
+          if(Number.isFinite(publishedAt) && side && !recorded.get(m.ticker) && !askLevels(first.get(m.ticker).body,side,95).length)resting.add(m.ticker);
+        }
+      }
+      if (!pendingBuys.size && !resting.size) continue;
       // Trade-date status and rule verification apply to the entire batch.
       if (sig.kind === 'unsold') await verifyTerms(io);
       else checkFees((await io.get('/series/KXART')).body);
@@ -329,11 +344,9 @@ export async function scanAuctionDepth(
       if (confirmed?.kind !== sig.kind || confirmed.amount !== sig.amount)
         continue;
       const active = new Set((await current()).map((m) => m.ticker));
-      const second = await books(
-        io,
-        pending.filter((m) => active.has(m.ticker))
-      );
-      for (const m of pending) {
+      const recheck=markets.filter(m=>active.has(m.ticker)&&(pendingBuys.has(m.ticker)||resting.has(m.ticker)));
+      const second = await books(io,recheck);
+      for (const m of recheck) {
         const read = second.get(m.ticker);
         if (
           !read ||
@@ -348,6 +361,16 @@ export async function scanAuctionDepth(
         )
           continue;
         const side = offerSide(confirmed, m.floor_strike);
+        if(resting.has(m.ticker) && confirmed.url===sig.url){
+          const earlier=first.get(m.ticker);
+          const asOf=r=>Date.parse(r.httpDate)-1000*Number(r.cacheAge??0);
+          const fresh=(r,source)=>r.requestedAt>=source.requestedAt && asOf(r)>=publishedAt &&
+            asOf(r)>=r.receivedAt-2500 && asOf(r)<=r.receivedAt+500;
+          if(fresh(earlier,sig)&&fresh(read,confirmed)&&asOf(read)>asOf(earlier))
+            observeRestingBid(db,{book:earlier.body},{ticker:m.ticker,side,at:read.receivedAt,book:read.body,
+              closeAt:Date.parse(m.close_time),url:confirmed.url,amount:confirmed.amount});
+        }
+        if(!pendingBuys.has(m.ticker))continue;
         db.exec('BEGIN IMMEDIATE');
         try {
           const prior = inventory(m.ticker, side, confirmed);

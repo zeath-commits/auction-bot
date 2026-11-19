@@ -90,6 +90,7 @@ test('sale and post-sale depth scans share cash, verify both books, and record t
             {
               ticker,
               orderbook_fp: {
+                yes_dollars: [['0.9500','18.75']],
                 no_dollars: bid===null ? [] : [[bid, ++books === 1 ? '12.00' : quantity]]
               }
             }
@@ -102,7 +103,8 @@ test('sale and post-sale depth scans share cash, verify both books, and record t
       else if (p === '/exchange/status')
         body = { trading_active: true, exchange_active: true };
       else throw Error(p);
-      return { body, requestedAt: Date.now(), receivedAt: Date.now() };
+      const at=Date.now();
+      return { body, requestedAt: at, receivedAt: at, httpDate:new Date(at).toUTCString() };
     }
   };
   try {
@@ -166,6 +168,11 @@ test('sale and post-sale depth scans share cash, verify both books, and record t
     assert.equal(original.length,1);
     assert.equal(JSON.parse(original[0].book).orderbook_fp.no_dollars[0][1],'12.00');
     auction.deadline = new Date(Date.now()+60000).toISOString();
+    bid=null;
+    await scanAuctionDepth(opts,'sale_depth');
+    const trial=db.prepare('SELECT * FROM auction_resting_trials WHERE ticker=?').get(ticker);
+    assert.equal(trial.side,'YES');assert.equal(trial.ahead,18.75);assert.equal(trial.amount,15);
+    assert.equal(owned(),13);
     html = html.replace('"price_realised":15','"price_realised":16').replace('USD 15','USD 16');
     bid = null;
     await scanAuctionDepth(opts,'sale_depth');
