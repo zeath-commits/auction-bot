@@ -48,6 +48,16 @@
   ],
   "studies": [
     {
+      "market": "Buying two sale-price thresholds on one artwork",
+      "test": "Paired YES on a lower threshold with NO on a higher threshold for the same lot under matching rules. One of those contracts pays $1 at any sale price under ordinary binary settlement. Compared the cost of buying both using whole-contract offers observed together. Repeated observations of the same book are counted separately.",
+      "finding": "Across five Sotheby's lots on November 18, 2,449 timestamped snapshots covered 180 distinct threshold pairs. Both legs had a recorded offer in 55,960 comparisons. Zero cost less than $1 before fees. The cheapest was $1.02 including the one-pair fee reserve. At 10:30 p.m. Eastern, three checks of all 123 pairs on nine Thursday lots found a lowest cost of $1.08 including the reserve, on Nicolas Party's Landscape. These samples leave gaps between observations."
+    },
+    {
+      "market": "Kiefer's Melancholia above $500K and above $600K",
+      "test": "Read Kalshi's finalized markets and public trades. Compared exchange one-minute quotes from the start of November 17 Eastern through close on November 18. For the higher threshold, the cost to buy NO is $1 minus the YES bid.",
+      "finding": "Both settled NO. The $600K contract recorded zero lifetime volume. In 168 minutes with both required closing quotes, the cheapest pair cost $1.16 before fees. At 7:38 p.m. Eastern on November 17, lower YES cost 18¢ and higher NO cost 98¢. A high asking price for YES can coexist with an expensive NO when the spread is wide."
+    },
+    {
       "market": "Auction orders under the original $1 per-order and $5 total pilot limits",
       "test": "Replayed the dated worker’s quantity calculation on saved order books. Checked for same-side public purchases at the limit or better one to six seconds after a second quote. November 16 and 17 archives recorded local receipt times. The historical checks cannot establish the exact order arrival or queue position.",
       "finding": "On November 17, 2,729 archived checks covered 119 thresholds for 15 artworks at Phillips and Christie’s. Two offers were at or below 95¢. Both outcomes won, but neither offer had a second saved quote. After the Avery Singer YES quote at 95¢, a buyer paid 94¢ for one contract 1.752 seconds later. In the separate November 18 Monet example, the $1 cap allowed one of the 21 contracts at 64¢, with a 67¢ reservation including a fee allowance. Four later public trades bought 23 at 64¢. The dashboard rehearses the dated worker, compares its actual paper timestamps with public purchases and grades supported shares at official settlement."
