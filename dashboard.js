@@ -136,6 +136,12 @@ function paper(d) {
       'Waiting for the first paper order that passes the session limits.');
     note('Public buyers must trade at the limit price or better one to six seconds after the paper intent. Modeled net uses that limit, the corresponding fee reserve and the official settlement value.');
     if(d.lateAuctionStatus?.sweepReviewError)note(d.lateAuctionStatus.sweepReviewError);
+    table('Discounted auction offers after publication',['Event','Delay','Observation','Seconds between books','Repeated shares through 95¢','Cheapest repeated offer','Shares supported by later trades'],
+      (d.delayedAuctionDepth??[]).map(r=>[r.event,r.minutes+' min',r.state,r.elapsedMs==null?'—':(r.elapsedMs/1000).toFixed(1),
+        r.repeated??'—',r.pick?r.pick.quantity+' '+r.pick.side+' on '+r.pick.ticker+' at '+(100*r.pick.price).toFixed(2)+'¢':'—',r.supported??'—']),
+      'Waiting for a published auction result. Checks run at 15, 30 and 60 minutes.');
+    note('Each check allows two minutes for two fresh books. The last column counts public buyers at the cheapest repeated offer or better one to six seconds after the second book.');
+    if(d.lateAuctionStatus?.delayedDepthError)note(d.lateAuctionStatus.delayedDepthError);
   }
   if (['sothebys_sold','sale_depth'].includes(selected)){
     table('Resting auction bids at 95¢ after publication',['Threshold','Side','Shares queued at 95¢ or better','Shares sold at 95¢','Shares sold below 95¢'],

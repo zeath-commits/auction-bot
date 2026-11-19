@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import { scanAuctionDepth } from '../late-auction.mjs';
+import {delayedAuctionDepth} from '../auction-delayed-depth.mjs';
 import { addPaper, openLedger } from '../strategy-monitor.mjs';
 
 test('sale and post-sale depth scans share cash, verify both books, and record the source without duplicating entries', async () => {
@@ -124,12 +125,14 @@ test('sale and post-sale depth scans share cash, verify both books, and record t
     const opts = {
       db,
       io,
+      delayedDepth:delayedAuctionDepth(db),
       auctions: [auction],
       stop: () => false,
       status: {},
       config: { offerTailHours: 0, maxSourceAgeMs: 15000, maxQuoteAgeMs: 2000 }
     };
     await scanAuctionDepth(opts, 'sale_depth');
+    assert.deepEqual(opts.delayedDepth.summary(Date.now()).map(r=>r.minutes),[60,30,15]);
     assert.equal(books, 2);
     assert.equal(
       db.prepare('SELECT quantity FROM paper WHERE ticker=?').get(ticker)

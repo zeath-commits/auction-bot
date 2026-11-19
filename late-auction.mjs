@@ -172,7 +172,7 @@ async function books(io, markets) {
 }
 
 export async function scanAuctionDepth(
-  { db, io, auctions, config, stop, status, sampler },
+  { db, io, auctions, config, stop, status, sampler, delayedDepth },
   strategy
 ) {
   if (strategy === duringSale) {
@@ -279,15 +279,18 @@ export async function scanAuctionDepth(
           target
         ).filter((m) => checkMarketActive(m, Date.now()));
       const marketRead = current();
-      if (sampler && strategy === duringSale && sig.kind === 'published_sale') {
+      if (delayedDepth && strategy === afterSale) delayedDepth.verify(target.event,sig);
+      if ((sampler || delayedDepth) && strategy === duringSale) {
         const history = db.prepare('SELECT kind,amount,seenAt FROM auction_source_signals WHERE event=?').all(target.event);
-        if (history.length===1 && history[0].kind===sig.kind && history[0].amount===sig.amount)
+        delayedDepth?.register(target.event,history);
+        if (sampler && sig.kind==='published_sale' && history.length===1 && history[0].kind===sig.kind && history[0].amount===sig.amount)
           sampler.start(target,Date.parse(history[0].seenAt),sig.amount,marketRead);
       }
       const markets = await marketRead;
       totals.matched += markets.length;
       if (!markets.length) continue;
       const first = await books(io, markets);
+      delayedDepth?.record(target,sig,markets,first,config,Date.now());
       totals.books += first.size;
       // Preserve the first batch even when no one is offering the result side.
       // The sale evidence and market rules are already matched above. Raw headers

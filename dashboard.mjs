@@ -31,6 +31,7 @@ import { observeSothebysBids } from './sothebys-bids.mjs';
 import { initRestingStudy, restingBalance, reviewRestingBid, settleRestingBid, reviewAuctionEntry } from './auction-resting.mjs';
 import {initEntryDepth,checkEntryDepth} from './auction-entry-depth.mjs';
 import {paperSweepAudit} from './auction-sweep-paper.mjs';
+import {delayedAuctionDepth} from './auction-delayed-depth.mjs';
 import {
   addPaper,
   observe,
@@ -46,6 +47,7 @@ initWithdrawalBids(db);
 initDiscountBids(db);
 initEntryDepth(db);
 const sweepAudit=paperSweepAudit(db);
+const delayedDepth=delayedAuctionDepth(db);
 const soldLimits = openSoldLimits(runtime);
 const config = JSON.parse(
   fs.readFileSync(
@@ -500,6 +502,7 @@ const server = http.createServer((req, res) => {
           auctionStatus,
           pairStatus,
           lateAuctionStatus,
+          delayedAuctionDepth:delayedDepth.summary(Date.now()),
           paperSweeps:{sessions:[...sweepSessions].filter(([,end])=>end>Date.now()).map(([date])=>date),
             running:[...children].filter(c=>c.spawnargs.includes('--paper')).flatMap(c=>c.spawnargs.filter(a=>a.startsWith('--sweep-date=')).map(a=>a.slice('--sweep-date='.length))),observations:sweepAudit.summary()},
           withdrawalStatus,
@@ -728,6 +731,7 @@ server.listen(port, host, () => {
   });
   observeLateAuctions({
     db,
+    delayedDepth,
     config,
     auctions: calendars.flatMap((c) => c.auctions),
     stop: () => stopping || exists(path.join(ROOT, 'STOP')),
@@ -781,6 +785,8 @@ server.listen(port, host, () => {
     catch(e){sothebysStatus.restingError=e.message;}
     try {await settleRestingBid(db,soldIO,Date.now());delete sothebysStatus.restingSettlementError;}
     catch(e){sothebysStatus.restingSettlementError=e.message;}
+    try {await delayedDepth.review(soldIO,Date.now());delete lateAuctionStatus.delayedDepthError;}
+    catch(e){lateAuctionStatus.delayedDepthError=e.message;}
     try {await reviewAuctionBid(db,soldIO,Date.now(),'published_sale');delete lateAuctionStatus.discountError;}
     catch(e){lateAuctionStatus.discountError=e.message;}
     try {await reviewAuctionEntry(db,soldIO,Date.now());delete sothebysStatus.entryTapeError;}
