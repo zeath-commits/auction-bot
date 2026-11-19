@@ -2,6 +2,7 @@ import { setTimeout as sleep } from 'node:timers/promises';
 import { Transport } from './transport.mjs';
 import { addPaper } from './strategy-monitor.mjs';
 import {initNBAFinalQueue} from './nba-final-queue.mjs';
+import {initTotalStudy} from './nba-total-queue.mjs';
 
 const league = 'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/';
 const aliases = {
@@ -188,6 +189,9 @@ export async function observeNBA({ db, config, stop, status }) {
   });
   const postgame=initNBAFinalQueue(db,io,{stop,teams,event:eventTicker,routes:nbaRoutes,
     summary:id=>espn('summary?event='+id),day:g=>dates(g.date).board.replace(/^(\d{4})(\d{2})(\d{2})$/,'$1-$2-$3')});
+  const totals=initTotalStudy(db,io,{stop,teams,event:eventTicker,
+    day:g=>dates(g.date).board.replace(/^(\d{4})(\d{2})(\d{2})$/,'$1-$2-$3')});
+  let totalPending=false,lastTotal=0;
   let events = new Map(),
     refresh = 0,
     multiplier = null;
@@ -309,6 +313,12 @@ export async function observeNBA({ db, config, stop, status }) {
       );
       if (!boards.every((b) => Array.isArray(b.events)))
         throw Error('ESPN schedule missing');
+      if(!totalPending&&Date.now()-lastTotal>=10000){
+        totalPending=true;lastTotal=Date.now();
+        totals(boards.flatMap(b=>b.events)).then(r=>{status.totals=r;})
+          .catch(e=>{status.totals={...status.totals,error:e.message};})
+          .finally(()=>{totalPending=false;});
+      }
       const games = boards
         .flatMap((b) => b.events)
         .filter((g) => events.has(eventTicker(g)));

@@ -48,6 +48,11 @@
   ],
   "studies": [
     {
+      "market": "NBA full-game totals after the combined score clears the strike",
+      "test": "Examined November 13–17. In 34 of 36 games the final scores matched both sources. For 1,035 thresholds, matched scoring plays on NBA.com and ESPN by period, clock and both team scores. Used a four-point cushion and allowed 30 seconds after ESPN’s archived play time before checking five minutes of Kalshi trades. Historical timestamps do not establish live source availability.",
+      "finding": "All 519 crossed thresholds paid YES. Across 168 thresholds in 31 games, sellers traded 83,704.03 YES contracts into 99¢ bids. No YES buyer took an offer for 99¢ or less in the windows. With a hypothetical 1,000 contracts ahead, 22 thresholds in 14 games had enough selling for another five contracts. With 10,000 ahead, none did. The live paper study timestamps both scores, checks two books and tracks one 99¢ queue per game."
+    },
+    {
       "market": "Public withdrawal reports for Warhol and Kahlo at Christie’s",
       "test": "Matched two November 17 reports naming the works to eleven Artnet-settled Kalshi thresholds. HENI published the Warhol withdrawal at 6:51 p.m. Eastern. For Kahlo, the conservative test used El Economista’s later 12:13 a.m. Eastern edit. Checked actual NO purchases from an hour later until the exchange close.",
       "finding": "All eleven thresholds paid NO across two artworks at one sale. On Warhol, buyers purchased 24.50 NO at 95¢ or less, including a purchase at 87¢. On Kahlo, buyers purchased 3,815.16 NO at 98–99¢. Requiring two consecutive completed minutes with a qualifying quote before a subsequent whole-contract purchase left only Warhol Above $22M. The 95¢ scenario modeled one contract and 4¢ net after fees. The separate 99¢ scenario modeled 100 contracts and 93¢ net. Historical quotes omit size. The forward dashboard records quantities on two books for exact lot matches in HENI’s withdrawal list."

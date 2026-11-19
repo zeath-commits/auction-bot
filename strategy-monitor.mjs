@@ -14,6 +14,7 @@ export const strategies = {
   weather_bracket: 'Weather · afternoon high predicts final range',
   nba_five: 'NBA · five-point lead with 35–50 seconds left',
   nba_best_route: 'NBA · five-point leader, better of two offers',
+  nba_total_queue: 'NBA · 99¢ YES queue after a total is crossed',
   sothebys_sold: 'Sotheby’s · published sale price and available quantity',
   sothebys_live_bid: 'Sotheby’s · live bids above a threshold',
   sothebys_bid_high: 'Sotheby’s · live bid with a 97–98¢ offer',

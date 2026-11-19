@@ -445,6 +445,16 @@ function paper(d) {
       for (const error of c.errors ?? []) note(error);
     }
   }
+  if(['all','nba_total_queue'].includes(selected)&&d.nbaStatus?.totals){
+    const t=d.nbaStatus.totals;
+    table('NBA totals above the strike on NBA.com and ESPN',['Games in third quarter or later','Simulated bids','Windows reviewed','Potential shares','Winning games with potential fills','Losing games with potential fills'],
+      [[t.live??0,t.trials??0,t.reviewed??0,t.shares??0,t.wins??0,t.losses??0]]);
+    note('Both scoreboards must clear the strike by four points on two checks at least 30 seconds apart. The paper study joins one 99¢ YES bid per game for five minutes, choosing the shortest queue seen across two books. It tracks up to five contracts after accounting for the bids ahead.');
+    if(selected==='nba_total_queue')table('Most recent simulated bids',['Threshold','Bid arrival','Shares ahead','Sold at 99¢','Sold below 99¢','Potential shares','Settlement'],
+      (t.recent??[]).map(r=>[r.ticker,time(r.arrival),r.ahead,r.atLimit??'Pending',r.below??'Pending',r.shares??'Pending',r.result??'Pending']),
+      'Waiting for a four-point cushion and two qualifying books.');
+    if(t.error)note(t.error);
+  }
   if (['all', 'nba_five','nba_best_route'].includes(selected) && d.nbaStatus?.at) {
     const n = d.nbaStatus;
     note(
