@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {DatabaseSync} from 'node:sqlite';
-import {initWithdrawalBids,registerWithdrawalBids,reviewWithdrawalBid,withdrawalAccounts} from '../withdrawal-bids.mjs';
+import {initWithdrawalBids,registerWithdrawalBids,reviewAuctionBid,withdrawalAccounts} from '../withdrawal-bids.mjs';
 
 test('withdrawal NO bids reserve each limit independently, count trade-through once, and reconcile scalar settlement',async()=>{
   const db=new DatabaseSync(':memory:');
@@ -31,12 +31,12 @@ test('withdrawal NO bids reserve each limit independently, count trade-through o
       if(route==='/historical/cutoff')return {body:{trades_created_ts:'2026-10-01T00:00:00Z'}};
       if(route.startsWith('/markets/trades?'))return {body:{trades:tape,cursor:''}};
       throw Error(route);}};
-    await reviewWithdrawalBid(db,io,arrival+120000);
+    await reviewAuctionBid(db,io,arrival+120000);
     assert.deepEqual(withdrawalAccounts(db).map(r=>[r.matched,r.settledNet]),[[2,0],[10,0]]);
     assert.equal(db.prepare('SELECT equalVolume FROM withdrawal_bids WHERE cents=80').get().equalVolume,8);
     finalized=true;
-    await reviewWithdrawalBid(db,io,Date.parse(market.close_time)+120000);
-    await reviewWithdrawalBid(db,io,Date.parse(market.close_time)+240000);
+    await reviewAuctionBid(db,io,Date.parse(market.close_time)+120000);
+    await reviewAuctionBid(db,io,Date.parse(market.close_time)+240000);
     assert.deepEqual(withdrawalAccounts(db).map(r=>[r.reservedShares,Number(r.settledNet.toFixed(2)),r.available]),[[0,-.1,999.9],[0,-2,998]]);
   }finally{db.close();}
 });

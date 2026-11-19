@@ -56,27 +56,34 @@ export function registerWithdrawalBids(db, { event, source, observed, slots, mar
   } catch(e) { db.exec('ROLLBACK'); throw e; }
 }
 
-export async function reviewWithdrawalBid(db, io, now) {
-  const next = db.prepare(`SELECT ticker FROM withdrawal_bids WHERE noValue IS NULL AND arrival<? AND COALESCE(checked,0)<?
+// Both studies reserve a resting bid and count only subsequent opposing taker
+// executions through it. Keep their budgets and official settlement ledgers separate.
+export async function reviewAuctionBid(db, io, now, study='withdrawal') {
+  const sold=study==='published_sale';
+  if(!sold && study!=='withdrawal')throw Error('Unknown auction bid study');
+  const table=sold?'auction_discount_bids':'withdrawal_bids', value=sold?'settleValue':'noValue';
+  const next = db.prepare(`SELECT ticker FROM ${table} WHERE ${value} IS NULL AND arrival<? AND COALESCE(checked,0)<?
     ORDER BY COALESCE(checked,0),ticker LIMIT 1`).get(now-60000,now-60000);
   if (!next) return;
   const {ticker} = next;
-  const rows = db.prepare('SELECT * FROM withdrawal_bids WHERE ticker=? AND noValue IS NULL').all(ticker);
-  db.prepare('UPDATE withdrawal_bids SET checked=? WHERE ticker=?').run(now,ticker);
+  const rows = db.prepare(`SELECT * FROM ${table} WHERE ticker=? AND ${value} IS NULL`).all(ticker);
+  const side=sold?rows[0].side:'no';
+  if(!['yes','no'].includes(side))throw Error('Invalid auction bid side');
+  db.prepare(`UPDATE ${table} SET checked=? WHERE ticker=?`).run(now,ticker);
   let response;
   try { response = await io.get('/markets/'+ticker); }
   catch(e) { if (!/HTTP 404\b/.test(e.message)) throw e; response = await io.get('/historical/markets/'+ticker); }
   const m = response.body.market, close = Date.parse(m.close_time);
   if (m.ticker!==ticker || !Number.isFinite(close)) throw Error('Withdrawal payout market changed');
-  let noValue = null;
+  let payout = null;
   if (m.status==='finalized') {
     const yes = decimal(m.settlement_value_dollars);
     if (yes>MICRO || !['yes','no','scalar'].includes(m.result) || m.result==='yes' && yes!==MICRO ||
         m.result==='no' && yes!==0) throw Error('Unknown withdrawal settlement');
-    noValue = 1-yes/MICRO;
+    payout = side==='no'?1-yes/MICRO:yes/MICRO;
   }
   const untilAt = Math.min(now-60000,close,Math.max(...rows.map(r=>r.untilAt)));
-  const trades = await windowTrades(io,{ticker,arrival:Math.min(...rows.map(r=>r.arrival)),untilAt},'no','yes');
+  const trades = await windowTrades(io,{ticker,arrival:Math.min(...rows.map(r=>r.arrival)),untilAt},side,side==='yes'?'no':'yes');
   db.exec('BEGIN IMMEDIATE');
   try {
     for (const row of rows) {
@@ -84,8 +91,8 @@ export async function reviewWithdrawalBid(db, io, now) {
       const eligible = trades.filter(t => Date.parse(t.at)>row.arrival && Date.parse(t.at)<end && t.price<=row.cents/100);
       const volume = eq => eligible.filter(t=>(t.price===row.cents/100)===eq).reduce((s,t)=>s+Math.round(t.qty*100),0)/100;
       const through=volume(false);
-      db.prepare('UPDATE withdrawal_bids SET through=?,equalVolume=?,matched=?,complete=?,noValue=?,trades=? WHERE ticker=? AND cents=?')
-        .run(through,volume(true),Math.min(row.shares,Math.floor(through)),Number(complete),complete?noValue:null,JSON.stringify(eligible),ticker,row.cents);
+      db.prepare(`UPDATE ${table} SET through=?,equalVolume=?,matched=?,complete=?,${value}=?,trades=? WHERE ticker=? AND cents=?`)
+        .run(through,volume(true),Math.min(row.shares,Math.floor(through)),Number(complete),complete?payout:null,JSON.stringify(eligible),ticker,row.cents);
     }
     db.exec('COMMIT');
   } catch(e) { db.exec('ROLLBACK'); throw e; }
@@ -97,7 +104,7 @@ export async function observeWithdrawalBids({db, config, auctions, stop, status}
   let nextCatalog = 0;
   while (!stop()) {
     try {
-      await reviewWithdrawalBid(db,io,Date.now());
+      await reviewAuctionBid(db,io,Date.now());
       if (Date.now()>=nextCatalog) {
         nextCatalog=Date.now()+120000;
         for (const c of catalogObservations.filter(c=>c.label==='Withdrawn'&&!terminal.has(c.event))) {

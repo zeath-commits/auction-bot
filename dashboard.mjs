@@ -22,7 +22,8 @@ import { observeNBA } from './nba-paper.mjs';
 import { observeRecordPair } from './art-record-pair.mjs';
 import { observeRangeBids, observeRangeResults } from './art-range-bids.mjs';
 import {observeWithdrawalReports} from './withdrawal-reports.mjs';
-import {initWithdrawalBids, registerWithdrawalBids, observeWithdrawalBids, withdrawalAccounts} from './withdrawal-bids.mjs';
+import {initWithdrawalBids, registerWithdrawalBids, observeWithdrawalBids, withdrawalAccounts, reviewAuctionBid} from './withdrawal-bids.mjs';
+import {initDiscountBids,discountBalance} from './auction-discount-bids.mjs';
 import { observeCS2 } from './esports-paper.mjs';
 import { observeUS } from './us-bitcoin-paper.mjs';
 import { observeSothebysBids } from './sothebys-bids.mjs';
@@ -40,6 +41,7 @@ const runtime = path.join(ROOT, 'runtime');
 const db = openLedger(runtime);
 initRestingStudy(db);
 initWithdrawalBids(db);
+initDiscountBids(db);
 initEntryDepth(db);
 const soldLimits = openSoldLimits(runtime);
 const config = JSON.parse(
@@ -534,6 +536,8 @@ const server = http.createServer((req, res) => {
           withdrawalStatus,
           withdrawalBidStatus,
           withdrawalAccounts:withdrawalAccounts(db),
+          auctionDiscountAccount:discountBalance(db),
+          auctionDiscountBids:db.prepare('SELECT ticker,side,arrival,shares,ahead,matched,through,complete,settleValue FROM auction_discount_bids ORDER BY arrival DESC,ticker LIMIT 100').all(),
           withdrawalBids:db.prepare('SELECT ticker,cents,arrival,shares,ahead,through,equalVolume,matched,complete,noValue FROM withdrawal_bids ORDER BY arrival DESC,ticker,cents LIMIT 100').all(),
           withdrawalQuotes:db.prepare('SELECT ticker,kind,at,detail FROM auction_withdrawal_quotes ORDER BY at DESC,ticker LIMIT 100').all().map(r=>{
             const {source,levels}=JSON.parse(r.detail);
@@ -808,6 +812,8 @@ server.listen(port, host, () => {
     catch(e){sothebysStatus.restingError=e.message;}
     try {await settleRestingBid(db,soldIO,Date.now());delete sothebysStatus.restingSettlementError;}
     catch(e){sothebysStatus.restingSettlementError=e.message;}
+    try {await reviewAuctionBid(db,soldIO,Date.now(),'published_sale');delete lateAuctionStatus.discountError;}
+    catch(e){lateAuctionStatus.discountError=e.message;}
     try {await reviewAuctionEntry(db,soldIO,Date.now());delete sothebysStatus.entryTapeError;}
     catch(e){sothebysStatus.entryTapeError=e.message;}
     finally{reviewingResting=false;}

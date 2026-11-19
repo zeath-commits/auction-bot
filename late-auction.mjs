@@ -10,6 +10,7 @@ import { catalogue, evidence, offerSide } from './watch-offers.mjs';
 import { verifyTerms } from './paper-unsold.mjs';
 import { addPaper } from './strategy-monitor.mjs';
 import { initRestingStudy, observeRestingBid } from './auction-resting.mjs';
+import {initDiscountBids, discountWindow, registerDiscountBid} from './auction-discount-bids.mjs';
 
 const scale = 1000000;
 import {auctionPortfolio} from './auction-portfolio.mjs';
@@ -175,6 +176,7 @@ export async function scanAuctionDepth(
 ) {
   if (strategy === duringSale) {
     initRestingStudy(db);
+    initDiscountBids(db);
     db.exec('CREATE TABLE IF NOT EXISTS auction_first_sale_books(signal TEXT,ticker TEXT,requested INTEGER,received INTEGER,httpDate TEXT,cacheAge TEXT,book TEXT,PRIMARY KEY(signal,ticker))');
   }
   const open = new Set();
@@ -323,9 +325,13 @@ export async function scanAuctionDepth(
         const history=db.prepare('SELECT kind,amount,seenAt FROM auction_source_signals WHERE event=?').all(target.event);
         if(history.length===1 && history[0].kind===sig.kind && history[0].amount===sig.amount)publishedAt=Date.parse(history[0].seenAt);
         const recorded=db.prepare('SELECT 1 FROM auction_resting_trials WHERE ticker=?');
+        const discount=db.prepare('SELECT 1 FROM auction_discount_bids WHERE ticker=?');
         for(const m of markets){
           const side=offerSide(sig,m.floor_strike);
-          if(Number.isFinite(publishedAt) && side && !recorded.get(m.ticker) && !askLevels(first.get(m.ticker).body,side,95).length)resting.add(m.ticker);
+          const book=first.get(m.ticker);
+          if(!Number.isFinite(publishedAt)||!side)continue;
+          if(!recorded.get(m.ticker) && !askLevels(book.body,side,95).length ||
+            discountWindow(publishedAt,book.requestedAt) && !discount.get(m.ticker) && !askLevels(book.body,side,80).length)resting.add(m.ticker);
         }
       }
       if (!pendingBuys.size && !resting.size) continue;
@@ -366,12 +372,15 @@ export async function scanAuctionDepth(
           const asOf=r=>Date.parse(r.httpDate)-1000*Number(r.cacheAge??0);
           const fresh=(r,source)=>r.requestedAt>=source.requestedAt && asOf(r)>=publishedAt &&
             asOf(r)>=r.receivedAt-2500 && asOf(r)<=r.receivedAt+500;
-          if(fresh(earlier,sig)&&fresh(read,confirmed)&&asOf(read)>asOf(earlier))
+          if(fresh(earlier,sig)&&fresh(read,confirmed)&&asOf(read)>asOf(earlier)){
             observeRestingBid(db,
               {book:earlier.body,bookAsOf:asOf(earlier),at:earlier.receivedAt,sourceAt:sig.requestedAt,url:sig.url,amount:sig.amount},
               {ticker:m.ticker,side,at:read.receivedAt,book:read.body,bookAsOf:asOf(read),sourceAt:confirmed.requestedAt,
                 saleSlots:auction.targets.reduce((n,target)=>n+target.markets.length,0),
                 closeAt:Date.parse(m.close_time),url:confirmed.url,amount:confirmed.amount});
+            registerDiscountBid(db,{market:m,first:earlier,second:read,publishedAt,amount:confirmed.amount,source:confirmed.url,
+              slots:auction.targets.filter(t=>t.id===target.id).reduce((n,t)=>n+t.markets.length,0)});
+          }
         }
         if(!pendingBuys.has(m.ticker))continue;
         db.exec('BEGIN IMMEDIATE');

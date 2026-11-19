@@ -282,6 +282,15 @@ function paper(d) {
     if(d.sothebysStatus?.entryDepthError)note(d.sothebysStatus.entryDepthError);
   }
   if (['all', 'sale_depth', 'late_auction', 'sothebys_sold'].includes(selected)) {
+    if (['all','sale_depth'].includes(selected) && d.auctionDiscountAccount) {
+      const a=d.auctionDiscountAccount;
+      table('80¢ bids after a published Phillips or Christie’s sale price',['Registered bids','Shares modeled','Available paper cash','Settled paper net'],
+        [[a.bids,a.matched,money(a.available),money(a.settledNet)]]);
+      note('Checks both books two to seven minutes after the result. Each artwork gets up to $100 across its thresholds. A bid stays open until close. Only later sellers trading below 80¢ count toward modeled fills.');
+      if(d.auctionDiscountBids?.length)table('Published-price bid evidence',['Threshold','Side','Arrival','Reserved shares','Quantity ahead','Sold below 80¢','Shares modeled'],
+        d.auctionDiscountBids.map(r=>[r.ticker,r.side.toUpperCase(),time(r.arrival),r.shares,r.ahead,r.through??'Pending',r.matched??'Pending']));
+      if(d.lateAuctionStatus?.discountError)note(d.lateAuctionStatus.discountError);
+    }
     const p = d.auctionPortfolio, marks = d.auctionExits;
     const portfolioStrategies=['sale_depth','late_auction','sothebys_sold'];
     const reviewedLevels=(d.auctionEntryTape??[]).filter(r=>portfolioStrategies.includes(r.strategy)).flatMap(r=>r.levels);
