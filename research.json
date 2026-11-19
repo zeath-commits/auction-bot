@@ -48,7 +48,7 @@
   ],
   "studies": [
     {
-      "market": "Auction orders at the current $1 per-order and $5 total pilot limits",
+      "market": "Auction orders under the original $1 per-order and $5 total pilot limits",
       "test": "Replayed the dated worker’s quantity calculation on saved order books. Checked for same-side public purchases at the limit or better one to six seconds after a second quote. November 16 and 17 archives recorded local receipt times. The historical checks cannot establish the exact order arrival or queue position.",
       "finding": "On November 17, 2,729 archived checks covered 119 thresholds for 15 artworks at Phillips and Christie’s. Two offers were at or below 95¢. Both outcomes won, but neither offer had a second saved quote. After the Avery Singer YES quote at 95¢, a buyer paid 94¢ for one contract 1.752 seconds later. In the separate November 18 Monet example, the $1 cap allowed one of the 21 contracts at 64¢, with a 67¢ reservation including a fee allowance. Four later public trades bought 23 at 64¢. The dashboard rehearses the dated worker, compares its actual paper timestamps with public purchases and grades supported shares at official settlement."
     },

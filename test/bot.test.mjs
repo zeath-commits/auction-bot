@@ -42,7 +42,24 @@ test('dated auction sweep sizes repeated depth within cash and skips other sessi
   const q=sweepQuote(make('21.00'),make('3.50'),'YES',{fractional_trading_enabled:true},config,250);
   assert.equal(q.quantity,3);assert.equal(q.limitCents,64);assert.ok(q.reserveCents<=250);
   assert.equal(sweepQuote(make('21.00'),make('3.50'),'YES',{},config,65),null);
+  const monet=sweepQuote(make('21.00'),make('23.00'),'YES',{},config,500);
+  assert.equal(monet.quantity,7);assert.equal(monet.reserveCents,467);
 });
+
+test('dated sweeps can revisit after fresh books and stop at cumulative spend including fees',async()=>withJournal(async j=>{
+  const c={...candidate(),strategy:'auction_sweep',firstBookAt:Date.now()+4000};
+  const limits={...config,maxOrders:1,maxOfferAttemptsPerArtwork:1,maxOrderCostCents:1,maxTotalReservedCents:500};
+  for(let n=0;n<6;n++){
+    const i={...c,clientOrderId:'attempt-'+n};
+    j.checkBudget(i,limits);
+    await j.append({...i,type:'intent'});
+    await j.append({type:'receipt',clientOrderId:i.clientOrderId,costCents:n===0?80:0,filled:n===0?1:0});
+  }
+  assert.equal(j.committedCents(),80);
+  assert.equal(j.canSweep(c.ticker,c.side,Date.now()),false);
+  j.checkBudget({...c,quote:{reserveCents:420}},limits);
+  assert.throws(()=>j.checkBudget({...c,quote:{reserveCents:421}},limits),/Total reserved/);
+},'live'));
 
 test('dated session submits both result sides using funds left after partial IOC fill',()=>withJournal(async j=>{
   const lower={...frozen,ticker:'KXART-TEST-300',threshold:300,primary:'Above 300'};
@@ -71,7 +88,7 @@ test('dated session submits both result sides using funds left after partial IOC
       fill_count:filled.toFixed(2),average_fill_price:payload.price,average_fee_paid:'0.0100'});
   }};
   const opts={io,auction:a,journal:j,live:true,stop:noop,log:noop,deadline:Date.now()+60000,
-    config:{...config,liveEnabled:true,maxOrderCostCents:1000,maxTotalReservedCents:1000}};
+    config:{...config,liveEnabled:true,maxOrderCostCents:100,maxTotalReservedCents:500,maxOrders:1,maxOfferAttemptsPerArtwork:1}};
   await scanSweep(opts);
   assert.deepEqual(posts.map(p=>[p.side,p.count,p.price,p.time_in_force]),[['bid','9','0.5000','immediate_or_cancel'],['ask','4','0.2000','immediate_or_cancel']]);
   assert.equal(j.committedCents(),426);

@@ -23,7 +23,10 @@ export function paperSweepAudit(db) {
     if(r){
       db.prepare('UPDATE auction_sweep_paper SET checked=? WHERE id=?').run(now,r.id);
       const tape=await windowTrades(io,{ticker:r.ticker,arrival:r.at+1000,untilAt:r.at+6000},r.side,r.side);
-      const matches=tape.filter(t=>Math.round(t.price*MICRO)<=r.limitCents*10000);
+      const overlapping=db.prepare('SELECT trades FROM auction_sweep_paper WHERE session=? AND ticker=? AND side=? AND at>? AND at<? AND trades IS NOT NULL')
+        .all(r.session,r.ticker,r.side,r.at-5000,r.at+5000);
+      const used=new Set(overlapping.flatMap(other=>JSON.parse(other.trades).map(t=>t.id)));
+      const matches=tape.filter(t=>!used.has(t.id)&&Math.round(t.price*MICRO)<=r.limitCents*10000);
       const volume=matches.reduce((n,t)=>n+Math.round(t.qty*100),0)/100;
       db.prepare('UPDATE auction_sweep_paper SET volume=?,matched=?,trades=? WHERE id=?')
         .run(volume,Math.min(r.quantity,Math.floor(volume)),JSON.stringify(matches),r.id);

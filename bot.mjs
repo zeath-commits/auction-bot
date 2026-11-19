@@ -228,8 +228,7 @@ export async function main(args = process.argv.slice(2)) {
       const result = { checkedAt: new Date().toISOString(), readOnly: true, authenticatedRequests: 0,
         orderSubmissions: 0, auctions: await preflight(io, watchlist,sweep && ((body,target)=>sweep.sessionBookCheck(io,body,target,config))) };
       if(sweep)result.session={date:sweepDate,liveEnabled:config.liveEnabled,maxPriceCents:config.maxPriceCents,
-        maxOrderCostCents:config.maxOrderCostCents,maxTotalReservedCents:config.maxTotalReservedCents,
-        maxOrders:config.maxOrders,maxOfferAttemptsPerArtwork:config.maxOfferAttemptsPerArtwork};
+        maxTotalReservedCents:config.maxTotalReservedCents,sizing:'Repeated whole-contract depth within available cash and remaining journal budget'};
       await fs.mkdir(path.join(ROOT, 'runtime'), { recursive: true });
       await fs.writeFile(path.join(ROOT, 'runtime', 'preflight.json'), JSON.stringify(result, null, 2));
       console.log(JSON.stringify(result, null, 2)); return;

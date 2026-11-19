@@ -43,16 +43,26 @@ export class Journal {
     return this.intents().reduce((sum,i)=>sum+(i.strategy==='auction_sweep'
       ? costs.get(i.clientOrderId)??i.quote.reserveCents : i.quote.reserveCents),0);
   }
+  canSweep(ticker, side, firstBookAt) {
+    const prior=this.intents().filter(i=>i.ticker===ticker);
+    if(!prior.length)return true;
+    const receipts=new Map(this.entries.filter(r=>r.type==='receipt').map(r=>[r.clientOrderId,r]));
+    return prior.every(i=>i.side===side && firstBookAt-1000>Date.parse(receipts.get(i.clientOrderId)?.recordedAt));
+  }
   checkBudget(candidate, config) {
     requireThat(this.unresolved().length === 0, 'Unresolved order intent; inspect exchange and journal before restarting');
-    if (['watch_offers','auction_sweep'].includes(candidate.strategy)) {
+    const sweep=candidate.strategy==='auction_sweep';
+    if (sweep) {
+      requireThat(this.canSweep(candidate.ticker,candidate.side,candidate.firstBookAt),'Fresh book required after prior receipt');
+    } else if (candidate.strategy==='watch_offers') {
       const prior = this.intents().filter(x => x.artworkKey === candidate.artworkKey);
       requireThat(prior.length < config.maxOfferAttemptsPerArtwork, 'Artwork attempt cap reached');
-      const cooldown = candidate.strategy==='auction_sweep' ? prior.filter(x=>x.ticker===candidate.ticker) : prior;
-      requireThat(cooldown.every(x=>Date.now()-Date.parse(x.recordedAt)>=config.offerCooldownSeconds*1000), 'Artwork cooldown active');
+      requireThat(prior.every(x=>Date.now()-Date.parse(x.recordedAt)>=config.offerCooldownSeconds*1000), 'Artwork cooldown active');
     } else requireThat(!this.blocked(candidate.artworkKey), 'Artwork already attempted');
-    requireThat(this.intents().length < config.maxOrders, 'Order count budget exhausted');
-    requireThat(candidate.quote.reserveCents <= config.maxOrderCostCents, 'Order cost cap exceeded');
+    if(!sweep){
+      requireThat(this.intents().length < config.maxOrders, 'Order count budget exhausted');
+      requireThat(candidate.quote.reserveCents <= config.maxOrderCostCents, 'Order cost cap exceeded');
+    }
     const total = this.committedCents();
     requireThat(total + candidate.quote.reserveCents <= config.maxTotalReservedCents, 'Total reserved budget exhausted');
   }

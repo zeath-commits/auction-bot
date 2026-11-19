@@ -76,9 +76,8 @@ export async function scanSweep(opts) {
   let cash=null;
   for(const t of auction.targets){
     await stop();
-    if(Date.now()>=deadline || journal.intents().length>=config.maxOrders || journal.committedCents()>=config.maxTotalReservedCents)return;
+    if(Date.now()>=deadline || journal.committedCents()>=config.maxTotalReservedCents)return;
     const key=artworkKey(auction,t),history=()=>journal.intents().filter(i=>i.artworkKey===key);
-    if(history().length>=config.maxOfferAttemptsPerArtwork)continue;
     const published=await evidence(io,auction,t,catalogueRead);
     if(!['published_sale','unsold'].includes(published?.kind))continue;
     if(history().some(i=>i.strategy==='auction_sweep' && (i.kind!==published.kind || i.sourcePrice!==published.amount)))continue;
@@ -101,8 +100,8 @@ export async function scanSweep(opts) {
     for(const {m,side,book} of candidates.sort((a,b)=>a.firstPrice-b.firstPrice||a.m.ticker.localeCompare(b.m.ticker))){
       await stop();
       const prior=history();
-      if(Date.now()>=deadline || journal.intents().length>=config.maxOrders || prior.length>=config.maxOfferAttemptsPerArtwork)break;
-      if(prior.some(i=>i.ticker===m.ticker&&(i.side!==side||Date.now()-Date.parse(i.recordedAt)<config.offerCooldownSeconds*1000)))continue;
+      if(Date.now()>=deadline || journal.committedCents()>=config.maxTotalReservedCents)return;
+      if(!journal.canSweep(m.ticker,side,start))continue;
       if(live){
         if(cash===null){
           cash=(await io.get('/portfolio/balance?exchange_index=0&subaccount='+config.subaccount,true)).body.balance;
@@ -110,7 +109,7 @@ export async function scanSweep(opts) {
         }
         await assertNoExistingExposure(io,auction,t,config,journalPositions(journal,prior));
       }
-      const budget=Math.min(cash??Infinity,config.maxOrderCostCents,config.maxTotalReservedCents-journal.committedCents());
+      const budget=Math.min(cash??Infinity,config.maxTotalReservedCents-journal.committedCents());
       if(!sweepQuote(book,book,side,m,config,budget))continue;
       const exchange=(await io.get('/exchange/status')).body;
       if(!exchange.trading_active||!exchange.exchange_active)return;
