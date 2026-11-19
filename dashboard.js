@@ -477,6 +477,23 @@ function paper(d) {
       for (const error of c.errors ?? []) note(error);
     }
   }
+  if (['all','nhl_final_queue'].includes(selected) && d.nhlFinal) {
+    const h=d.nhlFinal;
+    table('NHL confirmed finals · 99¢ paper bids',
+      ['Games enrolled','Games completed','Simulated bids','Games with modeled fills','Paper net after modeled fees'],
+      [[h.games.length+' / '+h.target,h.complete,h.bids,h.filledGames,money(h.net)]]);
+    if (h.error) note(h.error);
+    if (selected==='nhl_final_queue') {
+      note('After NHL and ESPN agree on the final score, wait 30 seconds and check both books twice. Simulate one five-contract bid on the shorter eligible queue. Later seller trades determine modeled fills. Net includes estimated maker fees and excludes operating costs.');
+      table('Scheduled games and paper outcomes',
+        ['Game','Scheduled start','Status','NHL final received','ESPN final received','Simulated bid','Shares ahead','Sales at 99¢','Sales below 99¢','Modeled shares','Paper net','Settlement time'],
+        h.games.map(g=>[g.away+' at '+g.home,time(g.tip),[g.status,g.error??g.lastIssue].filter(Boolean).join(' · '),
+          time(g.nhlFinalAt),time(g.espnFinalAt),g.bid?g.bid.ticker+' '+g.bid.side.toUpperCase():null,
+          g.bid?.ahead,g.result?.atLimit,g.result?.below,g.result?.qty??(g.done?0:null),g.done?money(g.result?.net??0):null,time(g.result?.settled)]),
+        'Waiting for the NHL schedule.');
+      note('Last monitor check '+time(h.heartbeat)+'.');
+    }
+  }
   if(['all','nba_total_queue'].includes(selected)&&d.nbaStatus?.totals){
     const t=d.nbaStatus.totals;
     table('NBA totals above the strike on NBA.com and ESPN',['Games in third quarter or later','Simulated bids','Windows reviewed','Potential shares','Winning games with potential fills','Losing games with potential fills'],

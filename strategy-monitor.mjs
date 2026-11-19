@@ -8,6 +8,7 @@ import { chartProjection, referencePrices, readClosingMargin, currentMargin, mar
 import { observeMakerQueue, reviewMakerQueue, observeEndpointBid, recheckEndpointBid, reviewEndpointBid } from './btc-maker-study.mjs';
 
 export const strategies = {
+  nhl_final_queue: 'NHL · 99¢ bids after confirmed finals',
   cs2_reference: 'CS2 · Kalshi offer below Polymarket US bid',
   weather_three: 'Weather · 3 p.m. station readings',
   weather_high: 'Weather · afternoon high already crossed',

@@ -46,6 +46,7 @@ test(
         'auction-quote-timing.mjs',
         'nba-paper.mjs',
         'nba-final-queue.mjs',
+        'nhl-final-paper.mjs',
         'nba-total-queue.mjs',
         'nba-total-pairs.mjs',
         'art-record-pair.mjs',

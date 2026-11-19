@@ -20,6 +20,7 @@ import {
   observeAuctionExits
 } from './auction-portfolio.mjs';
 import { observeNBA } from './nba-paper.mjs';
+import { nhlFinalStudy } from './nhl-final-paper.mjs';
 import { observeRecordPair } from './art-record-pair.mjs';
 import { observeRangeBids, observeRangeResults } from './art-range-bids.mjs';
 import {observeWithdrawalReports} from './withdrawal-reports.mjs';
@@ -60,6 +61,7 @@ const config = JSON.parse(
   )
 );
 const status = { state: 'Starting', at: null };
+const nhlStudy = nhlFinalStudy(db,new Transport(config));
 const lateAuctionStatus = { at: null };
 const usBitcoinStatus = { at: null };
 const sothebysStatus = {};
@@ -528,6 +530,7 @@ const server = http.createServer((req, res) => {
             return summary;
           }),
           nbaStatus,
+          nhlFinal: nhlStudy.summary(),
           recordPairStatus,
           recordPairDelays: db.prepare(`SELECT seconds,COUNT(*) AS batches,COUNT(available) AS checked,
             SUM(CASE WHEN available IS NOT NULL THEN requested END) AS requested,SUM(available) AS available
@@ -671,6 +674,11 @@ server.listen(port, host, () => {
     }
   }
   importSafe();
+  const pollHockey = () => {
+    if (!stopping && !exists(path.join(ROOT,'STOP'))) void nhlStudy.tick();
+  };
+  pollHockey();
+  setInterval(pollHockey,2000).unref();
   observeWithdrawalBids({db,config,auctions:calendars.flatMap(c=>c.auctions),status:withdrawalBidStatus,
     stop:()=>stopping||exists(path.join(ROOT,'STOP'))}).catch(e=>{withdrawalBidStatus.error=e.message;});
   observeWithdrawalReports({db,config,auctions:calendars.flatMap(c=>c.auctions),status:withdrawalStatus,registerBids:registerWithdrawalBids,
