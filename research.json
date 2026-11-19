@@ -48,6 +48,11 @@
   ],
   "studies": [
     {
+      "market": "NBA game totals with about six minutes remaining",
+      "test": "Used the first scoring play between 6:00 and 5:30 of the fourth quarter. The lower 1% scoring cutoff over the rest of 943 games in 2024–25 was 13 points. Allowing two points of room set the forecast at 11 additional points. In the following season, 922 of 924 scored at least 11. Selected one still-unreached, already-listed threshold per game that needed at most 11 more points. A $1,000 paper budget reserved up to 100 shares before checking sellers for 60 seconds.",
+      "finding": "All 423 eligible 2025–26 thresholds paid YES. At 98¢ with 30 seconds of latency, 16 games had enough seller volume below the bid to model 819 shares and $16.05 after estimated fees. Eleven of those had an archived ask range entirely above 98¢ during the arrival minute, accounting for 507 shares. A 90-second delay modeled $20.36. In November 1–17, 2026, all 69 eligible thresholds won, but no sellers traded below 98¢ under either delay. On November 18 the first two dual-source receipts arrived 43–46 seconds after the recorded plays. Neither one attracted a seller at 98¢ or less in the subsequent one-minute test. No realized profit."
+    },
+    {
       "market": "NBA full-game totals after the combined score clears the strike",
       "test": "Examined November 13–17. In 34 of 36 games the final scores matched both sources. For 1,035 thresholds, matched scoring plays on NBA.com and ESPN by period, clock and both team scores. Used a four-point cushion and allowed 30 seconds after ESPN’s archived play time before checking five minutes of Kalshi trades. Historical timestamps do not establish live source availability.",
       "finding": "All 519 crossed thresholds paid YES. Across 168 thresholds in 31 games, sellers traded 83,704.03 YES contracts into 99¢ bids. No YES buyer took an offer for 99¢ or less in the windows. With a hypothetical 1,000 contracts ahead, 22 thresholds in 14 games had enough selling for another five contracts. With 10,000 ahead, none did. The live paper study timestamps both scores, checks two books and tracks one 99¢ queue per game."
