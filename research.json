@@ -48,6 +48,11 @@
   ],
   "studies": [
     {
+      "market": "95¢ auction bids across all 45 Sotheby’s thresholds on November 18",
+      "test": "All 45 one-hour observation windows overlapped. An equal split of a $1,000 paper budget would have reserved 23 shares per threshold, or $983.25 across five lots. Counted only non-block sales strictly below the bid after allowing a second for arrival.",
+      "finding": "One threshold attracted sellers. Four trades sold 312.75 NO at 94¢ on Van Gogh Above $260M. The other 44 had zero sales at or below 95¢ on the indicated side. The equal split could model at most 23 purchases at 95¢ there, costing $21.85 and earning $1.15 if NO pays $1. The exchange had yet to settle the contract. This was the only threshold with zero visible shares queued at 95¢ or better on both reads. Future auctions test an empty-queue rule with an independent $1,000 paper balance capped at $100 per threshold. Neither model receives retroactive fills."
+    },
+    {
       "market": "Van Gogh 95¢ resting NO after the published $190.43M price",
       "test": "The bot recorded Sotheby’s catalog and individual lot page agreeing on $190.43M. On Above $260M, two books had no immediately available NO offer at 95¢ or less and no visible NO bids at 95¢ or better. The prospective one-hour queue study recorded hypothetical arrival at 6:26:40.775 p.m. Eastern on November 18.",
       "finding": "Three minutes and three seconds later, four non-block trades at the same timestamp sold 312.75 NO contracts to resting buyers at 94¢. A resting 95¢ bid would have offered a better price to sellers. The bot had no order in the queue, and the threshold remained unsettled at review. The same observation now covers published Phillips and Christie’s results on mapped Artnet-verified thresholds."

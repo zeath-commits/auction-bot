@@ -367,8 +367,11 @@ export async function scanAuctionDepth(
           const fresh=(r,source)=>r.requestedAt>=source.requestedAt && asOf(r)>=publishedAt &&
             asOf(r)>=r.receivedAt-2500 && asOf(r)<=r.receivedAt+500;
           if(fresh(earlier,sig)&&fresh(read,confirmed)&&asOf(read)>asOf(earlier))
-            observeRestingBid(db,{book:earlier.body},{ticker:m.ticker,side,at:read.receivedAt,book:read.body,
-              closeAt:Date.parse(m.close_time),url:confirmed.url,amount:confirmed.amount});
+            observeRestingBid(db,
+              {book:earlier.body,bookAsOf:asOf(earlier),at:earlier.receivedAt,sourceAt:sig.requestedAt,url:sig.url,amount:sig.amount},
+              {ticker:m.ticker,side,at:read.receivedAt,book:read.body,bookAsOf:asOf(read),sourceAt:confirmed.requestedAt,
+                saleSlots:auction.targets.reduce((n,target)=>n+target.markets.length,0),
+                closeAt:Date.parse(m.close_time),url:confirmed.url,amount:confirmed.amount});
         }
         if(!pendingBuys.has(m.ticker))continue;
         db.exec('BEGIN IMMEDIATE');

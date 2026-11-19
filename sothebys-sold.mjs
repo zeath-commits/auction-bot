@@ -140,6 +140,7 @@ export async function scanSold({
   io,
   source,
   targets,
+  saleSlots,
   marketList,
   previous,
   stop,
@@ -197,6 +198,7 @@ export async function scanSold({
           quotes.push({
             ticker: m.ticker,
             event: lot.event,
+            saleSlots,
             at: read.receivedAt,
             amount: lot.salePrice,
             side,

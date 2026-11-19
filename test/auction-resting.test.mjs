@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {DatabaseSync} from 'node:sqlite';
-import {initRestingStudy,observeRestingBid,reviewRestingBid,reviewAuctionEntry} from '../auction-resting.mjs';
+import {initRestingStudy,observeRestingBid,reviewRestingBid,settleRestingBid,restingBalance,reviewAuctionEntry} from '../auction-resting.mjs';
 
 test('matches public purchases to original paper levels and truncates overlapping entry windows',async()=>{
   const db=new DatabaseSync(':memory:');
@@ -44,10 +44,54 @@ test('resting study excludes immediately available asks and measures opposing ex
       is_block_trade:false,yes_price_dollars:price,count_fp:'2.50',taker_outcome_side:'no',taker_book_side:'ask',...changes});
     const trades=[trade('a','.95'),trade('b','.91'),trade('c','.96'),trade('d','.93',{is_block_trade:true}),
       trade('e','.88',{taker_outcome_side:'yes',taker_book_side:'bid'}),trade('f','.8',{created_time:new Date(11000).toISOString()})];
-    const io={get:async url=>({body:{trades:url.includes('cursor=')?trades.slice(1):trades.slice(0,1),cursor:url.includes('cursor=')?'':'next'}})};
+    const io={get:async url=>url==='/historical/cutoff'?{body:{trades_created_ts:new Date(11500).toISOString()}}:
+      {body:{trades:url.includes('cursor=')?trades.slice(1):trades.slice(0,1),cursor:url.includes('cursor=')?'':'next'}}};
     await reviewRestingBid(db,io,200000);
     const r=db.prepare('SELECT * FROM auction_resting_trials').get();
     assert.equal(r.atLimit,2.5);
     assert.equal(r.belowLimit,2.5);
+    assert.deepEqual(db.prepare('SELECT tradeId FROM auction_resting_sales ORDER BY tradeId').all().map(t=>t.tradeId),['a','b']);
+  }finally{db.close();}
+});
+
+test('reserves a shared budget before sales, releases unused funds and pays only on final settlement',async()=>{
+  const db=new DatabaseSync(':memory:');
+  try{
+    initRestingStudy(db);
+    const observation={at:10000,closeAt:100000,side:'NO',url:'house',amount:1,
+      book:{orderbook_fp:{yes_dollars:[],no_dollars:[]}}};
+    const observe=(ticker,saleSlots)=>observeRestingBid(db,observation,{...observation,ticker,saleSlots});
+    observe('old',undefined);
+    observe('old',2);
+    db.exec('BEGIN IMMEDIATE');
+    for(const ticker of ['A','B','C'])observe(ticker,2);
+    db.exec('COMMIT');
+    const initial=db.prepare("SELECT ticker,shares FROM auction_resting_allocations WHERE policy='equal' ORDER BY ticker").all();
+    assert.deepEqual(initial.map(r=>[r.ticker,r.shares]),[['A',526],['B',526],['C',0]]);
+    assert.equal(restingBalance(db).available,.60);
+    assert.equal(restingBalance(db,'empty').reserved,299.25);
+    const io={get:async route=>{
+      if(route==='/historical/cutoff')return {body:{trades_created_ts:new Date(0).toISOString()}};
+      const ticker=new URL(route,'https://test.invalid').searchParams.get('ticker');
+      const trade=(price,count)=>({ticker,trade_id:ticker+price,created_time:new Date(12000).toISOString(),
+        taker_outcome_side:'yes',taker_book_side:'bid',is_block_trade:false,no_price_dollars:price,count_fp:count});
+      return {body:{trades:ticker==='A'?[trade('0.94','4.75'),trade('0.95','99')]:[],cursor:''}};
+    }};
+    for(let i=0;i<4;i++)await reviewRestingBid(db,io,200000);
+    assert.equal(restingBalance(db).openCost,3.8);
+    assert.equal(restingBalance(db).available,996.2);
+    let finalized=false;
+    const settlement={get:async path=>{
+      assert.equal(path,'/markets/A');
+      return {body:{market:{ticker:'A',status:finalized?'finalized':'closed',result:'scalar',settlement_value_dollars:'0.6000'}}};
+    }};
+    await settleRestingBid(db,settlement,200000);
+    assert.equal(restingBalance(db).available,996.2);
+    finalized=true;
+    await settleRestingBid(db,settlement,261000);
+    assert.deepEqual(restingBalance(db),{trials:3,available:997.8,reserved:0,openCost:0,settledNet:-2.2});
+    await settleRestingBid(db,settlement,400000);
+    assert.equal(restingBalance(db).available,997.8);
+    assert.equal(restingBalance(db,'empty').available,997.8);
   }finally{db.close();}
 });

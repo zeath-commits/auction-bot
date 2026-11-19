@@ -108,8 +108,20 @@ function paper(d) {
       (d.auctionResting??[]).filter(r=>selected==='sothebys_sold'?r.source?.includes('sothebys.com'):!r.source?.includes('sothebys.com'))
         .map(r=>[r.ticker,r.side,r.ahead,r.atLimit??'Pending',r.belowLimit??'Pending']),
       'Waiting for a confirmed sale price and two books with no offer at or below 95¢.');
-    note('Each threshold is observed once. The model allows one second for a bid to arrive, then counts sales for up to one hour. The ledger credits no fills for these observations.');
+    note('Each threshold is observed once. The model allows one second for a bid to arrive, then counts sales for up to one hour.');
+    const account=d.auctionRestingAccount;
+    if(account){
+      const names={equal:'Equal allocation',empty:'Empty queue'};
+      table('Independent $1,000 paper budgets for 95¢ resting bids',['Test','Available','Reserved for bids','Awaiting settlement at cost','Settled paper net'],
+        [[names.equal,account],[names.empty,d.auctionEmptyQueueAccount]].map(([name,a])=>[name,...[a.available,a.reserved,a.openCost,a.settledNet].map(money)]));
+      table('Bids allocated in advance',['Threshold','Test','Side','Shares reserved at entry','Modeled shares bought','Settlement per share'],
+        d.auctionRestingPositions.filter(r=>selected==='sothebys_sold'?r.source?.includes('sothebys.com'):!r.source?.includes('sothebys.com'))
+          .map(r=>[r.ticker,names[r.policy],r.side,r.shares,r.matched??'Under review',r.settleValue==null?'—':money(r.settleValue/1e6)]),
+        'Waiting for the next qualifying auction bid.');
+      note('Equal allocation splits the budget across all listed thresholds in a sale. The empty-queue test reserves up to $100 per threshold when both books show zero shares bid at 95¢ or better. Each test counts subsequent sales strictly below 95¢, capped at its reserved shares. Earlier observations had no budget allocation.');
+    }
     if(d.sothebysStatus?.restingError)note(d.sothebysStatus.restingError);
+    if(d.sothebysStatus?.restingSettlementError)note(d.sothebysStatus.restingSettlementError);
   }
   if (selected === 'btc_band60')
     note('One paper contract in the final minute. The best offer must be from 98¢ through 99¢, including fractional cents, with at least one full contract on both checks. This test can overlap the exact-cent strategy.');

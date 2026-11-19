@@ -172,6 +172,12 @@ test('sale and post-sale depth scans share cash, verify both books, and record t
     await scanAuctionDepth(opts,'sale_depth');
     const trial=db.prepare('SELECT * FROM auction_resting_trials WHERE ticker=?').get(ticker);
     assert.equal(trial.side,'YES');assert.equal(trial.ahead,18.75);assert.equal(trial.amount,15);
+    const funded=db.prepare('SELECT slots,shares,proof FROM auction_resting_plans JOIN auction_resting_allocations USING(ticker) WHERE ticker=?').get(ticker);
+    assert.equal(funded.slots,1);
+    assert.equal(funded.shares,1052);
+    const {first,second}=JSON.parse(funded.proof);
+    assert.ok(second.bookAsOf>first.bookAsOf);
+    assert.equal(db.prepare("SELECT COUNT(*) n FROM auction_resting_allocations WHERE policy='empty'").get().n,0);
     assert.equal(owned(),13);
     html = html.replace('"price_realised":15','"price_realised":16').replace('USD 15','USD 16');
     bid = null;

@@ -15,6 +15,7 @@ const calendar = JSON.parse(
   fs.readFileSync(new URL('./sothebys-bid-calendar.json', import.meta.url))
 );
 const strategy = 'sothebys_live_bid';
+const saleSlots = calendar.targets.reduce((sum, target) => sum + target.contracts, 0);
 
 export function extractSothebys(html, c, detailTarget = null) {
   const raw = html.match(
@@ -298,7 +299,7 @@ export async function observeSothebysBids({
           return;
         }
         const scan=async (source,previous)=>{
-          const outcome=await scanSold({db,io,source,targets:[t],marketList,previous,stop,tail:false,deadline,
+          const outcome=await scanSold({db,io,source,targets:[t],saleSlots,marketList,previous,stop,tail:false,deadline,
             accept:verdicts.accepts});
           if (limits && outcome.next.size) limits.record([...outcome.next.values()],previous,30000);
           lotBooks.set(t.event,outcome.next);
@@ -429,6 +430,7 @@ export async function observeSothebysBids({
           io,
           source: s,
           targets: calendar.targets,
+          saleSlots,
           marketList,
           previous: previousSold,
           stop,
