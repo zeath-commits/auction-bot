@@ -28,6 +28,7 @@ test(
         'withdrawal-reports.mjs',
         'withdrawal-bids.mjs',
         'auction-discount-bids.mjs',
+        'auction-sale-samples.mjs',
         'us-bitcoin-paper.mjs',
         'bitcoin-reference.mjs',
         'btc-maker-study.mjs',

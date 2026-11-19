@@ -11,6 +11,7 @@ import { verifyTerms } from './paper-unsold.mjs';
 import { addPaper } from './strategy-monitor.mjs';
 import { initRestingStudy, observeRestingBid } from './auction-resting.mjs';
 import {initDiscountBids, discountWindow, registerDiscountBid} from './auction-discount-bids.mjs';
+import {saleSampler} from './auction-sale-samples.mjs';
 
 const scale = 1000000;
 import {auctionPortfolio} from './auction-portfolio.mjs';
@@ -171,7 +172,7 @@ async function books(io, markets) {
 }
 
 export async function scanAuctionDepth(
-  { db, io, auctions, config, stop, status },
+  { db, io, auctions, config, stop, status, sampler },
   strategy
 ) {
   if (strategy === duringSale) {
@@ -277,7 +278,13 @@ export async function scanAuctionDepth(
           ).body,
           target
         ).filter((m) => checkMarketActive(m, Date.now()));
-      const markets = await current();
+      const marketRead = current();
+      if (sampler && strategy === duringSale && sig.kind === 'published_sale') {
+        const history = db.prepare('SELECT kind,amount,seenAt FROM auction_source_signals WHERE event=?').all(target.event);
+        if (history.length===1 && history[0].kind===sig.kind && history[0].amount===sig.amount)
+          sampler.start(target,Date.parse(history[0].seenAt),sig.amount,marketRead);
+      }
+      const markets = await marketRead;
       totals.matched += markets.length;
       if (!markets.length) continue;
       const first = await books(io, markets);
@@ -452,7 +459,12 @@ export async function observeLateAuctions(opts) {
     'CREATE TABLE IF NOT EXISTS auction_source_signals(id TEXT PRIMARY KEY,event TEXT,kind TEXT,amount REAL,source TEXT,seenAt TEXT)'
   );
   const io = new Transport(opts.config);
-  await Promise.all([watchDuringSales(opts, io), watchAfterSales(opts, io)]);
+  const sampler = saleSampler({...opts,io});
+  try {
+    await Promise.all([watchDuringSales({...opts,sampler}, io), watchAfterSales(opts, io)]);
+  } finally {
+    await sampler.drain();
+  }
 }
 
 async function watchDuringSales(opts, io) {
