@@ -134,31 +134,42 @@ export async function submitCandidate({ io, candidate, config, journal, live, st
   }
 }
 
-export async function preflight(io, watchlist) {
+export async function preflight(io, watchlist, sweepCheck) {
   checkFees((await io.get('/series/KXART')).body);
   const summary = [];
   for (const auction of watchlist.auctions) {
     const source = await readAuction(io, auction);
     let published = 0, contracts = 0;
+    const books={active:0,quoted:0,fresh:0};
     for (const target of auction.targets) {
       if (checkLot(source.rows, target)) published++;
       const event = await io.get('/events/' + target.event + '?with_nested_markets=true');
       const ms = checkEvent(event.body, target);
       requireThat(ms.length === target.markets.length, 'Frozen contracts missing');
       contracts += ms.length;
+      if(sweepCheck){
+        const b=await sweepCheck(event.body,target);
+        for(const k of Object.keys(books))books[k]+=b[k];
+      }
       await sleep(150);
     }
     summary.push({ house: auction.house, targets: auction.targets.length, contracts,
       strictPublishedResults: published, startsAt: auction.startAt, endsAt: auction.deadline,
-      sourcesAndRulesMatched: true });
+      sourcesAndRulesMatched: true, ...(sweepCheck?{books}:{}) });
   }
   return summary;
 }
 
 export async function main(args = process.argv.slice(2)) {
+  const sweepArg=args.find(a=>a.startsWith('--sweep-date='));
+  const sweepDate=sweepArg?.slice('--sweep-date='.length);
+  if(sweepArg){
+    requireThat(/^\d{4}-\d{2}-\d{2}$/.test(sweepDate) && !args.some(a=>['--paper-calendar','--paper-bids','--watch-offers','--check-account'].includes(a)),
+      'Use --sweep-date=YYYY-MM-DD with the paper, preflight or live session mode');
+  }
   const calendar = args.includes('--paper-calendar');
   requireThat(!calendar || (!args.includes('--live') && (args.includes('--paper') || args.includes('--paper-bids'))), 'Additional auction calendar is paper-only');
-  const watchFile = calendar ? 'paper-calendar.json' : 'watchlist.json';
+  const watchFile = calendar || sweepArg ? 'paper-calendar.json' : 'watchlist.json';
   if (args.includes('--paper-bids')) {
     requireThat(args.every(a => ['--paper-bids','--paper-calendar','--once'].includes(a)), 'Bid-threshold mode only supports paper trading');
     return (await import('./paper-bids.mjs')).runBidPaper(args.includes('--once'),watchFile);
@@ -166,10 +177,10 @@ export async function main(args = process.argv.slice(2)) {
   const offers = args.includes('--watch-offers');
   const accountCheck = args.includes('--check-account');
   requireThat(!accountCheck || args.length===1,'Run account check separately');
-  const known = new Set(['--paper', '--paper-calendar', '--live', '--acknowledge-live-trading', '--preflight', '--watch-offers', '--once', '--help','--check-account']);
+  const known = new Set(['--paper', '--paper-calendar', '--live', '--acknowledge-live-trading', '--preflight', '--watch-offers', '--once', '--help','--check-account',sweepArg]);
   requireThat(args.every(a => known.has(a)) && new Set(args).size === args.length, 'Unknown or duplicate argument');
   if (args.includes('--help')) {
-    console.log('node bot.mjs --preflight | --paper [--watch-offers] [--once] | --live [--watch-offers] --acknowledge-live-trading\nDefault: paper. See README.md for setup and limits.');
+    console.log('node bot.mjs --preflight | --paper [--watch-offers] [--once] | --live [--watch-offers] --acknowledge-live-trading\nUse --sweep-date=YYYY-MM-DD to size orders from available auction depth. Default: paper. See README.md for setup and limits.');
     return;
   }
   const live = args.includes('--live');
@@ -191,7 +202,9 @@ export async function main(args = process.argv.slice(2)) {
     return;
   }
   requireThat(!live || config.liveEnabled, 'config.json liveEnabled is false');
-  const watchlist = validateWatchlist(JSON.parse(await fs.readFile(path.join(ROOT, watchFile), 'utf8')));
+  const file = JSON.parse(await fs.readFile(path.join(ROOT, watchFile), 'utf8'));
+  const sweep=sweepArg ? await import('./auction-sweep.mjs') : null;
+  const watchlist = validateWatchlist(sweep ? sweep.sessionWatchlist(file,sweepDate) : file);
   let stopped = false;
   const onSignal = () => { stopped = true; };
   process.on('SIGINT', onSignal); process.on('SIGTERM', onSignal);
@@ -203,7 +216,7 @@ export async function main(args = process.argv.slice(2)) {
   const io = new Transport(config, { live, checkStop: stop });
   let journal;
   const mode = live ? 'live' : 'paper';
-  const runtime = path.join(ROOT, 'runtime', calendar ? 'paper-calendar' : mode);
+  const runtime = path.join(ROOT, 'runtime', calendar ? 'paper-calendar' : sweep && !live ? 'paper-sweep-'+sweepDate : mode);
   async function log(type, data) {
     const row = { at: new Date().toISOString(), mode, type, ...data };
     await fs.appendFile(path.join(runtime, 'observations.jsonl'), JSON.stringify(row) + '\n');
@@ -213,12 +226,15 @@ export async function main(args = process.argv.slice(2)) {
     await stop();
     if (args.includes('--preflight')) {
       const result = { checkedAt: new Date().toISOString(), readOnly: true, authenticatedRequests: 0,
-        orderSubmissions: 0, auctions: await preflight(io, watchlist) };
+        orderSubmissions: 0, auctions: await preflight(io, watchlist,sweep && ((body,target)=>sweep.sessionBookCheck(io,body,target,config))) };
+      if(sweep)result.session={date:sweepDate,liveEnabled:config.liveEnabled,maxPriceCents:config.maxPriceCents,
+        maxOrderCostCents:config.maxOrderCostCents,maxTotalReservedCents:config.maxTotalReservedCents,
+        maxOrders:config.maxOrders,maxOfferAttemptsPerArtwork:config.maxOfferAttemptsPerArtwork};
       await fs.mkdir(path.join(ROOT, 'runtime'), { recursive: true });
       await fs.writeFile(path.join(ROOT, 'runtime', 'preflight.json'), JSON.stringify(result, null, 2));
       console.log(JSON.stringify(result, null, 2)); return;
     }
-    const tailMs = offers ? config.offerTailHours * 3600000 : 0;
+    const tailMs = offers || sweep ? config.offerTailHours * 3600000 : 0;
     const lastDeadline = Math.max(...watchlist.auctions.map(a => Date.parse(a.deadline))) + tailMs;
     requireThat(Date.now() < lastDeadline, 'Watchlist expired; review new auctions before another run');
     journal = new Journal(runtime, mode); await journal.open();
@@ -231,6 +247,15 @@ export async function main(args = process.argv.slice(2)) {
       for (const auction of watchlist.auctions) {
         const deadline = Date.parse(auction.deadline) + tailMs;
         if (Date.now() < Date.parse(auction.startAt) || Date.now() >= deadline) continue;
+        if(sweep){
+          try {await sweep.scanSweep({io,auction,config,journal,live,stop,log,deadline});}
+          catch(e){
+            await stop();
+            if(journal.unresolved().length || !/HTTP (429|5\d\d)|timeout|timed out|fetch failed|Cached response too old/i.test(e.message))throw e;
+            await log('sweep_read_deferred',{sale:auction.sale,error:e.message});
+          }
+          continue;
+        }
         if (offers) {
           const {scanOffers} = await import('./watch-offers.mjs');
           await scanOffers({io,auction,config,journal,live,stop,log,deadline});
@@ -249,7 +274,7 @@ export async function main(args = process.argv.slice(2)) {
       }
       const status = { mode, at: new Date().toISOString(), state: 'waiting_or_monitoring',
         attemptedArtworks: journal.intents().length,
-        reservedCents: journal.intents().reduce((n, x) => n + x.quote.reserveCents, 0),
+        reservedCents: journal.committedCents(),
         lastDeadline: new Date(lastDeadline).toISOString(), actualProfit: null };
       await fs.writeFile(path.join(runtime, 'status.json'), JSON.stringify(status, null, 2));
       if (args.includes('--once')) break;

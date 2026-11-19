@@ -11,6 +11,7 @@ import { Journal } from '../journal.mjs';
 import { submitCandidate, processTarget } from '../bot.mjs';
 import { christies, phillips } from '../parsers.mjs';
 import { scanOffers, offerSide } from '../watch-offers.mjs';
+import {scanSweep, sessionWatchlist, sweepQuote} from '../auction-sweep.mjs';
 
 const config = JSON.parse(await fs.readFile(new URL('../config.example.json', import.meta.url)));
 const watch = JSON.parse(await fs.readFile(new URL('../watchlist.json', import.meta.url)));
@@ -32,6 +33,51 @@ async function withJournal(fn, mode = 'paper') {
   // Test data is intentionally tiny; no recursive deletion of computed Windows paths.
 }
 const noop = async () => {};
+
+test('dated auction sweep sizes repeated depth within cash and skips other session dates',()=>{
+  const cal={auctions:[{startAt:'2026-11-20T00:00:00Z'},{startAt:'2026-11-20T15:00:00Z'}]};
+  assert.deepEqual(sessionWatchlist(cal,'2026-11-19').auctions,[cal.auctions[0]]);
+  assert.throws(()=>sessionWatchlist(cal,'2026-11-21'),/No reviewed/);
+  const make=n=>({orderbook_fp:{no_dollars:[['0.3600',n],['0.1000','30.00']]}});
+  const q=sweepQuote(make('21.00'),make('3.50'),'YES',{fractional_trading_enabled:true},config,250);
+  assert.equal(q.quantity,3);assert.equal(q.limitCents,64);assert.ok(q.reserveCents<=250);
+  assert.equal(sweepQuote(make('21.00'),make('3.50'),'YES',{},config,65),null);
+});
+
+test('dated session submits both result sides using funds left after partial IOC fill',()=>withJournal(async j=>{
+  const lower={...frozen,ticker:'KXART-TEST-300',threshold:300,primary:'Above 300'};
+  const t={...target,markets:[frozen,lower]};
+  const a={house:'christies',sale:'1',sourceUrl:'https://www.christies.com/list',targets:[t]};
+  const posts=[],positions=new Map();
+  const wrap=body=>({body,requestedAt:Date.now(),receivedAt:Date.now(),httpDate:new Date().toUTCString()});
+  const book=ticker=>({ticker,orderbook_fp:{yes_dollars:[['0.2000','40.00']],no_dollars:[['0.5000','40.00']]}});
+  const io={live:true,request:async()=>({...wrap(null),text:catalogue(400)}),get:async route=>{
+    if(route.startsWith('/events/')){
+      const e=eventBody();e.markets.push({...market(),ticker:lower.ticker,floor_strike:300,rules_primary:lower.primary});return wrap(e);
+    }
+    if(route.startsWith('/markets/orderbooks?'))return wrap({orderbooks:t.markets.map(m=>book(m.ticker))});
+    if(route.startsWith('/markets/'))return wrap(book(route.split('/')[2]));
+    if(route.startsWith('/series/'))return wrap({series:{ticker:'KXART',fee_type:'quadratic',fee_multiplier:1}});
+    if(route==='/exchange/status')return wrap({exchange_active:true,trading_active:true});
+    if(route.startsWith('/portfolio/positions'))return wrap({market_positions:[...positions].map(([ticker,position_fp])=>({ticker,position_fp}))});
+    if(route.startsWith('/portfolio/orders'))return wrap({orders:[]});
+    if(route.startsWith('/portfolio/balance?exchange_index=0'))return wrap({balance:500});
+    throw Error(route);
+  },createOrder:async payload=>{
+    posts.push(payload);
+    const yes=payload.side==='bid',filled=yes?2:Number(payload.count);
+    positions.set(payload.ticker,(yes?filled:-filled).toFixed(2));
+    return wrap({order_id:'sim-'+posts.length,client_order_id:payload.client_order_id,remaining_count:'0.00',
+      fill_count:filled.toFixed(2),average_fill_price:payload.price,average_fee_paid:'0.0100'});
+  }};
+  const opts={io,auction:a,journal:j,live:true,stop:noop,log:noop,deadline:Date.now()+60000,
+    config:{...config,liveEnabled:true,maxOrderCostCents:1000,maxTotalReservedCents:1000}};
+  await scanSweep(opts);
+  assert.deepEqual(posts.map(p=>[p.side,p.count,p.price,p.time_in_force]),[['bid','9','0.5000','immediate_or_cancel'],['ask','4','0.2000','immediate_or_cancel']]);
+  assert.equal(j.committedCents(),426);
+  await scanSweep(opts);assert.equal(posts.length,2);
+  assert.equal(j.unresolved().length,0);
+},'live'));
 
 test('a crossed bid can buy YES, but equality or a lower bid cannot imply NO', () => {
   assert.equal(offerSide({kind:'current_bid',amount:501},500),'YES');

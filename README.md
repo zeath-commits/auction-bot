@@ -79,6 +79,14 @@ On the paper dashboard, select **Sotheby’s · published sale price and availab
 
 ### Connect your Kalshi account
 
+For the November 19 auctions, run `node bot.mjs --sweep-date=2026-11-19 --preflight` to check the selected Eastern date, lot identities and contract rules using public data. `node bot.mjs --paper --sweep-date=2026-11-19` rehearses the same quote and order-sizing path. The paper dashboard and all BTC studies run independently.
+
+The dated worker checks for a published sale price including premium or an explicit unsold result under the reviewed terms. Within each artwork it visits thresholds with cheaper displayed offers first, rechecks the result and both books, then sizes each immediate-or-cancel order to the whole contracts still visible at qualifying prices. The worker uses the smaller of available account cash, the remaining journal budget and the per-order cost limit. Each threshold can receive another order after its cooldown. Multiple thresholds on one artwork share settlement risk. The house can revise its report and the Artnet value determines the contract outcome.
+
+Review `maxPriceCents`, `minConditionalProfitCents`, `maxOrderCostCents`, `maxTotalReservedCents`, `maxOrders` and `maxOfferAttemptsPerArtwork` in your local config. Dated sweeps size by depth and cash, independent of the older fixed `contractsPerOrder` setting. The example limits are $1 per order and $5 across the journal, five submissions total and two per artwork. Confirmed partial fills charge their actual cost rounded up to cents. A zero fill consumes an attempt. An unknown receipt stops execution and retains the reservation.
+
+After your account check, you can personally start the funded worker with `node bot.mjs --live --sweep-date=2026-11-19 --acknowledge-live-trading` and `liveEnabled` set to `true` locally. The worker uses the live journal shown under **Real trades**. Keep the signing file on the machine running the worker. Supply its path through `KALSHI_PRIVATE_KEY_PATH` and the public key ID through `KALSHI_API_KEY_ID`. Never paste the private key into chat or commit it.
+
 1. Copy `config.example.json` to the ignored local `config.json` and review its limits. Store your private signing key **outside the repository**. Set `KALSHI_API_KEY_ID` to the key ID and `KALSHI_PRIVATE_KEY_PATH` to the key file path in the worker’s environment.
 2. Run `node bot.mjs --check-account` to verify an authenticated balance read. This prints only the connection status.
 3. To activate real orders, set `liveEnabled` to `true` in your local config and run `node bot.mjs --live --watch-offers --acknowledge-live-trading`. Running this command authorizes the worker to spend up to the configured limits. Ctrl+C or the `STOP` file stops future submissions. An uncertain order receipt requires reconciliation before restarting.

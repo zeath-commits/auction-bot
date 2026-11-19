@@ -37,16 +37,23 @@ export class Journal {
     return this.intents().filter(x => !this.entries.some(r => r.type === 'receipt' && r.clientOrderId === x.clientOrderId));
   }
   blocked(key) { return this.intents().some(x => x.artworkKey === key); }
+  committedCents() {
+    const costs = new Map(this.entries.filter(r=>r.type==='receipt' && !r.hypothetical &&
+      Number.isSafeInteger(r.costCents) && r.costCents>=0).map(r=>[r.clientOrderId,r.costCents]));
+    return this.intents().reduce((sum,i)=>sum+(i.strategy==='auction_sweep'
+      ? costs.get(i.clientOrderId)??i.quote.reserveCents : i.quote.reserveCents),0);
+  }
   checkBudget(candidate, config) {
     requireThat(this.unresolved().length === 0, 'Unresolved order intent; inspect exchange and journal before restarting');
-    if (candidate.strategy === 'watch_offers') {
+    if (['watch_offers','auction_sweep'].includes(candidate.strategy)) {
       const prior = this.intents().filter(x => x.artworkKey === candidate.artworkKey);
       requireThat(prior.length < config.maxOfferAttemptsPerArtwork, 'Artwork attempt cap reached');
-      requireThat(prior.every(x=>Date.now()-Date.parse(x.recordedAt)>=config.offerCooldownSeconds*1000), 'Artwork cooldown active');
+      const cooldown = candidate.strategy==='auction_sweep' ? prior.filter(x=>x.ticker===candidate.ticker) : prior;
+      requireThat(cooldown.every(x=>Date.now()-Date.parse(x.recordedAt)>=config.offerCooldownSeconds*1000), 'Artwork cooldown active');
     } else requireThat(!this.blocked(candidate.artworkKey), 'Artwork already attempted');
     requireThat(this.intents().length < config.maxOrders, 'Order count budget exhausted');
     requireThat(candidate.quote.reserveCents <= config.maxOrderCostCents, 'Order cost cap exceeded');
-    const total = this.intents().reduce((n, x) => n + x.quote.reserveCents, 0);
+    const total = this.committedCents();
     requireThat(total + candidate.quote.reserveCents <= config.maxTotalReservedCents, 'Total reserved budget exhausted');
   }
   async close() {
