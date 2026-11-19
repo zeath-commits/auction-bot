@@ -48,6 +48,11 @@
   ],
   "studies": [
     {
+      "market": "Resting NO bids after a public auction withdrawal",
+      "test": "Used the later of publication and revision on the Warhol and Kahlo reports. Starting one hour later, required two consecutive completed minutes with a quoted NO ask above the limit throughout. Simulated a bid arriving one second later and counted subsequent sellers strictly below its price. Separate 80¢ and 95¢ scenarios each split $100 per artwork across all listed thresholds before looking for trades.",
+      "finding": "On the Warhol, 26.64 NO contracts sold below 80¢ on three thresholds after the corresponding bids could rest. That modeled 25 shares costing $20 and earning $5 gross through close, or $4.70 if charged estimated taker fees. A one-hour expiry modeled two shares and 40¢ gross. At 95¢ through close, 17 shares modeled 85¢ gross. The Kahlo had no qualifying sellers. Each scenario depends on one artwork at one sale, and the historical quotes omit depth. The forward paper accounts save the queue and subsequent sales for reported withdrawals."
+    },
+    {
       "market": "NBA full-game totals near an even chance with six minutes left",
       "test": "Used the 2024–25 scoring distribution from 943 games to select one listed total per game. An entry required an estimated eight cents per share after taker fees. Checked the next 20 seconds for a public purchase of at least five shares at or below the modeled limit. The test included 698 quoted games in 2025–26 and 90 from November 1–17, 2026. Public trades establish prices paid by other buyers.",
       "finding": "At five contracts per entry, the 2025–26 replay won 29 of 103 and lost $40.25. November won three of 14 and lost $7.98. Applying the actual public purchase prices still lost $27.29 and $6.59 after estimated fees. Updating the forecast with a more recent score also lost money in both periods. The market midpoint predicted outcomes more accurately in both samples. This directional rule has no demonstrated trading edge."

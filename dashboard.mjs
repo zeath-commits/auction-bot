@@ -22,6 +22,7 @@ import { observeNBA } from './nba-paper.mjs';
 import { observeRecordPair } from './art-record-pair.mjs';
 import { observeRangeBids, observeRangeResults } from './art-range-bids.mjs';
 import {observeWithdrawalReports} from './withdrawal-reports.mjs';
+import {initWithdrawalBids, registerWithdrawalBids, observeWithdrawalBids, withdrawalAccounts} from './withdrawal-bids.mjs';
 import { observeCS2 } from './esports-paper.mjs';
 import { observeUS } from './us-bitcoin-paper.mjs';
 import { observeSothebysBids } from './sothebys-bids.mjs';
@@ -38,6 +39,7 @@ import {
 const runtime = path.join(ROOT, 'runtime');
 const db = openLedger(runtime);
 initRestingStudy(db);
+initWithdrawalBids(db);
 initEntryDepth(db);
 const soldLimits = openSoldLimits(runtime);
 const config = JSON.parse(
@@ -58,6 +60,7 @@ const nbaStatus = {};
 const recordPairStatus = {};
 const rangeBidStatus = {};
 const withdrawalStatus = {};
+const withdrawalBidStatus = {};
 const cs2Status = {};
 const auctionExits = {};
 const weatherStatus = {};
@@ -529,6 +532,9 @@ const server = http.createServer((req, res) => {
           pairStatus,
           lateAuctionStatus,
           withdrawalStatus,
+          withdrawalBidStatus,
+          withdrawalAccounts:withdrawalAccounts(db),
+          withdrawalBids:db.prepare('SELECT ticker,cents,arrival,shares,ahead,through,equalVolume,matched,complete,noValue FROM withdrawal_bids ORDER BY arrival DESC,ticker,cents LIMIT 100').all(),
           withdrawalQuotes:db.prepare('SELECT ticker,kind,at,detail FROM auction_withdrawal_quotes ORDER BY at DESC,ticker LIMIT 100').all().map(r=>{
             const {source,levels}=JSON.parse(r.detail);
             return {ticker:r.ticker,kind:r.kind,at:r.at,source,levels};
@@ -689,7 +695,9 @@ server.listen(port, host, () => {
     }
   }
   importSafe();
-  observeWithdrawalReports({db,config,auctions:calendars.flatMap(c=>c.auctions),status:withdrawalStatus,
+  observeWithdrawalBids({db,config,auctions:calendars.flatMap(c=>c.auctions),status:withdrawalBidStatus,
+    stop:()=>stopping||exists(path.join(ROOT,'STOP'))}).catch(e=>{withdrawalBidStatus.error=e.message;});
+  observeWithdrawalReports({db,config,auctions:calendars.flatMap(c=>c.auctions),status:withdrawalStatus,registerBids:registerWithdrawalBids,
     stop:()=>stopping||exists(path.join(ROOT,'STOP'))}).catch(e=>{withdrawalStatus.error=e.message;});
   observeRangeResults({db,config,status:rangeBidStatus,
     stop:() => stopping || exists(path.join(ROOT,'STOP'))

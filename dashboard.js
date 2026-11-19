@@ -218,7 +218,7 @@ function paper(d) {
       [[c.closed, c.attempted, c.atTen, c.beforeClose, c.wide, c.correct + ' / ' + c.settled]]);
   }
   if (selected==='art_withdrawn'){
-    note('Artnet marked Haberdashery withdrawn from the named sale. The paper position follows the no-eligible-price provision. Kalshi confirms its payout at settlement.');
+    note('Artnet marked Haberdashery withdrawn from the named sale. The paper position tests whether Kalshi settles the thresholds NO.');
     const s=d.withdrawalStatus;
     if(s){
       table('HENI withdrawal reports for monitored lots',['Last scan','Watched lots','Publisher listings','Matching lots','Matches with open markets'],
@@ -230,6 +230,13 @@ function paper(d) {
     table('Available NO contracts after a public withdrawal report',['Threshold','Observation','Observed','Price and whole contracts'],
       (d.withdrawalQuotes??[]).map(r=>[r.ticker,labels[r.kind],time(r.at),r.levels.map(l=>money(l.price)+' × '+l.quantity).join(', ')||'No offer through 99¢']),
       'Waiting for an exact lot match with an open market.');
+    table('Resting NO bids after a withdrawal',['Bid','Lots','Paper bids','Shares modeled','Available cash','Settled paper net'],
+      (d.withdrawalAccounts??[]).map(r=>[r.cents+'¢',r.lots,r.bids,r.matched,money(r.available),money(r.settledNet)]));
+    note('Each bid price uses a separate $1,000 paper account. Up to $100 per lot is split across thresholds. The model counts later sales strictly below a bid that could rest on two fresh books.');
+    if(d.withdrawalBidStatus?.error)note(d.withdrawalBidStatus.error);
+    table('Withdrawal bid evidence',['Threshold','NO bid','Arrival','Shares reserved at entry','Queued at or above bid','Sold below bid','Shares modeled'],
+      (d.withdrawalBids??[]).map(r=>[r.ticker,r.cents+'¢',time(r.arrival),r.shares,r.ahead,r.through??'Pending',r.matched??'Pending']),
+      'Waiting for two fresh books after a withdrawal report.');
   }
   if (['all','art_record_pair','art_range_bids','art_withdrawn'].includes(selected)) {
     const trials=(d.auctionExitTrials ?? []).filter(t=>selected==='all'||selected===t.strategy);

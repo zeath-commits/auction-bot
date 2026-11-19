@@ -1,5 +1,5 @@
 import {setTimeout as sleep} from 'node:timers/promises';
-import {checkEvent,checkMarketActive,overlappingAskLevels} from './core.mjs';
+import {checkEvent,checkFees,checkMarketActive,overlappingAskLevels} from './core.mjs';
 import {Transport} from './transport.mjs';
 
 const listing='https://heni.com/news';
@@ -26,7 +26,7 @@ export function withdrawalListing(html){
   return {reports,count:links.length};
 }
 
-export async function observeWithdrawalReports({db,config,auctions,status,stop,
+export async function observeWithdrawalReports({db,config,auctions,status,stop,registerBids,
   io=new Transport({...config,requestTimeoutMs:5000,maxHttpAgeSeconds:2}),fetchPage=fetch,pause=sleep}){
   db.exec(`CREATE TABLE IF NOT EXISTS auction_withdrawal_reports(event TEXT,article TEXT,at INTEGER,detail TEXT,
       PRIMARY KEY(event,article));
@@ -58,6 +58,13 @@ export async function observeWithdrawalReports({db,config,auctions,status,stop,
           if(!active.length)continue;
           open++;
           db.prepare('INSERT OR IGNORE INTO auction_withdrawal_reports VALUES(?,?,?,?)').run(t.event,report.id,received,JSON.stringify(report));
+          const observed=db.prepare('SELECT at FROM auction_withdrawal_reports WHERE event=? AND article=?').get(t.event,report.id).at;
+          let studyOpen=false;
+          if(registerBids && received>=observed+3600000){
+            checkFees((await io.get('/series/KXART')).body);
+            const exchange=(await io.get('/exchange/status')).body;
+            studyOpen=exchange.exchange_active && exchange.trading_active;
+          }
           const q=new URLSearchParams(active.map(m=>['tickers',m.ticker]));q.set('depth','100');
           const read=()=>io.get('/markets/orderbooks?'+q);
           // HTTP Date has one-second precision. Make the first response distinguishable from the source receipt.
@@ -69,6 +76,7 @@ export async function observeWithdrawalReports({db,config,auctions,status,stop,
           const maps=[first,second].map(r=>new Map(r.body.orderbooks.map(b=>[b.ticker,b])));
           if(![first,second].every(r=>r.body.orderbooks.length===active.length)||
             !maps.every(map=>map.size===active.length&&active.every(m=>map.has(m.ticker))))throw Error('Incomplete withdrawal books');
+          if(studyOpen && !stop())registerBids(db,{event:t.event,source:report.source,observed,markets:active,slots:markets.length,first,second});
           for(const m of active){
             if(!checkMarketActive(m,second.receivedAt))continue;
             const books=maps.map(map=>map.get(m.ticker));
