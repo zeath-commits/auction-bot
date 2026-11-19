@@ -138,14 +138,16 @@ for (let from = start; from < end; from += 7 * 86400) {
 }
 if (process.argv.includes('--chart-check')) {
   let tested = 0,
-    matched = 0;
+    matched = 0, endpointMatches = 0;
   for (const row of valid) {
     const ticks = await referencePrices(row.close - 60, row.close - 1);
     const mean = averageAt(ticks, row.close);
-    if (mean !== null) {
+    const endpoint=ticks.get(row.close-1);
+    if (mean !== null && Number.isFinite(endpoint)) {
       tested++;
       if (mean === row.pmFinal) matched++;
+      if (endpoint === row.pmFinal) endpointMatches++;
     }
   }
-  console.log('One-second chart checks', tested, 'matched finals', matched);
+  console.log('One-second chart checks', tested, 'final candle matched settlement', endpointMatches, 'averaged candles matched settlement', matched);
 }

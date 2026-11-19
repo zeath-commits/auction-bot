@@ -5,7 +5,7 @@ import { setTimeout as sleep } from 'node:timers/promises';
 import { Transport } from './transport.mjs';
 import { askLevels, MICRO, overlappingAskLevels } from './core.mjs';
 import { chartProjection, referencePrices, readClosingMargin, currentMargin, marginAllows } from './bitcoin-reference.mjs';
-import { observeMakerQueue, reviewMakerQueue } from './btc-maker-study.mjs';
+import { observeMakerQueue, reviewMakerQueue, observeEndpointBid, reviewEndpointBid } from './btc-maker-study.mjs';
 
 export const strategies = {
   cs2_reference: 'CS2 · Kalshi offer below Polymarket US bid',
@@ -38,6 +38,8 @@ export const strategies = {
   btc10: 'Bitcoin · final 10 seconds',
   btc_chart10: 'Bitcoin · final 10 seconds with chart confirmation',
   btc_cushion45: 'Bitcoin · 45-second cushion, up to 99.8¢',
+  btc_endpoint10: 'Bitcoin · closing chart trend, up to 99.8¢',
+  btc_endpoint_bid45: 'Bitcoin · 99.8¢ resting bid with 42–45 seconds left',
   btc999: 'Bitcoin · 100 contracts at 99.9¢ in final 10 seconds',
   btcDepth: 'Bitcoin · 1,000 contracts displayed',
   published_sale: 'Published auction price',
@@ -68,6 +70,12 @@ export function openLedger(directory) {
     CREATE TABLE IF NOT EXISTS btc_early_signals(ticker TEXT PRIMARY KEY,closeAt INTEGER,observed INTEGER,
       side TEXT,passed INTEGER,detail TEXT,result TEXT,checks INTEGER DEFAULT 0,depth99 INTEGER DEFAULT 0,depth998 INTEGER DEFAULT 0);
     CREATE TABLE IF NOT EXISTS btc_early_books(ticker TEXT,observed INTEGER,detail TEXT,PRIMARY KEY(ticker,observed));
+    CREATE TABLE IF NOT EXISTS btc_endpoint_signals(ticker TEXT PRIMARY KEY,closeAt INTEGER,observed INTEGER,
+      side TEXT,passed INTEGER,detail TEXT,result TEXT,checks INTEGER DEFAULT 0,depth99 INTEGER DEFAULT 0,depth998 INTEGER DEFAULT 0);
+    CREATE TABLE IF NOT EXISTS btc_endpoint_books(ticker TEXT,observed INTEGER,detail TEXT,PRIMARY KEY(ticker,observed));
+    CREATE TABLE IF NOT EXISTS btc_chart_audits(ticker TEXT PRIMARY KEY,checked INTEGER,detail TEXT);
+    CREATE TABLE IF NOT EXISTS btc_endpoint_bids(ticker TEXT PRIMARY KEY,side TEXT,arrival INTEGER,untilAt INTEGER,
+      ahead REAL,proof TEXT,checked INTEGER,volume REAL,sales TEXT);
     CREATE TABLE IF NOT EXISTS btc_band_depth(ticker TEXT,at INTEGER,fresh INTEGER,side TEXT,
       depth INTEGER,detail TEXT NOT NULL,PRIMARY KEY(ticker,at));
     CREATE TABLE IF NOT EXISTS auction_premium_signals(ticker TEXT PRIMARY KEY,event TEXT,at INTEGER,
@@ -210,23 +218,24 @@ function earlyBook(read,side,multiplier) {
   return {at:read.receivedAt,httpDate:read.httpDate,age:read.cacheAge??0,levels,principal,fees,depth99,depth998};
 }
 
-function priceEarlySignal(db,market,first,second,multiplier,margin,close) {
+function priceCushionSignal(db,market,first,second,multiplier,margin,close,strategy) {
   const {ticker,floor_strike:strike}=market, at=second.receivedAt;
-  const signal=db.prepare('SELECT observed,side FROM btc_early_signals WHERE ticker=? AND passed=1').get(ticker);
+  const prefix=strategy==='btc_endpoint10'?'btc_endpoint':'btc_early';
+  const signal=db.prepare(`SELECT observed,side,detail FROM ${prefix}_signals WHERE ticker=? AND passed=1`).get(ticker);
   if(!signal || first.requestedAt<signal.observed+1000 || at>=signal.observed+10000 || !independentBtcBooks(first,second) ||
     Date.parse(first.httpDate)-1000*Number(first.cacheAge??0)<signal.observed+1000 ||
     !marginAllows(margin,signal.side,close,strike,second.requestedAt,at))return;
+  if(strategy==='btc_endpoint10' && margin.lastAt<=JSON.parse(signal.detail).margin.lastAt)return;
   const a=earlyBook(first,signal.side,multiplier),b=earlyBook(second,signal.side,multiplier);
   const depth99=Math.min(a.depth99,b.depth99),depth998=Math.min(a.depth998,b.depth998);
   const {principal,fees}=a.principal+a.fees>b.principal+b.fees?a:b;
   db.exec('BEGIN IMMEDIATE');
   try {
-    const saved=db.prepare('INSERT OR IGNORE INTO btc_early_books VALUES(?,?,?)')
+    const saved=db.prepare(`INSERT OR IGNORE INTO ${prefix}_books VALUES(?,?,?)`)
       .run(ticker,at,JSON.stringify({side:signal.side,margin,first:a,second:b}));
-    if(saved.changes)db.prepare('UPDATE btc_early_signals SET checks=checks+1,depth99=max(depth99,?),depth998=max(depth998,?) WHERE ticker=?')
+    if(saved.changes)db.prepare(`UPDATE ${prefix}_signals SET checks=checks+1,depth99=max(depth99,?),depth998=max(depth998,?) WHERE ticker=?`)
       .run(depth99,depth998,ticker);
     if(depth998>=100 && principal+fees<100){
-      const strategy='btc_cushion45';
       const cash=db.prepare('SELECT 1000+COALESCE(SUM(COALESCE(payout,0)-quantity*price-fees),0) balance FROM paper WHERE strategy=?').get(strategy).balance;
       if(cash+1e-9>=principal+fees)addPaper(db,{id:strategy+'/'+ticker,strategy,ticker,side:signal.side,at:new Date(at).toISOString(),
         quantity:100,price:principal/100,fees,depth:depth998,closeAt:close});
@@ -257,15 +266,26 @@ export function recordBtc(db, market, first, second, multiplier, margin = null) 
   const secondsLeft=(close-observed)/1000;
   const signalTable=secondsLeft>=6 && secondsLeft<=10 ? 'btc_cushion_signals'
     : secondsLeft>=42 && secondsLeft<=45 ? 'btc_early_signals' : null;
-  if(signalTable && market.strike_type==='greater_or_equal' && market.rules_primary?.includes('BRTI')){
+  const endpointMargin=margin?.endpoint>0?{...margin,projected:margin.endpoint}:null;
+  function freezeSignal(table,reading){
     const strike=market.floor_strike;
-    const usable=currentMargin(margin,close,strike,second.requestedAt,observed);
-    const side=usable?(margin.projected>=strike?'yes':'no'):null;
-    const passed=marginAllows(margin,side,close,strike,second.requestedAt,observed);
-    db.prepare('INSERT OR IGNORE INTO '+signalTable+'(ticker,closeAt,observed,side,passed,detail) VALUES(?,?,?,?,?,?)')
-      .run(market.ticker,close,observed,side,Number(passed),JSON.stringify({strike,margin,bookStart:second.requestedAt}));
+    const usable=currentMargin(reading,close,strike,second.requestedAt,observed);
+    const side=usable?(reading.projected>=strike?'yes':'no'):null;
+    const passed=marginAllows(reading,side,close,strike,second.requestedAt,observed);
+    return db.prepare('INSERT OR IGNORE INTO '+table+'(ticker,closeAt,observed,side,passed,detail) VALUES(?,?,?,?,?,?)')
+      .run(market.ticker,close,observed,side,Number(passed),JSON.stringify({strike,margin:reading,bookStart:second.requestedAt})).changes;
   }
-  if(secondsLeft>=32 && secondsLeft<=44)priceEarlySignal(db,market,first,second,multiplier,margin,close);
+  if(signalTable && market.strike_type==='greater_or_equal' && market.rules_primary?.includes('BRTI')){
+    const firstSignal=freezeSignal(signalTable,margin);
+    if(signalTable==='btc_early_signals' && firstSignal && endpointMargin && independentBtcBooks(first,second)){
+      const side=endpointMargin.projected>=market.floor_strike?'yes':'no';
+      if(marginAllows(endpointMargin,side,close,market.floor_strike,second.requestedAt,observed))
+        observeEndpointBid(db,market,first,second,endpointMargin);
+    }
+    if(signalTable==='btc_cushion_signals')freezeSignal('btc_endpoint_signals',endpointMargin);
+  }
+  if(secondsLeft>=32 && secondsLeft<=44)priceCushionSignal(db,market,first,second,multiplier,margin,close,'btc_cushion45');
+  if(secondsLeft<10 && endpointMargin)priceCushionSignal(db,market,first,second,multiplier,endpointMargin,close,'btc_endpoint10');
   recordLargeFavorite(db, market, close, first, second, multiplier, margin);
   function recordOffer(strategy, seconds, minimumSize, a, b) {
     if (!a || !b || b.side !== a.side || b.price > a.price) return;
@@ -346,16 +366,17 @@ export async function settle(db, io) {
     .prepare(
       `SELECT pending.ticker FROM (
     SELECT ticker FROM paper WHERE payout IS NULL AND ticker NOT LIKE 'cpc-btc-updown-5m-%'
-    AND (strategy NOT IN ('btc60','btc_band60','btc_band10','btc_band1000','btc10','btc_chart10','btc_cushion45','btc999','btcDepth','btc_underdog','cross_us_btc','cross_us_middle') OR closeAt<=?)
+    AND (strategy NOT IN ('btc60','btc_band60','btc_band10','btc_band1000','btc10','btc_chart10','btc_cushion45','btc_endpoint10','btc999','btcDepth','btc_underdog','cross_us_btc','cross_us_middle') OR closeAt<=?)
     UNION SELECT ticker FROM btc_chart_windows WHERE side IS NOT NULL AND result IS NULL AND closeAt<=?
     UNION SELECT ticker FROM btc_cushion_signals WHERE side IS NOT NULL AND result IS NULL AND closeAt<=?
     UNION SELECT ticker FROM btc_early_signals WHERE side IS NOT NULL AND result IS NULL AND closeAt<=?
+    UNION SELECT ticker FROM btc_endpoint_signals WHERE side IS NOT NULL AND result IS NULL AND closeAt<=?
     UNION SELECT ticker FROM auction_premium_signals WHERE result IS NULL
     UNION SELECT ticker FROM weather_forecasts WHERE result IS NULL AND closeAt<=?
     ) pending LEFT JOIN results r USING(ticker) WHERE COALESCE(r.checked,0)<?
     ORDER BY COALESCE(r.checked,0) LIMIT 10`
     )
-    .all(Date.now(), Date.now(), Date.now(), Date.now(), Date.now(), Date.now() - 60000);
+    .all(Date.now(), Date.now(), Date.now(), Date.now(), Date.now(), Date.now(), Date.now() - 60000);
   for (const { ticker } of pending) {
     const { market: m } = (
       await io.get('/markets/' + encodeURIComponent(ticker))
@@ -365,6 +386,7 @@ export async function settle(db, io) {
       db.prepare('UPDATE btc_chart_windows SET result=? WHERE ticker=? AND result IS NULL').run(m.result, ticker);
       db.prepare('UPDATE btc_cushion_signals SET result=? WHERE ticker=? AND result IS NULL').run(m.result,ticker);
       db.prepare('UPDATE btc_early_signals SET result=? WHERE ticker=? AND result IS NULL').run(m.result,ticker);
+      db.prepare('UPDATE btc_endpoint_signals SET result=? WHERE ticker=? AND result IS NULL').run(m.result,ticker);
       db.prepare('UPDATE auction_premium_signals SET result=? WHERE ticker=? AND result IS NULL').run(m.result,ticker);
       db.prepare('UPDATE weather_forecasts SET result=? WHERE ticker=? AND result IS NULL').run(m.result,ticker);
     }
@@ -388,6 +410,32 @@ export async function settle(db, io) {
       Date.now()
     );
   }
+}
+
+export async function auditClosingChart(db,io,now,read=referencePrices){
+  const t=db.prepare(`SELECT s.ticker,s.closeAt FROM (
+    SELECT ticker,closeAt FROM btc_cushion_signals WHERE side IS NOT NULL AND result IN ('yes','no')
+    UNION SELECT ticker,closeAt FROM btc_early_signals WHERE side IS NOT NULL AND result IN ('yes','no')
+    ) s LEFT JOIN btc_chart_audits a USING(ticker)
+    WHERE s.closeAt<=? AND a.detail IS NULL AND COALESCE(a.checked,0)<? ORDER BY COALESCE(a.checked,0),s.closeAt LIMIT 1`).get(now-60000,now-60000);
+  if(!t)return;
+  db.prepare('INSERT INTO btc_chart_audits(ticker,checked) VALUES(?,?) ON CONFLICT(ticker) DO UPDATE SET checked=excluded.checked').run(t.ticker,now);
+  const end=t.closeAt/1000;
+  const m=(await io.get('/markets/'+encodeURIComponent(t.ticker))).body.market;
+  if(m?.ticker!==t.ticker || m.status!=='finalized' || Date.parse(m.close_time)!==t.closeAt ||
+    !['yes','no'].includes(m.result) || !(Number(m.expiration_value)>0))throw Error('Unverified BTC chart audit settlement');
+  const prices=await read(end-60,end-1);
+  const rows=db.prepare(`SELECT observed,detail FROM btc_cushion_signals WHERE ticker=? AND side IS NOT NULL
+    UNION ALL SELECT observed,detail FROM btc_early_signals WHERE ticker=? AND side IS NOT NULL`).all(t.ticker,t.ticker);
+  const readings=rows.map(r=>{
+    const {margin}=JSON.parse(r.detail);
+    if(!(margin.lastAt<margin.receivedAt && margin.receivedAt<=r.observed && r.observed<t.closeAt))throw Error('Invalid pre-close receipt');
+    return {observed:r.observed,lastAt:margin.lastAt,receivedAt:margin.receivedAt,live:margin.spot,archived:prices.get(margin.lastAt/1000)??null};
+  });
+  const final=Number(m.expiration_value),endpoint=prices.get(end-1)??null;
+  const detail={readings,endpoint,final,matches:readings.filter(r=>r.live===r.archived).length,
+    missing:readings.filter(r=>r.archived==null).length,endpointMatched:endpoint===final};
+  db.prepare('UPDATE btc_chart_audits SET detail=? WHERE ticker=?').run(JSON.stringify(detail),t.ticker);
 }
 
 export async function observe({ db, config, stop, status }) {
@@ -456,7 +504,13 @@ export async function observe({ db, config, stop, status }) {
         delay = 250;
       } else {
         await settle(db, io);
-        if (left > 75000) await reviewMakerQueue(db, io, Date.now());
+        if (left > 75000) {
+          await reviewMakerQueue(db, io, Date.now());
+          try {await reviewEndpointBid(db,io,Date.now());delete status.endpointBidError;}
+          catch(e){status.endpointBidError=e.message;}
+          try {await auditClosingChart(db,io,Date.now());delete status.chartAuditError;}
+          catch(e){status.chartAuditError=e.message;}
+        }
         status.state = market
           ? 'Waiting for final minute'
           : 'Waiting for next listing';

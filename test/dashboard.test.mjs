@@ -31,6 +31,7 @@ test(
         'sothebys-bids.mjs',
         'sothebys-sold.mjs',
         'auction-resting.mjs',
+        'public-trades.mjs',
         'sold-limits.mjs',
         'sale-timing.mjs',
         'auction-quote-timing.mjs',

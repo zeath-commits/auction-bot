@@ -1,3 +1,4 @@
+import {windowTrades} from './public-trades.mjs';
 import {askLevels,decimal,MICRO} from './core.mjs';
 
 const startingCash=1000, bidCents=95, bidMicros=bidCents*MICRO/100;
@@ -68,16 +69,11 @@ export async function reviewRestingBid(db,io,now) {
   db.prepare('UPDATE auction_resting_trials SET checked=? WHERE ticker=?').run(now,trial.ticker);
   const side=trial.side.toLowerCase(), taker=side==='yes'?'no':'yes';
   let atLimit=0,belowLimit=0;
-  const cutoff=Date.parse((await io.get('/historical/cutoff')).body.trades_created_ts);
-  if(!Number.isFinite(cutoff))throw Error('Missing auction trade archive cutoff');
-  const trades=new Map();
-  for(const route of [trial.arrival<cutoff&&'/historical/trades',trial.untilAt>=cutoff&&'/markets/trades'].filter(Boolean)){
-    for(const t of await auctionTrades(io,trial,side,taker,route))trades.set(t.id,t);
-  }
+  const trades=await windowTrades(io,trial,side,taker);
   const record=db.prepare('INSERT OR IGNORE INTO auction_resting_sales VALUES(?,?,?,?,?)');
   db.exec('BEGIN IMMEDIATE');
   try {
-    for (const {id,at,price,qty} of trades.values()) {
+    for (const {id,at,price,qty} of trades) {
       if(price>bidCents/100)continue;
       if(price===bidCents/100)atLimit+=qty;
       else belowLimit+=qty;
@@ -108,29 +104,6 @@ export async function settleRestingBid(db,io,now){
     .run(t.side==='YES'?yes:MICRO-yes,now,t.ticker);
 }
 
-async function auctionTrades(io,trial,side,taker,route='/markets/trades') {
-  const params=new URLSearchParams({ticker:trial.ticker,min_ts:String(Math.floor(trial.arrival/1000)),
-    max_ts:String(Math.ceil(trial.untilAt/1000)),is_block_trade:'false',limit:'1000'});
-  const trades=[];
-  const cursors=new Set(),ids=new Set();
-  do {
-    const {body}=await io.get(route+'?'+params);
-    for(const t of body.trades) {
-      if(t.ticker!==trial.ticker||!t.trade_id||ids.has(t.trade_id))throw Error('Unexpected auction trade identity');
-      ids.add(t.trade_id);
-      const at=Date.parse(t.created_time),price=Number(t[side+'_price_dollars']),qty=Number(t.count_fp);
-      if(!Number.isFinite(at+price+qty)||qty<=0||price<=0||price>=1)throw Error('Invalid auction trade');
-      if(at<=trial.arrival||at>=trial.untilAt||t.is_block_trade!==false||t.taker_outcome_side!==taker||
-        t.taker_book_side!==(taker==='yes'?'bid':'ask'))continue;
-      trades.push({id:t.trade_id,at:t.created_time,price,qty});
-    }
-    if(!body.cursor)break;
-    if(cursors.has(body.cursor))throw Error('Repeated auction trades cursor');
-    cursors.add(body.cursor);params.set('cursor',body.cursor);
-  }while(true);
-  return trades;
-}
-
 const includedStrategies = "('sothebys_sold','late_auction','sale_depth','art_withdrawn')";
 export async function reviewAuctionEntry(db,io,now) {
   // Hold the window open for 30 seconds and allow a minute for exchange publication.
@@ -157,17 +130,8 @@ export async function reviewAuctionEntry(db,io,now) {
   const next=db.prepare(`SELECT MIN(at) AS at FROM paper WHERE ticker=? AND at>? AND strategy IN ${includedStrategies}`).get(ticker,at).at;
   const begin=Date.parse(at),arrival=begin+1000;
   const untilAt=Math.min(begin+30000,...rows.map(r=>r.closeAt),next?Date.parse(next):Infinity);
-  const cutoff=Date.parse((await io.get('/historical/cutoff')).body.trades_created_ts);
-  if(!Number.isFinite(cutoff)) throw Error('Missing trade archive cutoff');
-  const routes=[];
-  if(untilAt>arrival && arrival<cutoff) routes.push('/historical/trades');
-  if(untilAt>arrival && untilAt>=cutoff) routes.push('/markets/trades');
-  const matches=new Map();
-  for(const route of routes) {
-    for(const trade of await auctionTrades(io,{ticker,arrival,untilAt},side,side,route))
-      if(levels.has(trade.price)) matches.set(trade.id,trade);
-  }
-  const detail={ticker,strategy,at,side,arrival,untilAt,levels:[],trades:[...matches.values()]};
+  const trades=(await windowTrades(io,{ticker,arrival,untilAt},side,side)).filter(t=>levels.has(t.price));
+  const detail={ticker,strategy,at,side,arrival,untilAt,levels:[],trades};
   for(const [price,paper] of levels) {
     const printed=Math.round(100*detail.trades.filter(t=>t.price===price).reduce((s,t)=>s+t.qty,0))/100;
     detail.levels.push({price,paper,printed,overlap:Math.min(paper,Math.floor(printed))});

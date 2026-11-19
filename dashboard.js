@@ -98,8 +98,27 @@ function paper(d) {
       ).size
     ]
   ]);
-  if (selected.startsWith('btc') || selected === 'us_btc10') {
-    note('New directional BTC paper entries require both the latest public chart price and the projected 60-second average to clear the strike by 0.15% on the selected side. The projection holds the last observed price flat through close. Missing or stale prices skip the entry.');
+  if ((selected.startsWith('btc') || selected === 'us_btc10') && !selected.startsWith('btc_endpoint')) {
+    note('The BTC cushion checks the latest chart price and a smoothed chart price against the strike. Both must clear 0.15%. The chart’s final reading has tracked Kalshi settlement. Averaging chart readings a second time can delay detection of a reversal.');
+  }
+  if(selected==='btc_endpoint_bid45' && d.btcEndpointBids){
+    const b=d.btcEndpointBids;
+    table('Resting 99.8¢ bid after a chart trend signal',['Eligible windows','Reviewed','100+ sold below 99.8¢','Graded after 100+ sold','Correct after 100+ sold'],
+      [[b.trials,b.reviewed,b.through,b.graded,b.wins]]);
+    note('At the first reading with 42–45 seconds left, the latest chart price and five-second trend forecast must both clear the strike by 0.15%. Two books must show no offer at 99.8¢ or less. After a one-second arrival allowance, the monitor counts sellers who traded below 99.8¢ in the next nine seconds. These observations measure potential fills.');
+    if(d.status?.endpointBidError)note(d.status.endpointBidError);
+  }
+  if(selected==='btc_endpoint10' && d.btcEndpoint){
+    const c=d.btcEndpoint;
+    table('Closing chart trend with 6–10 seconds left',['Windows','Fresh forecasts','Cleared 0.15%','Settled after clearing','Correct','Later book pairs checked','100 offered twice ≤99.8¢'],
+      [[c.sampled,c.fresh,c.passed,c.settled,c.correct,c.checked,c.full]]);
+    note('The forecast extends the last five seconds of chart movement to the final candle. The latest price and forecast must both clear the strike by 0.15%, at the signal and on a newer reading. Two fresh books after the signal must each offer 100 shares for 99.8¢ or less. The paper account reserves the higher cost including modeled fees.');
+    if(d.btcChartAudit){
+      const a=d.btcChartAudit;
+      table('Live chart readings compared with the archive after settlement',['Closes checked','Final candles matching settlement','Readings saved before close','Matching archived readings','Missing archived readings'],
+        [[a.closes,a.finals,a.readings,a.matches,a.missing]]);
+    }
+    if(d.status?.chartAuditError)note(d.status.chartAuditError);
   }
   if (selected === 'btc_underdog')
     note('One paper contract per market at the first 1¢ or 2¢ ask in the final minute that holds or improves on a second book check. Net includes modeled taker fees.');

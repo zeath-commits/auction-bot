@@ -5,6 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import {
   addPaper,
+  auditClosingChart,
   captureChart,
   openLedger,
   paperRows,
@@ -12,7 +13,7 @@ import {
   settle
 } from '../strategy-monitor.mjs';
 import { chartProjection, closingMargin, marginAllows } from '../bitcoin-reference.mjs';
-import { makerQueue, observeMakerQueue, reviewMakerQueue } from '../btc-maker-study.mjs';
+import { makerQueue, observeMakerQueue, reviewMakerQueue, reviewEndpointBid } from '../btc-maker-study.mjs';
 
 function recordWithMargin(db,market,first,second,rate,side='yes') {
   const strike=market.floor_strike??100, price=strike*(side==='yes'?1.01:0.99);
@@ -37,6 +38,74 @@ test('closing BTC margin requires a fresh spot and projected settlement on the c
   assert.equal(passes({...margin(55600),receivedAt:at+300}),false);
   const partial=ticks(55600);partial.delete(end-22);
   assert.equal(closingMargin(partial,end*1000,strike,at),null);
+});
+
+test('endpoint forecast uses five completed seconds and requires newer confirmation before a paper purchase',async()=>{
+  const directory=fs.mkdtempSync(path.join(os.tmpdir(),'btc-endpoint-')),db=openLedger(directory);
+  try{
+    const close=Math.floor(Date.now()/1000)*1000-1000,end=close/1000;
+    const ticks=new Map(Array.from({length:60},(_,i)=>[end-60+i,101]));
+    ticks.set(end-15,104);
+    const reversal=closingMargin(ticks,close,100,close-9000);
+    assert.equal(reversal.lastAt,close-10000);
+    assert.ok(reversal.endpoint<100 && reversal.spot>100 && reversal.projected>100);
+    const m={ticker:'KXBTC15M-ENDPOINT',floor_strike:100,strike_type:'greater_or_equal',rules_primary:'BRTI',status:'active',close_time:new Date(close).toISOString()};
+    const read=(at,size)=>({requestedAt:at,receivedAt:at+50,httpDate:new Date(at).toUTCString(),cacheAge:0,
+      body:{orderbook_fp:{yes_dollars:[],no_dollars:[['0.003',size]]}}});
+    const proof=at=>({...closingMargin(ticks,close,100,at),receivedAt:at+100});
+    const signal=proof(close-9100);
+    recordBtc(db,m,read(close-10000,'100'),read(close-8800,'100'),1,signal);
+    const entries=()=>paperRows(db).filter(r=>r.strategy==='btc_endpoint10');
+    assert.equal(entries().length,0);
+    assert.equal(db.prepare('SELECT passed FROM btc_endpoint_signals').get().passed,1);
+    recordBtc(db,m,read(close-7000,'100'),read(close-5800,'100'),1,signal);
+    assert.equal(entries().length,0);
+    recordBtc(db,m,read(close-6000,'99'),read(close-4800,'100'),1,proof(close-5200));
+    assert.equal(entries().length,0);
+    recordBtc(db,m,read(close-4000,'110'),read(close-2800,'101'),1,proof(close-3200));
+    assert.deepEqual(entries().map(r=>[r.side,r.quantity,r.price,r.fees]),[['yes',100,.997,.03]]);
+    await settle(db,{get:async()=>({body:{market:{...m,status:'finalized',result:'no'}}})});
+    assert.equal(db.prepare('SELECT result FROM btc_endpoint_signals').get().result,'no');
+    assert.ok(Math.abs(entries()[0].net+99.73)<1e-9);
+    const archive=new Map(ticks);
+    archive.set(signal.lastAt/1000,99);
+    archive.set(end-1,98.21);
+    await auditClosingChart(db,{get:async()=>({body:{market:{...m,status:'finalized',result:'no',expiration_value:'98.21'}}})},
+      close+90000,async()=>archive);
+    const audit=JSON.parse(db.prepare('SELECT detail FROM btc_chart_audits').get().detail);
+    assert.equal(audit.endpointMatched,true);
+    assert.equal(audit.matches,0);
+    assert.equal(audit.readings[0].live,101);
+    assert.equal(audit.readings[0].archived,99);
+  }finally{db.close();fs.rmSync(directory,{recursive:true,force:true});}
+});
+
+test('the early trend registers a passive bid before seller volume is known',async()=>{
+  const directory=fs.mkdtempSync(path.join(os.tmpdir(),'btc-passive-')),db=openLedger(directory);
+  try{
+    const close=200000, ticker='KXBTC15M-PASSIVE';
+    const m={ticker,status:'active',floor_strike:100,strike_type:'greater_or_equal',rules_primary:'BRTI',
+      close_time:new Date(close).toISOString(),price_ranges:[{start:'0.9000',end:'1.0000',step:'0.0010'}]};
+    const read=(at,other=[])=>({requestedAt:at,receivedAt:at+50,httpDate:new Date(at).toUTCString(),
+      body:{orderbook_fp:{yes_dollars:other,no_dollars:[['0.998','12']]}}});
+    const margin={strike:100,closeMs:close,requestedAt:close-45200,receivedAt:close-45060,
+      lastAt:close-47000,projected:99,spot:99,endpoint:98.7};
+    recordBtc(db,m,read(close-47000),read(close-45000),1,margin);
+    const trial=db.prepare('SELECT * FROM btc_endpoint_bids WHERE ticker=?').get(ticker);
+    assert.equal(trial.side,'no');assert.equal(trial.ahead,12);assert.equal(trial.volume,null);
+    recordBtc(db,{...m,ticker:ticker+'-ASK'},read(close-47000,[['0.002','1']]),read(close-45000),1,margin);
+    recordBtc(db,{...m,ticker:ticker+'-ASK'},read(close-47000),read(close-45000),1,margin);
+    assert.equal(db.prepare('SELECT COUNT(*) n FROM btc_endpoint_bids').get().n,1);
+    const sale=(id,price,at,side='yes')=>({ticker,trade_id:id,no_price_dollars:price,count_fp:'101.50',is_block_trade:false,
+      created_time:new Date(at).toISOString(),taker_outcome_side:side,taker_book_side:side==='yes'?'bid':'ask'});
+    const sales=[sale('valid','.997',trial.arrival+10),sale('equal','.998',trial.arrival+20),
+      sale('late','.996',trial.untilAt),sale('early','.994',trial.arrival),sale('wrong-side','.994',trial.arrival+10,'no')];
+    const io={get:async route=>({body:route==='/historical/cutoff'?{trades_created_ts:new Date(trial.arrival+1).toISOString()}:{trades:sales}})};
+    await reviewEndpointBid(db,io,close+90000);
+    const result=db.prepare('SELECT volume,sales FROM btc_endpoint_bids').get();
+    assert.equal(result.volume,101.5);
+    assert.deepEqual(JSON.parse(result.sales).map(t=>t.id),['valid']);
+  }finally{db.close();fs.rmSync(directory,{recursive:true,force:true});}
 });
 
 test('chart-confirmed BTC entries use candles and receipts available before the quote', async () => {

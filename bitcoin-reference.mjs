@@ -129,7 +129,8 @@ export function chartProjection(prices, close, strike) {
   return { mean, gapBps, side: mean >= strike ? 'yes' : 'no' };
 }
 
-// A provisional paper-trading threshold. The public chart is a proxy for BRTI.
+// The final chart candle has tracked Kalshi's published settlement. Keep the older
+// smoothed-price filter for comparison and project the endpoint separately.
 export const minimumClosingMarginBps = 15;
 export function closingMargin(prices, closeMs, strike, requestedAt) {
   const end=closeMs/1000, from=end-60;
@@ -147,7 +148,9 @@ export function closingMargin(prices, closeMs, strike, requestedAt) {
   }
   const spot=prices.get(last);
   const projected=(total+(end-last-1)*Math.round(spot*100))/6000;
-  return {closeMs,strike,lastAt:last*1000,requestedAt,spot,projected,seconds:last-from+1};
+  const prior=last-5>=from?prices.get(last-5):null;
+  const endpoint=prior==null?null:spot+(spot-prior)*(end-1-last)/5;
+  return {closeMs,strike,lastAt:last*1000,requestedAt,spot,projected,seconds:last-from+1,prior,endpoint};
 }
 
 export async function readClosingMargin(closeMs,strike) {

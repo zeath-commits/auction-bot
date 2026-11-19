@@ -1,3 +1,4 @@
+import {windowTrades} from './public-trades.mjs';
 import { askLevels, MICRO } from './core.mjs';
 
 // Observe an existing 99.9-cent bid, then measure how much traded against
@@ -21,6 +22,35 @@ export function observeMakerQueue(db, market, first, second, close) {
   if (!a || !b || b.side!==a.side || arrival>=close) return;
   db.prepare('INSERT OR IGNORE INTO btc_999_queue(ticker,side,arrival,closeAt,ahead) VALUES(?,?,?,?,?)')
     .run(market.ticker,b.side,arrival,close,Math.max(a.ahead,b.ahead));
+}
+
+// Register at the first 42–45 second signal, before inspecting subsequent trades.
+export function observeEndpointBid(db,market,first,second,margin){
+  if(!market.price_ranges?.some(r=>r.start==='0.9000'&&r.end==='1.0000'&&r.step==='0.0010'))return;
+  const side=margin.endpoint>=market.floor_strike?'yes':'no',upper=side.toUpperCase();
+  const opposite=upper==='YES'?'NO':'YES';
+  const depth=read=>{
+    if(!Array.isArray(read.body?.orderbook_fp?.yes_dollars)||!Array.isArray(read.body?.orderbook_fp?.no_dollars))return null;
+    if(askLevels(read.body,upper,99.8).length)return null;
+    return askLevels(read.body,opposite,0.2).reduce((n,l)=>n+l.quantity/MICRO,0);
+  };
+  const a=depth(first),b=depth(second);
+  if(a==null||b==null)return;
+  const at=second.receivedAt;
+  const proof=({body,httpDate,cacheAge,requestedAt,receivedAt})=>({body,httpDate,cacheAge,requestedAt,receivedAt});
+  db.prepare('INSERT OR IGNORE INTO btc_endpoint_bids(ticker,side,arrival,untilAt,ahead,proof) VALUES(?,?,?,?,?,?)')
+    .run(market.ticker,side,at+1000,at+10000,Math.max(a,b),JSON.stringify({margin,first:proof(first),second:proof(second)}));
+}
+
+export async function reviewEndpointBid(db,io,now){
+  const trial=db.prepare(`SELECT * FROM btc_endpoint_bids WHERE volume IS NULL AND untilAt<=?
+    AND COALESCE(checked,0)<? ORDER BY COALESCE(checked,0),untilAt LIMIT 1`).get(now-60000,now-60000);
+  if(!trial)return;
+  db.prepare('UPDATE btc_endpoint_bids SET checked=? WHERE ticker=?').run(now,trial.ticker);
+  const aggressor=trial.side==='yes'?'no':'yes';
+  const sales=(await windowTrades(io,trial,trial.side,aggressor)).filter(t=>t.price<0.998);
+  db.prepare('UPDATE btc_endpoint_bids SET volume=?,sales=? WHERE ticker=?')
+    .run(sales.reduce((n,t)=>n+Math.round(t.qty*100),0)/100,JSON.stringify(sales),trial.ticker);
 }
 
 export async function reviewMakerQueue(db, io, now) {
