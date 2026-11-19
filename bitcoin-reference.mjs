@@ -159,10 +159,15 @@ export async function readClosingMargin(closeMs,strike) {
   return margin && {...margin,receivedAt:Date.now()};
 }
 
+export function currentMargin(margin,closeMs,strike,bookStart,decisionAt) {
+  return !!margin && strike>0 && margin.closeMs===closeMs && margin.strike===strike &&
+    [margin.spot,margin.projected].every(p=>Number.isFinite(p)&&p>0) &&
+    margin.lastAt<margin.requestedAt && margin.requestedAt<=margin.receivedAt && margin.receivedAt<=bookStart &&
+    bookStart<=decisionAt && decisionAt-margin.lastAt<=4500 && decisionAt<closeMs;
+}
+
 export function marginAllows(margin,side,closeMs,strike,bookStart,decisionAt) {
-  if(!margin || !['yes','no'].includes(side) || !(strike>0) || margin.closeMs!==closeMs || margin.strike!==strike ||
-      !(margin.lastAt < margin.requestedAt && margin.requestedAt <= margin.receivedAt && margin.receivedAt<=bookStart &&
-      bookStart<=decisionAt && decisionAt-margin.lastAt<=4500 && decisionAt<closeMs)) return false;
+  if(!['yes','no'].includes(side)||!currentMargin(margin,closeMs,strike,bookStart,decisionAt))return false;
   const direction=side==='yes'?1:-1;
-  return [margin.spot,margin.projected].every(p=>Number.isFinite(p)&&p>0&&direction*(p-strike)*10000>=strike*minimumClosingMarginBps);
+  return [margin.spot,margin.projected].every(p=>direction*(p-strike)*10000>=strike*minimumClosingMarginBps);
 }

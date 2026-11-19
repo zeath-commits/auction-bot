@@ -65,13 +65,18 @@ test('chart-confirmed BTC entries use candles and receipts available before the 
     const entered = () => paperRows(db).filter(r=>r.strategy==='btc_chart10');
     recordWithMargin(db,market,snap(close-9000),snap(close-7800),1);
     assert.equal(entered().length,0);
+    const cushion=()=>db.prepare('SELECT * FROM btc_cushion_signals WHERE ticker=?').get(market.ticker);
+    assert.equal(cushion().observed,close-7770);
+    assert.equal(cushion().side,'yes');assert.equal(cushion().passed,1);
     recordWithMargin(db,market,snap(close-7000),snap(close-5800),1);
     assert.equal(entered().length,1);
+    assert.equal(cushion().observed,close-7770);
     await captureChart(db,market,async () => { reads++; },() => close-5000);
     assert.equal(reads,1);
     await settle(db, {get: async () => ({body:{market:{...market,status:'finalized',result:'yes'}}})});
     assert.equal(db.prepare('SELECT result FROM btc_chart_windows').get().result,'yes');
     assert.equal(entered()[0].payout,1);
+    assert.equal(cushion().result,'yes');
   } finally {
     db.close();
     fs.rmSync(directory,{recursive:true,force:true});

@@ -4,7 +4,7 @@ import path from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { Transport } from './transport.mjs';
 import { overlappingAskLevels } from './core.mjs';
-import { chartProjection, referencePrices, readClosingMargin, marginAllows } from './bitcoin-reference.mjs';
+import { chartProjection, referencePrices, readClosingMargin, currentMargin, marginAllows } from './bitcoin-reference.mjs';
 import { observeMakerQueue, reviewMakerQueue } from './btc-maker-study.mjs';
 
 export const strategies = {
@@ -61,6 +61,8 @@ export function openLedger(directory) {
       secondQuote TEXT, fresh INTEGER, PRIMARY KEY(ticker,at));
     CREATE TABLE IF NOT EXISTS btc_999_queue(ticker TEXT PRIMARY KEY,side TEXT,arrival INTEGER,
       closeAt INTEGER,ahead REAL,checked INTEGER,volume REAL,result TEXT);
+    CREATE TABLE IF NOT EXISTS btc_cushion_signals(ticker TEXT PRIMARY KEY,closeAt INTEGER,observed INTEGER,
+      side TEXT,passed INTEGER,detail TEXT,result TEXT);
     CREATE TABLE IF NOT EXISTS btc_band_depth(ticker TEXT,at INTEGER,fresh INTEGER,side TEXT,
       depth INTEGER,detail TEXT NOT NULL,PRIMARY KEY(ticker,at));
     CREATE TABLE IF NOT EXISTS auction_premium_signals(ticker TEXT PRIMARY KEY,event TEXT,at INTEGER,
@@ -205,6 +207,16 @@ export function recordBtc(db, market, first, second, multiplier, margin = null) 
     `INSERT INTO windows VALUES(?,?,1,?,?) ON CONFLICT(ticker) DO UPDATE SET
     checks=checks+1,lastCheck=excluded.lastCheck`
   ).run(market.ticker, close, observed, observed);
+  // Freeze the first observation even if the feed was stale or no offer existed.
+  const secondsLeft=(close-observed)/1000;
+  if(secondsLeft>=6 && secondsLeft<=10 && market.strike_type==='greater_or_equal' && market.rules_primary?.includes('BRTI')){
+    const strike=market.floor_strike;
+    const usable=currentMargin(margin,close,strike,second.requestedAt,observed);
+    const side=usable?(margin.projected>=strike?'yes':'no'):null;
+    const passed=marginAllows(margin,side,close,strike,second.requestedAt,observed);
+    db.prepare('INSERT OR IGNORE INTO btc_cushion_signals(ticker,closeAt,observed,side,passed,detail) VALUES(?,?,?,?,?,?)')
+      .run(market.ticker,close,observed,side,Number(passed),JSON.stringify({strike,margin,bookStart:second.requestedAt}));
+  }
   recordLargeFavorite(db, market, close, first, second, multiplier, margin);
   function recordOffer(strategy, seconds, minimumSize, a, b) {
     if (!a || !b || b.side !== a.side || b.price > a.price) return;
@@ -287,12 +299,13 @@ export async function settle(db, io) {
     SELECT ticker FROM paper WHERE payout IS NULL AND ticker NOT LIKE 'cpc-btc-updown-5m-%'
     AND (strategy NOT IN ('btc60','btc_band60','btc_band10','btc_band1000','btc10','btc_chart10','btc999','btcDepth','btc_underdog','cross_us_btc','cross_us_middle') OR closeAt<=?)
     UNION SELECT ticker FROM btc_chart_windows WHERE side IS NOT NULL AND result IS NULL AND closeAt<=?
+    UNION SELECT ticker FROM btc_cushion_signals WHERE side IS NOT NULL AND result IS NULL AND closeAt<=?
     UNION SELECT ticker FROM auction_premium_signals WHERE result IS NULL
     UNION SELECT ticker FROM weather_forecasts WHERE result IS NULL AND closeAt<=?
     ) pending LEFT JOIN results r USING(ticker) WHERE COALESCE(r.checked,0)<?
     ORDER BY COALESCE(r.checked,0) LIMIT 10`
     )
-    .all(Date.now(), Date.now(), Date.now(), Date.now() - 60000);
+    .all(Date.now(), Date.now(), Date.now(), Date.now(), Date.now() - 60000);
   for (const { ticker } of pending) {
     const { market: m } = (
       await io.get('/markets/' + encodeURIComponent(ticker))
@@ -300,6 +313,7 @@ export async function settle(db, io) {
     if (m.ticker !== ticker) throw Error('Unexpected settlement ticker');
     if (m.status === 'finalized' && ['yes','no','scalar'].includes(m.result)) {
       db.prepare('UPDATE btc_chart_windows SET result=? WHERE ticker=? AND result IS NULL').run(m.result, ticker);
+      db.prepare('UPDATE btc_cushion_signals SET result=? WHERE ticker=? AND result IS NULL').run(m.result,ticker);
       db.prepare('UPDATE auction_premium_signals SET result=? WHERE ticker=? AND result IS NULL').run(m.result,ticker);
       db.prepare('UPDATE weather_forecasts SET result=? WHERE ticker=? AND result IS NULL').run(m.result,ticker);
     }
