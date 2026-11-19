@@ -104,19 +104,10 @@ export async function settleRestingBid(db,io,now){
     .run(t.side==='YES'?yes:MICRO-yes,now,t.ticker);
 }
 
-const includedStrategies = "('sothebys_sold','late_auction','sale_depth','art_withdrawn')";
-export async function reviewAuctionEntry(db,io,now) {
-  // Hold the window open for 30 seconds and allow a minute for exchange publication.
-  const pending=db.prepare(`SELECT p.ticker,p.at FROM paper p LEFT JOIN auction_entry_tape a
-    ON a.ticker=p.ticker AND a.at=p.at WHERE p.strategy IN ${includedStrategies}
-    AND p.at<? AND a.detail IS NULL AND COALESCE(a.checked,0)<? ORDER BY COALESCE(a.checked,0),p.at,p.ticker LIMIT 1`)
-    .get(new Date(now-90000).toISOString(),now-60000);
-  if (!pending) return;
-  const {ticker,at}=pending;
-  db.prepare(`INSERT INTO auction_entry_tape(ticker,at,checked) VALUES(?,?,?)
-    ON CONFLICT(ticker,at) DO UPDATE SET checked=excluded.checked`).run(ticker,at,now);
+export const auctionEntryStrategies = "('sothebys_sold','late_auction','sale_depth','art_withdrawn')";
+export function originalEntry(db,ticker,at){
   const rows=db.prepare(`SELECT p.*,e.detail FROM paper p LEFT JOIN late_evidence e USING(id)
-    WHERE p.ticker=? AND p.at=? AND p.strategy IN ${includedStrategies}`).all(ticker,at);
+    WHERE p.ticker=? AND p.at=? AND p.strategy IN ${auctionEntryStrategies}`).all(ticker,at);
   const {side,strategy}=rows[0], levels=new Map();
   for(const row of rows) {
     if(row.side!==side || row.strategy!==strategy || !['yes','no'].includes(side)) throw Error('Ambiguous auction entry');
@@ -127,9 +118,23 @@ export async function reviewAuctionEntry(db,io,now) {
       levels.set(price,(levels.get(price)??0)+quantity);
     }
   }
-  const next=db.prepare(`SELECT MIN(at) AS at FROM paper WHERE ticker=? AND at>? AND strategy IN ${includedStrategies}`).get(ticker,at).at;
+  return {levels,side,strategy,closeAt:Math.min(...rows.map(r=>r.closeAt))};
+}
+
+export async function reviewAuctionEntry(db,io,now) {
+  // Hold the window open for 30 seconds and allow a minute for exchange publication.
+  const pending=db.prepare(`SELECT p.ticker,p.at FROM paper p LEFT JOIN auction_entry_tape a
+    ON a.ticker=p.ticker AND a.at=p.at WHERE p.strategy IN ${auctionEntryStrategies}
+    AND p.at<? AND a.detail IS NULL AND COALESCE(a.checked,0)<? ORDER BY COALESCE(a.checked,0),p.at,p.ticker LIMIT 1`)
+    .get(new Date(now-90000).toISOString(),now-60000);
+  if (!pending) return;
+  const {ticker,at}=pending;
+  db.prepare(`INSERT INTO auction_entry_tape(ticker,at,checked) VALUES(?,?,?)
+    ON CONFLICT(ticker,at) DO UPDATE SET checked=excluded.checked`).run(ticker,at,now);
+  const {levels,side,strategy,closeAt}=originalEntry(db,ticker,at);
+  const next=db.prepare(`SELECT MIN(at) AS at FROM paper WHERE ticker=? AND at>? AND strategy IN ${auctionEntryStrategies}`).get(ticker,at).at;
   const begin=Date.parse(at),arrival=begin+1000;
-  const untilAt=Math.min(begin+30000,...rows.map(r=>r.closeAt),next?Date.parse(next):Infinity);
+  const untilAt=Math.min(begin+30000,closeAt,next?Date.parse(next):Infinity);
   const trades=(await windowTrades(io,{ticker,arrival,untilAt},side,side)).filter(t=>levels.has(t.price));
   const detail={ticker,strategy,at,side,arrival,untilAt,levels:[],trades};
   for(const [price,paper] of levels) {

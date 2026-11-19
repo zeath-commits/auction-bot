@@ -1,7 +1,32 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {DatabaseSync} from 'node:sqlite';
+import {initEntryDepth,checkEntryDepth} from '../auction-entry-depth.mjs';
 import {initRestingStudy,observeRestingBid,reviewRestingBid,settleRestingBid,restingBalance,reviewAuctionEntry} from '../auction-resting.mjs';
+
+test('delayed auction depth uses a later exchange timestamp, caps each price and reserves earlier inventory',async()=>{
+  const db=new DatabaseSync(':memory:');
+  try{
+    db.exec('CREATE TABLE paper(id TEXT,ticker TEXT,strategy TEXT,at TEXT,side TEXT,quantity REAL,price REAL,closeAt INTEGER); CREATE TABLE late_evidence(id TEXT,detail TEXT)');
+    initEntryDepth(db);
+    const iso=t=>new Date(t).toISOString();
+    const add=db.prepare("INSERT INTO paper VALUES(?,'T','sothebys_sold',?,'yes',?,?,200000)");
+    add.run('prior',iso(90000),1,.92);
+    add.run('a',iso(100000),5,.94);add.run('b',iso(100000),4,.96);
+    const snapshot={requestedAt:102000,receivedAt:102200,httpDate:iso(101000),cacheAge:1,body:{orderbooks:[
+      {ticker:'T',orderbook_fp:{yes_dollars:[],no_dollars:[['0.07','4.50'],['0.06','2.00'],['0.04','3.50']]}}]}};
+    const io={get:async()=>snapshot};
+    assert.equal(await checkEntryDepth(db,io,102000),0);
+    snapshot.httpDate=iso(102000);snapshot.cacheAge=0;
+    assert.equal(await checkEntryDepth(db,io,102000),1);
+    const {levels,held}=JSON.parse(db.prepare('SELECT detail FROM auction_entry_depth').get().detail);
+    assert.equal(held,1);
+    assert.deepEqual(levels,[{limit:.94,requested:5,matched:5,cost:4.67},{limit:.96,requested:4,matched:3,cost:2.88}]);
+    assert.equal(await checkEntryDepth(db,io,103000),0);
+    add.run('expired',iso(120000),1,.99);
+    assert.equal(await checkEntryDepth(db,{get:()=>{throw Error('Late request');}},126001),0);
+  }finally{db.close();}
+});
 
 test('matches public purchases to original paper levels and truncates overlapping entry windows',async()=>{
   const db=new DatabaseSync(':memory:');

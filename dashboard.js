@@ -254,9 +254,20 @@ function paper(d) {
       note('Counts same-side buyer executions from one second to 30 seconds after the paper observation. A later entry or market close ends the window early. Public trades do not establish a bot fill.');
     }
     if(d.sothebysStatus?.entryTapeError) note(d.sothebysStatus.entryTapeError);
+    const depth=(d.auctionEntryDepth??[]).filter(r=>selected==='all'||r.strategy===selected);
+    table('Auction offers checked again after paper entry',['Threshold','Side','Delay','Limit','Paper shares','Shares still offered within limit','Cost at later offers'],
+      depth.flatMap(r=>r.levels.map(l=>[r.ticker,r.side.toUpperCase(),((r.receivedAt-Date.parse(r.at))/1000).toFixed(2)+'s',
+        money(l.limit),l.requested,l.matched,money(l.cost)])),
+      'No timely follow-up book recorded for these entries.');
+    if(depth.length)note('The monitor checks a fresh book one to six seconds after entry. It accounts for earlier paper purchases before counting whole shares at the same price or better. Cost excludes fees.');
+    if(d.sothebysStatus?.entryDepthError)note(d.sothebysStatus.entryDepthError);
   }
   if (['all', 'sale_depth', 'late_auction', 'sothebys_sold'].includes(selected)) {
     const p = d.auctionPortfolio, marks = d.auctionExits;
+    const portfolioStrategies=['sale_depth','late_auction','sothebys_sold'];
+    const reviewedLevels=(d.auctionEntryTape??[]).filter(r=>portfolioStrategies.includes(r.strategy)).flatMap(r=>r.levels);
+    const reviewedShares=reviewedLevels.reduce((n,l)=>n+l.paper,0);
+    const publicOverlap=reviewedLevels.reduce((n,l)=>n+l.overlap,0);
     const exits = d.auctionHoldings.map((h) =>
       marks.rows?.find(
         (r) =>
@@ -275,7 +286,8 @@ function paper(d) {
     metrics([
       ['Available paper cash', money(p.cash)],
       ['Open cost incl. fees', money(p.openCost)],
-      ['Settled auction net', money(p.settledNet)],
+      ['Settled net at modeled fills', money(p.settledNet)],
+      ['Paper shares also bought publicly within 30s',reviewedShares?publicOverlap+' of '+reviewedShares:'Awaiting review'],
       ['Open net if all sold now', money(liquidationNet)],
       [
         'Open net if all pay $1',

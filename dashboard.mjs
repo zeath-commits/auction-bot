@@ -24,6 +24,7 @@ import { observeCS2 } from './esports-paper.mjs';
 import { observeUS } from './us-bitcoin-paper.mjs';
 import { observeSothebysBids } from './sothebys-bids.mjs';
 import { initRestingStudy, restingBalance, reviewRestingBid, settleRestingBid, reviewAuctionEntry } from './auction-resting.mjs';
+import {initEntryDepth,checkEntryDepth} from './auction-entry-depth.mjs';
 import {
   addPaper,
   observe,
@@ -35,6 +36,7 @@ import {
 const runtime = path.join(ROOT, 'runtime');
 const db = openLedger(runtime);
 initRestingStudy(db);
+initEntryDepth(db);
 const soldLimits = openSoldLimits(runtime);
 const config = JSON.parse(
   fs.readFileSync(
@@ -530,6 +532,10 @@ const server = http.createServer((req, res) => {
           auctionEmptyQueueAccount:restingBalance(db,'empty'),
           auctionRestingPositions:db.prepare('SELECT p.*,t.source FROM auction_resting_positions p JOIN auction_resting_trials t USING(ticker) ORDER BY arrival DESC,ticker').all(),
           auctionEntryTape:db.prepare('SELECT detail FROM auction_entry_tape WHERE detail IS NOT NULL ORDER BY at DESC,ticker').all().map(r=>JSON.parse(r.detail)),
+          auctionEntryDepth:db.prepare('SELECT detail FROM auction_entry_depth ORDER BY at DESC,ticker').all().map(r=>{
+            const {book,...summary}=JSON.parse(r.detail);
+            return summary;
+          }),
           nbaStatus,
           recordPairStatus,
           recordPairDelays: db.prepare(`SELECT seconds,COUNT(*) AS batches,COUNT(available) AS checked,
@@ -753,6 +759,14 @@ server.listen(port, host, () => {
   setInterval(importSafe, 15000).unref();
   setInterval(runAuctions, 60000).unref();
   const soldIO = new Transport(config);
+  let checkingDepth=false;
+  setInterval(async()=>{
+    if(checkingDepth||stopping||exists(path.join(ROOT,'STOP')))return;
+    checkingDepth=true;
+    try{if(await checkEntryDepth(db,soldIO,Date.now()))delete sothebysStatus.entryDepthError;}
+    catch(e){sothebysStatus.entryDepthError=e.message;}
+    finally{checkingDepth=false;}
+  },400).unref();
   checkCatalogCases(soldIO);
   setInterval(() => checkCatalogCases(soldIO), 300000).unref();
   const reconcileLimits = () => {
