@@ -193,7 +193,9 @@ export async function main(args = process.argv.slice(2)) {
     requireThat(!live, 'Create and review config.json before activating live execution');
     configText = await fs.readFile(path.join(ROOT, 'config.example.json'), 'utf8');
   }
-  const config = validateConfig(JSON.parse(configText));
+  const sweep=sweepArg ? await import('./auction-sweep.mjs') : null;
+  const baseConfig=validateConfig(JSON.parse(configText));
+  const config=sweep ? sweep.datedSweepConfig(baseConfig) : baseConfig;
   if(accountCheck) {
     const reader = new Transport(config,{live:false});
     await reader.loadCredentials(true);
@@ -203,7 +205,6 @@ export async function main(args = process.argv.slice(2)) {
   }
   requireThat(!live || config.liveEnabled, 'config.json liveEnabled is false');
   const file = JSON.parse(await fs.readFile(path.join(ROOT, watchFile), 'utf8'));
-  const sweep=sweepArg ? await import('./auction-sweep.mjs') : null;
   const watchlist = validateWatchlist(sweep ? sweep.sessionWatchlist(file,sweepDate) : file);
   let stopped = false;
   const onSignal = () => { stopped = true; };
@@ -228,7 +229,10 @@ export async function main(args = process.argv.slice(2)) {
       const result = { checkedAt: new Date().toISOString(), readOnly: true, authenticatedRequests: 0,
         orderSubmissions: 0, auctions: await preflight(io, watchlist,sweep && ((body,target)=>sweep.sessionBookCheck(io,body,target,config))) };
       if(sweep)result.session={date:sweepDate,liveEnabled:config.liveEnabled,maxPriceCents:config.maxPriceCents,
-        maxTotalReservedCents:config.maxTotalReservedCents,sizing:'Repeated whole-contract depth within available cash and remaining journal budget'};
+        minConditionalProfitCents:config.minConditionalProfitCents,datedAuctionSizing:config.datedAuctionSizing,
+        maxTotalReservedCents:config.datedAuctionSizing==='available_cash'?null:config.maxTotalReservedCents,
+        paperBudgetCents:config.datedAuctionSizing==='available_cash'?config.datedPaperBankrollCents:config.maxTotalReservedCents,
+        sizing:config.datedAuctionSizing==='available_cash'?'Available subaccount cash including fees; paper uses its simulated bankroll':'Repeated whole-contract depth within available cash and remaining journal budget'};
       await fs.mkdir(path.join(ROOT, 'runtime'), { recursive: true });
       await fs.writeFile(path.join(ROOT, 'runtime', 'preflight.json'), JSON.stringify(result, null, 2));
       console.log(JSON.stringify(result, null, 2)); return;

@@ -11,7 +11,7 @@ import { Journal } from '../journal.mjs';
 import { submitCandidate, processTarget } from '../bot.mjs';
 import { christies, phillips } from '../parsers.mjs';
 import { scanOffers, offerSide } from '../watch-offers.mjs';
-import {scanSweep, sessionWatchlist, sweepQuote} from '../auction-sweep.mjs';
+import {datedSweepConfig, scanSweep, sessionWatchlist, sweepQuote} from '../auction-sweep.mjs';
 
 const config = JSON.parse(await fs.readFile(new URL('../config.example.json', import.meta.url)));
 const watch = JSON.parse(await fs.readFile(new URL('../watchlist.json', import.meta.url)));
@@ -44,6 +44,11 @@ test('dated auction sweep sizes repeated depth within cash and skips other sessi
   assert.equal(sweepQuote(make('21.00'),make('3.50'),'YES',{},config,65),null);
   const monet=sweepQuote(make('21.00'),make('23.00'),'YES',{},config,500);
   assert.equal(monet.quantity,7);assert.equal(monet.reserveCents,467);
+  const full=datedSweepConfig(validateConfig({...config,datedAuctionSizing:'available_cash'}));
+  const expensive={orderbook_fp:{no_dollars:[['0.0300','20.00']]}};
+  assert.equal(sweepQuote(expensive,expensive,'YES',{},full,2500).quantity,20);
+  assert.equal(sweepQuote(expensive,expensive,'YES',{},config,2500),null);
+  assert.equal(config.maxPriceCents,95);
 });
 
 test('dated sweeps can revisit after fresh books and stop at cumulative spend including fees',async()=>withJournal(async j=>{
@@ -61,11 +66,12 @@ test('dated sweeps can revisit after fresh books and stop at cumulative spend in
   assert.throws(()=>j.checkBudget({...c,quote:{reserveCents:421}},limits),/Total reserved/);
 },'live'));
 
-test('dated session submits both result sides using funds left after partial IOC fill',()=>withJournal(async j=>{
+for(const mode of ['pilot','available_cash','paper_cash']){
+test('dated auction sizing and journal budget with '+mode,()=>withJournal(async j=>{
   const lower={...frozen,ticker:'KXART-TEST-300',threshold:300,primary:'Above 300'};
   const t={...target,markets:[frozen,lower]};
   const a={house:'christies',sale:'1',sourceUrl:'https://www.christies.com/list',targets:[t]};
-  const posts=[],positions=new Map();
+  const posts=[],positions=new Map();let balances=0;
   const wrap=body=>({body,requestedAt:Date.now(),receivedAt:Date.now(),httpDate:new Date().toUTCString()});
   const book=ticker=>({ticker,orderbook_fp:{yes_dollars:[['0.2000','40.00']],no_dollars:[['0.5000','40.00']]}});
   const io={live:true,request:async()=>({...wrap(null),text:catalogue(400)}),get:async route=>{
@@ -78,7 +84,7 @@ test('dated session submits both result sides using funds left after partial IOC
     if(route==='/exchange/status')return wrap({exchange_active:true,trading_active:true});
     if(route.startsWith('/portfolio/positions'))return wrap({market_positions:[...positions].map(([ticker,position_fp])=>({ticker,position_fp}))});
     if(route.startsWith('/portfolio/orders'))return wrap({orders:[]});
-    if(route.startsWith('/portfolio/balance?exchange_index=0'))return wrap({balance:500});
+    if(route.startsWith('/portfolio/balance?exchange_index=0'))return wrap({balance:mode==='pilot'?500:++balances===1?2500:1000});
     throw Error(route);
   },createOrder:async payload=>{
     posts.push(payload);
@@ -87,14 +93,22 @@ test('dated session submits both result sides using funds left after partial IOC
     return wrap({order_id:'sim-'+posts.length,client_order_id:payload.client_order_id,remaining_count:'0.00',
       fill_count:filled.toFixed(2),average_fill_price:payload.price,average_fee_paid:'0.0100'});
   }};
-  const opts={io,auction:a,journal:j,live:true,stop:noop,log:noop,deadline:Date.now()+60000,
-    config:{...config,liveEnabled:true,maxOrderCostCents:100,maxTotalReservedCents:500,maxOrders:1,maxOfferAttemptsPerArtwork:1}};
+  const opts={io,auction:a,journal:j,live:mode!=='paper_cash',stop:noop,log:noop,deadline:Date.now()+60000,
+    config:datedSweepConfig({...config,datedAuctionSizing:mode==='pilot'?'pilot':'available_cash',datedPaperBankrollCents:2500,
+      liveEnabled:mode!=='paper_cash',maxOrderCostCents:100,maxTotalReservedCents:500,maxOrders:1,maxOfferAttemptsPerArtwork:1})};
   await scanSweep(opts);
-  assert.deepEqual(posts.map(p=>[p.side,p.count,p.price,p.time_in_force]),[['bid','9','0.5000','immediate_or_cancel'],['ask','4','0.2000','immediate_or_cancel']]);
-  assert.equal(j.committedCents(),426);
-  await scanSweep(opts);assert.equal(posts.length,2);
+  if(mode==='paper_cash'){
+    assert.deepEqual(j.intents().map(i=>i.quote.quantity),[40,4]);
+    assert.equal(j.committedCents(),2439);assert.equal(posts.length,0);assert.equal(balances,0);
+  }else{
+    const counts=mode==='pilot'?['9','4']:['40','12'];
+    assert.deepEqual(posts.map(p=>[p.side,p.count,p.price,p.time_in_force]),[['bid',counts[0],'0.5000','immediate_or_cancel'],['ask',counts[1],'0.2000','immediate_or_cancel']]);
+    assert.equal(j.committedCents(),mode==='pilot'?426:1074);
+    await scanSweep(opts);assert.equal(posts.length,2);
+  }
   assert.equal(j.unresolved().length,0);
-},'live'));
+},mode==='paper_cash'?'paper':'live'));
+}
 
 test('a crossed bid can buy YES, but equality or a lower bid cannot imply NO', () => {
   assert.equal(offerSide({kind:'current_bid',amount:501},500),'YES');

@@ -13,6 +13,11 @@ export function sessionWatchlist(calendar, date) {
   return {...calendar,auctions};
 }
 
+export function datedSweepConfig(config) {
+  if(config.datedAuctionSizing!=='available_cash')return config;
+  return {...config,maxPriceCents:99,minConditionalProfitCents:1};
+}
+
 // Charge every unit the IOC limit and reserve rounding on every possible fill.
 // Price plus the standard quadratic fee increases throughout the binary price range.
 export function sweepQuote(initial,current,side,market,config,budgetCents) {
@@ -73,10 +78,13 @@ async function batchBooks(io,markets) {
 export async function scanSweep(opts) {
   const {io,journal,auction,config,live,stop,deadline,log}=opts;
   const catalogueRead=await catalogue(io,auction);
+  const useCash=config.datedAuctionSizing==='available_cash';
+  const remaining=()=>useCash&&live ? Infinity :
+    (useCash ? config.datedPaperBankrollCents : config.maxTotalReservedCents)-journal.committedCents();
   let cash=null;
   for(const t of auction.targets){
     await stop();
-    if(Date.now()>=deadline || journal.committedCents()>=config.maxTotalReservedCents)return;
+    if(Date.now()>=deadline || remaining()<=0)return;
     const key=artworkKey(auction,t),history=()=>journal.intents().filter(i=>i.artworkKey===key);
     const published=await evidence(io,auction,t,catalogueRead);
     if(!['published_sale','unsold'].includes(published?.kind))continue;
@@ -100,16 +108,18 @@ export async function scanSweep(opts) {
     for(const {m,side,book} of candidates.sort((a,b)=>a.firstPrice-b.firstPrice||a.m.ticker.localeCompare(b.m.ticker))){
       await stop();
       const prior=history();
-      if(Date.now()>=deadline || journal.committedCents()>=config.maxTotalReservedCents)return;
+      if(Date.now()>=deadline || remaining()<=0)return;
       if(!journal.canSweep(m.ticker,side,start))continue;
       if(live){
-        if(cash===null){
-          cash=(await io.get('/portfolio/balance?exchange_index=0&subaccount='+config.subaccount,true)).body.balance;
-          requireThat(Number.isSafeInteger(cash)&&cash>=0,'Invalid available cash balance');
+        if(cash===null||useCash){
+          const balance=(await io.get('/portfolio/balance?exchange_index=0&subaccount='+config.subaccount,true)).body.balance;
+          requireThat(Number.isSafeInteger(balance)&&balance>=0,'Invalid available cash balance');
+          cash=Math.min(cash??balance,balance);
         }
         await assertNoExistingExposure(io,auction,t,config,journalPositions(journal,prior));
       }
-      const budget=Math.min(cash??Infinity,config.maxTotalReservedCents-journal.committedCents());
+      const budget=Math.min(cash??Infinity,remaining());
+      requireThat(Number.isSafeInteger(budget)&&budget>=0,'Invalid available sweep budget');
       if(!sweepQuote(book,book,side,m,config,budget))continue;
       const exchange=(await io.get('/exchange/status')).body;
       if(!exchange.trading_active||!exchange.exchange_active)return;
@@ -128,7 +138,9 @@ export async function scanSweep(opts) {
         sourceUrl:confirmed.url,sourceRequestedAt:confirmed.requestedAt,quoteRequestedAt:read.requestedAt,firstBookAt:start,
         finalBookAt:stamp,settlementSource:'Artnet',settlementConfirmed:false,
         url:'https://kalshi.com/markets/kxart/what-will-the-price-of-art-be/'+t.event.toLowerCase()};
-      await submitCandidate({io,journal,config,live,stop,log,candidate,deadline:Math.min(deadline,Date.parse(latest.close_time))});
+      const totalLimit=journal.committedCents()+budget;
+      requireThat(Number.isSafeInteger(totalLimit),'Invalid sweep reservation limit');
+      await submitCandidate({io,journal,config:{...config,maxTotalReservedCents:totalLimit},live,stop,log,candidate,deadline:Math.min(deadline,Date.parse(latest.close_time))});
       if(live)cash-=journal.entries.find(r=>r.type==='receipt'&&r.clientOrderId===candidate.clientOrderId).costCents;
     }
   }

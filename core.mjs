@@ -19,7 +19,10 @@ export const sha = value => createHash('sha256').update(JSON.stringify(value)).d
 export const artworkKey = (auction, target) => `${auction.house}:${auction.sale}:${target.id}`;
 
 export function validateConfig(c) {
-  c = {maxOfferAttemptsPerArtwork: 2, offerCooldownSeconds: 60, offerTailHours: 12, ...c};
+  c = {maxOfferAttemptsPerArtwork: 2, offerCooldownSeconds: 60, offerTailHours: 12,
+    datedAuctionSizing:'pilot', datedPaperBankrollCents:100000, ...c};
+  requireThat(['pilot','available_cash'].includes(c.datedAuctionSizing),'Invalid datedAuctionSizing');
+  requireThat(Number.isSafeInteger(c.datedPaperBankrollCents)&&c.datedPaperBankrollCents>0,'Invalid datedPaperBankrollCents');
   requireThat(typeof c.liveEnabled === 'boolean', 'liveEnabled must be boolean');
   const bounds = {
     pollIntervalMs: [5000, 60000], requestTimeoutMs: [1000, 30000],

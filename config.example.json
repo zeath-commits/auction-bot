@@ -1,5 +1,7 @@
 {
   "liveEnabled": false,
+  "datedAuctionSizing": "pilot",
+  "datedPaperBankrollCents": 100000,
   "pollIntervalMs": 10000,
   "requestTimeoutMs": 8000,
   "maxSourceAgeMs": 15000,
