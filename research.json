@@ -48,6 +48,11 @@
   ],
   "studies": [
     {
+      "market": "BTC 15-minute contracts with ten seconds remaining",
+      "test": "Compared the latest chart reading and its five-second trend with the strike across 5,316 settled markets, September 23 through November 17 Eastern. Allowed two seconds of chart delay. For signals clearing 0.15%, checked seller trades strictly after a further second for a bid to arrive.",
+      "finding": "The side ahead reversed 78 times. The largest lead that reversed was 0.037%. All 1,478 signals clearing both checks settled on the predicted side. Sellers traded below 99.8¢ in ten of those markets, all of which had also qualified at 45 seconds. At 100 contracts per market and 99.8¢ per contract, that models $2 gross across eight weeks. One market traded exactly at 99¢ and none traded below it. Queue position, actual fills, fees and operating costs determine the achievable return."
+    },
+    {
       "market": "Exchange quote history for the $9.40 Kiefer paper gain",
       "test": "Rechecked both NO positions against Kalshi’s finalized markets, all public trades on each threshold from one second after entry through close, and one-minute exchange quotes around each entry. For NO, the best offer is one dollar minus the best YES bid.",
       "finding": "The 884-share paper purchase at 99¢ on Above $550K earned $8.23 on the ledger. Kalshi recorded a 1¢ best YES bid during that minute, corroborating a 99¢ NO offer at some point. The minute had zero trading volume and the market reported zero lifetime volume. The 125-share Above $850K position modeled $1.17 net. Its entry minute had no archived quote. Neither threshold had a public trade on either side after entry. The ledger confirms the payout direction and assumes execution of the quantities seen in the books. Future entries now get an independent depth check one to six seconds later."
