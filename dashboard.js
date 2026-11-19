@@ -1081,14 +1081,20 @@ function history(d) {
   );
 }
 function real(a) {
+  if(a.unresolved)note(a.unresolved+' live order intents have no confirmed receipt.');
   if (a.conflicts)
     note(
       a.conflicts +
         ' exchange order records have conflicting receipts. Their amounts require reconciliation.'
     );
-  note(
-    'The monitor runs in paper mode. This ledger reads confirmed exchange receipts for orders submitted by this bot.'
-  );
+  const report=a.reconciliation;
+  if(report){
+    metrics([['Verified trading net',money(report.tradingNet)],['Reported operating costs',money(report.operatingCosts)],
+      ['Net after operating costs',money(report.pilotNet)]]);
+    table('Account settlements as of '+time(report.checkedAt),['Market','Subaccount','Bot orders','Proceeds','Cost before fees','Fees','Trading net','Status'],
+      report.markets.map(r=>[r.ticker,r.subaccount,r.orders,money(r.proceeds),money(r.principal),money(r.fees),money(r.tradingNet),r.reason??r.state]),
+      'No confirmed bot fills to reconcile.');
+  }else if(a.history.length)note('Run npm run reconcile on the worker to match these receipts to account payouts.');
   table(
     'Real bot fills',
     [
@@ -1096,16 +1102,14 @@ function real(a) {
       'Market',
       'Side',
       'Filled quantity',
-      'Cost including fees',
-      'Verified realized net'
+      'Receipt cost including fees, rounded up to cents'
     ],
     a.history.map((r) => [
       time(r.at),
       r.ticker,
       r.side,
       r.quantity,
-      money(r.cost),
-      money(r.net)
+      money(r.cost)
     ]),
     'No confirmed real bot fills.'
   );

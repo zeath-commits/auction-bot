@@ -41,7 +41,7 @@ export class Transport {
     }
     if (authenticated) {
       const portfolioRead=this.readOnlyCheck && method==='GET' &&
-        ['/balance','/fills','/settlements'].some(suffix=>u.pathname==='/trade-api/v2/portfolio'+suffix);
+        ['/portfolio/balance','/portfolio/fills','/portfolio/settlements','/historical/fills'].some(route=>u.pathname==='/trade-api/v2'+route);
       requireThat(apiRequest && (this.live || portfolioRead) && this.key && this.id, 'Authenticated access unavailable');
       Object.assign(headers, authHeaders(this.key, this.id, method, url));
     }

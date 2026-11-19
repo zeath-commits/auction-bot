@@ -4,6 +4,7 @@ import path from 'node:path';
 import { timingSafeEqual, createHash } from 'node:crypto';
 import { spawn } from 'node:child_process';
 import { ROOT } from './bot.mjs';
+import {botFills,ledgerFingerprint} from './live-ledger.mjs';
 import { observePairs, pairSeries } from './auction-pairs.mjs';
 import { observeTotalPairs } from './nba-total-pairs.mjs';
 import { observeLateAuctions } from './late-auction.mjs';
@@ -85,62 +86,11 @@ function records(file) {
   return lines.filter(Boolean).map((line) => JSON.parse(line));
 }
 function botReceipts() {
-  const rows = records(path.join(runtime, 'live', 'orders.jsonl'));
-  const intents = new Map(
-    rows
-      .filter(
-        (r) =>
-          r.type === 'intent' &&
-          r.mode === 'live' &&
-          r.clientOrderId &&
-          r.ticker
-      )
-      .map((r) => [r.clientOrderId, r])
-  );
-  const fills = rows.filter(
-    (r) =>
-      r.mode === 'live' &&
-      r.type === 'receipt' &&
-      !r.hypothetical &&
-      intents.has(r.clientOrderId) &&
-      typeof r.orderId === 'string' &&
-      r.orderId &&
-      Number.isFinite(r.costCents) &&
-      r.costCents >= 0 &&
-      Number.isFinite(r.filled) &&
-      r.filled > 0
-  );
-  const grouped = Map.groupBy(fills, (r) => r.orderId);
-  const clientGroups = Map.groupBy(fills, (r) => r.clientOrderId);
-  const history = [];
-  let conflicts = 0;
-  for (const group of grouped.values()) {
-    const r = group[0],
-      order = intents.get(r.clientOrderId);
-    if (
-      group.some(
-        (x) =>
-          x.clientOrderId !== r.clientOrderId ||
-          x.costCents !== r.costCents ||
-          x.filled !== r.filled ||
-          (x.realizedProfit ?? null) !== (r.realizedProfit ?? null)
-      ) ||
-      clientGroups.get(r.clientOrderId).some((x) => x.orderId !== r.orderId)
-    ) {
-      conflicts++;
-      continue;
-    }
-    history.push({
-      ticker: order.ticker,
-      side: order.side,
-      quantity: r.filled,
-      cost: r.costCents / 100,
-      at: r.recordedAt,
-      source: 'Bot execution receipt',
-      net: r.realizedProfit ?? null
-    });
-  }
-  return { history, conflicts };
+  const journal=botFills(records(path.join(runtime,'live','orders.jsonl')));
+  const file=path.join(runtime,'live','reconciliation.json');
+  const saved=exists(file)?json(file):null;
+  const reconciliation=saved?.fingerprint===ledgerFingerprint(journal)?saved:null;
+  return {...journal,reconciliation};
 }
 function importAuction() {
   const archived = path.join(ROOT, 'research.json');

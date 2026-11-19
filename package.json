@@ -8,6 +8,7 @@
     "start": "node dashboard.mjs",
     "test": "node --test --test-isolation=none test/*.test.mjs",
     "preflight": "node bot.mjs --preflight",
+    "reconcile": "node reconcile-live.mjs",
     "paper": "node bot.mjs --paper-bids"
   }
 }

@@ -6,6 +6,7 @@ import os from 'node:os';
 import { spawn } from 'node:child_process';
 import { once } from 'node:events';
 import { ROOT } from '../bot.mjs';
+import {botFills,ledgerFingerprint} from '../live-ledger.mjs';
 
 test(
   'network dashboard keeps personal records behind owner access',
@@ -18,6 +19,7 @@ test(
         'bot.mjs',
         'core.mjs',
         'journal.mjs',
+        'live-ledger.mjs',
         'parsers.mjs',
         'transport.mjs',
         'strategy-monitor.mjs',
@@ -108,6 +110,11 @@ test(
           .map((r) => JSON.stringify(r))
           .join('\n') + '\n'
       );
+      const file=path.join(live,'orders.jsonl');
+      const rows=(await fs.readFile(file,'utf8')).trim().split('\n').map(JSON.parse);
+      const reconciliation={fingerprint:ledgerFingerprint(botFills(rows)),checkedAt:new Date().toISOString(),markets:[],
+        tradingNet:null,operatingCosts:null,pilotNet:null,privateMarker:'PRIVATE-PAYOUT-TEST'};
+      await fs.writeFile(path.join(live,'reconciliation.json'),JSON.stringify(reconciliation));
       // Exercise network-mode authentication on loopback, with no exchange access.
       child = spawn(process.execPath, ['dashboard.mjs'], {
         cwd: dir,
@@ -125,7 +132,8 @@ test(
       const base = 'http://localhost:' + port;
       const status = await fetch(base + '/api/status');
       assert.equal(status.status, 200);
-      assert.ok(!(await status.text()).includes('PRIVATE-TEST'));
+      const publicBody=await status.text();
+      assert.ok(!publicBody.includes('PRIVATE-TEST')&&!publicBody.includes('PRIVATE-PAYOUT-TEST'));
       assert.equal((await fetch(base + '/api/account')).status, 401);
       const headers = {
         Authorization:
@@ -135,6 +143,7 @@ test(
         await fetch(base + '/api/account', { headers })
       ).json();
       assert.equal(account.mode, 'paper');
+      assert.equal(account.reconciliation.privateMarker,'PRIVATE-PAYOUT-TEST');
       assert.equal(account.conflicts, 1);
       assert.deepEqual(
         account.history.map((r) => [r.ticker, r.quantity, r.cost]),
@@ -145,6 +154,10 @@ test(
           .status,
         405
       );
+      await fs.appendFile(file,JSON.stringify({...intent,clientOrderId:'pending'})+'\n');
+      const changed=await (await fetch(base+'/api/account',{headers})).json();
+      assert.equal(changed.unresolved,1);
+      assert.equal(changed.reconciliation,null);
     } finally {
       if (child && child.exitCode === null) {
         const done = once(child, 'exit');
