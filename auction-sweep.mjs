@@ -5,11 +5,13 @@ import {catalogue, evidence, journalPositions, offerSide} from './watch-offers.m
 import {verifyTerms} from './paper-unsold.mjs';
 import {assertNoExistingExposure, submitCandidate} from './bot.mjs';
 
-export function sessionWatchlist(calendar, date) {
+export function sessionWatchlist(calendar, date, {priorTailHours=0, now=Date.now()}={}) {
   requireThat(/^\d{4}-\d{2}-\d{2}$/.test(date),'Supply an Eastern auction date as YYYY-MM-DD');
   const format=new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'});
-  const auctions=calendar.auctions.filter(a=>format.format(Date.parse(a.startAt))===date);
-  requireThat(auctions.length,'No reviewed auctions for '+date);
+  const day=a=>format.format(Date.parse(a.startAt));
+  requireThat(calendar.auctions.some(a=>day(a)===date),'No reviewed auctions for '+date);
+  const auctions=calendar.auctions.filter(a=>day(a)===date || (priorTailHours>0 && day(a)<date &&
+    Date.parse(a.startAt)<=now && now<Date.parse(a.deadline)+priorTailHours*3600000));
   return {...calendar,auctions};
 }
 

@@ -38,6 +38,13 @@ test('dated auction sweep sizes repeated depth within cash and skips other sessi
   const cal={auctions:[{startAt:'2026-11-20T00:00:00Z'},{startAt:'2026-11-20T15:00:00Z'}]};
   assert.deepEqual(sessionWatchlist(cal,'2026-11-19').auctions,[cal.auctions[0]]);
   assert.throws(()=>sessionWatchlist(cal,'2026-11-21'),/No reviewed/);
+  const overlap={auctions:[
+    {startAt:'2026-11-18T15:00:00Z',deadline:'2026-11-19T00:00:00Z'},
+    {startAt:'2026-11-19T18:00:00Z',deadline:'2026-11-20T00:00:00Z'},
+    {startAt:'2026-11-20T15:00:00Z',deadline:'2026-11-21T00:00:00Z'}]};
+  const priorWindow={now:Date.parse('2026-11-20T06:00:00Z'),priorTailHours:12};
+  assert.deepEqual(sessionWatchlist(overlap,'2026-11-20',priorWindow).auctions,overlap.auctions.slice(1));
+  assert.deepEqual(sessionWatchlist(overlap,'2026-11-20',{...priorWindow,now:Date.parse('2026-11-20T12:00:00Z')}).auctions,overlap.auctions.slice(2));
   const make=n=>({orderbook_fp:{no_dollars:[['0.3600',n],['0.1000','30.00']]}});
   const q=sweepQuote(make('21.00'),make('3.50'),'YES',{fractional_trading_enabled:true},config,250);
   assert.equal(q.quantity,3);assert.equal(q.limitCents,64);assert.ok(q.reserveCents<=250);

@@ -137,8 +137,9 @@ export async function submitCandidate({ io, candidate, config, journal, live, st
 export async function preflight(io, watchlist, sweepCheck) {
   checkFees((await io.get('/series/KXART')).body);
   const summary = [];
+  const readSource = sweepCheck ? (await import('./watch-offers.mjs')).catalogue : readAuction;
   for (const auction of watchlist.auctions) {
-    const source = await readAuction(io, auction);
+    const source = await readSource(io, auction);
     let published = 0, contracts = 0;
     const books={active:0,quoted:0,fresh:0};
     for (const target of auction.targets) {
@@ -196,6 +197,9 @@ export async function main(args = process.argv.slice(2)) {
   const sweep=sweepArg ? await import('./auction-sweep.mjs') : null;
   const baseConfig=validateConfig(JSON.parse(configText));
   const config=sweep ? sweep.datedSweepConfig(baseConfig) : baseConfig;
+  if (live && config.liveSweepDate != null) {
+    requireThat(sweepDate && sweepDate === config.liveSweepDate, 'Funded trading is configured only for the selected auction date');
+  }
   if(accountCheck) {
     const reader = new Transport(config,{live:false});
     await reader.loadCredentials(true);
@@ -205,7 +209,9 @@ export async function main(args = process.argv.slice(2)) {
   }
   requireThat(!live || config.liveEnabled, 'config.json liveEnabled is false');
   const file = JSON.parse(await fs.readFile(path.join(ROOT, watchFile), 'utf8'));
-  const watchlist = validateWatchlist(sweep ? sweep.sessionWatchlist(file,sweepDate) : file);
+  const priorTailHours = sweep && sweepDate===config.liveSweepDate && (live || args.includes('--preflight'))
+    ? config.offerTailHours : 0;
+  const watchlist = validateWatchlist(sweep ? sweep.sessionWatchlist(file,sweepDate,{priorTailHours}) : file);
   let stopped = false;
   const onSignal = () => { stopped = true; };
   process.on('SIGINT', onSignal); process.on('SIGTERM', onSignal);
